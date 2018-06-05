@@ -1,0 +1,1062 @@
+body {
+  padding:0 0;
+  margin:0 0;
+  /* font-family: sans-serif; */
+}
+
+button {
+  border: none;
+  padding: 0 0;
+  margin: 0 0;
+  background-color: transparent;
+  outline: none;
+}
+
+button:disabled:hover {
+  color: red;
+}
+
+p {
+  margin: 0 0;
+}
+
+input:focus {
+    outline:none;
+}
+
+textarea {
+  resize: none;
+}
+
+#app {
+  padding:0 0;
+  margin:0 0;
+  width: 100%;
+  background-color: #f1f1f1;
+}
+
+#banner {
+  position: fixed;
+  top: 0;
+  background-color: white;
+  width: 100%;
+  height: 70px;
+  color: black;
+  z-index: 2;
+  padding: 0 8%;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+#banner_title {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 24px;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+#search_bar_div {
+  display:inline-block;
+  border:1px solid #ccc;
+  border-radius: 4px;
+  margin: 0 3%;
+}
+
+#search_bar {
+  width: 400px;
+  height: 20px;
+  padding: 5px 7px;
+  background-color: transparent;
+  border: 0;
+}
+
+#search_bar_button {
+  padding: 5px 7px;
+  background-color: transparent;
+  border: 0;
+}
+
+.banner_button {
+  display: inline-block;
+  cursor: pointer;
+  padding: 0 15px;
+  height: 100%;
+  font-size: 14px;
+}
+
+.banner_button:hover {
+  color: gray;
+  line-height: 70px;
+}
+
+#notification_button {
+  height: 20px;
+}
+
+#banner_hr {
+  border-color: #f1f1f1;
+  width: 100%;
+  margin: 0 0;
+}
+
+#white_background_wrapper {
+  position: relative;
+  overflow: hidden;
+  width: 1250px;
+  min-height: 706px;
+  margin: 0 auto;
+  margin-top: 70px;
+  background-color: white;
+}
+
+#content_wrapper {
+  margin: 0;
+  float: left;
+  /* margin-left: 10%; */
+  margin-bottom: 5%;
+  width: 75%;
+  background-color: white;
+}
+
+#type_selector {
+  display: inline-block;
+  position: relative;
+  margin-left: 2%;
+  margin-bottom: 20px;
+  margin-top: 20px;
+  color: black;
+  z-index: 1;
+  font-size: 21px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.type_selector_button {
+  display: inline-block;
+  margin-right: 40px;
+}
+
+.type_selector_button:hover {
+  color: gray;
+}
+
+.type_selector_button_selected {
+  display: inline-block;
+  margin-right: 40px;
+  color: red;
+  border-bottom: 1px solid red;
+  padding-bottom: 1%;
+}
+
+.type_selector_button_selected:hover {
+  color: gray;
+}
+
+#post_wrapper {
+  display: inline-block;
+  position: relative;
+  margin-left: 2%;
+  list-style-type: none;
+  list-style-position: inside;
+  background-color: white;
+}
+
+#polaroid_div {
+  display: inline-block;
+  width: 65%;
+  border: 1px solid #f1f1f1;
+  box-shadow: 5px 10px 8px #888888;
+}
+
+#post_header {
+  height: 60px;
+  width: 100%;
+  padding: 5px 5px;
+}
+
+#user_name {
+  color: black;
+  font-weight: 400;
+  font-size: 90%;
+  margin-left: 1%
+}
+
+#post_status {
+  display: inline-block;
+  color: gray;
+  margin-left: 1%;
+  font-weight: 200;
+  font-size: 90%;
+}
+
+#genre_button {
+  display: inline-block;
+  float: right;
+  background-color: gray;
+  color: white;
+  border-radius: 20px;
+}
+
+#genre_button:hover {
+  background-color: #ccc;
+}
+
+#genre_text {
+  text-align: center;
+  font-size: 12px;
+  margin: 2px 0;
+  padding: 0 10px;
+}
+
+#profile_image_div {
+  display: inline-block;
+  height: 50px;
+  width: 50px;
+}
+
+#profile_image {
+  height: 50px;
+  width: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #f1f1f1;
+}
+
+#header_text {
+  display: inline-block;
+  width: 90%;
+}
+
+#image_wrapper {
+  display: inline-block;
+  width: 100%;
+}
+
+#post_image {
+  max-width: 100%;
+}
+
+#tags_div_wrapper {
+  padding: 0 20px;
+  display: inline-block;
+  vertical-align: top;
+  width: 35%;
+}
+
+#title {
+  padding-top: 30px;
+  display: inline-block;
+  height: 60px;
+  width: 100%;
+}
+
+#title_text {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+#tag_title_hr {
+  border-color: #888888;
+  float: left;
+  margin: 0 0;
+  width: 100%;
+}
+
+#tags_div {
+  padding: 10px 0;
+  font-size: 13px;
+}
+
+.clothing_tag {
+  padding: 10px 0;
+}
+
+.tag_image {
+  display: inline-block;
+  vertical-align: top;
+  width: 50px;
+  padding-top: 1%;
+  padding-right: 5%;
+}
+
+.tags_text_div {
+  display: inline-block;
+}
+
+.tag_brand {
+  margin-top: 2%;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+.tag_name {
+  margin-top: 2%;
+  margin-bottom: 0;
+}
+
+.og_tag {
+  float:right;
+}
+
+.og_icon {
+  display: inline-block;
+  width: 40px;
+}
+
+#description_hr {
+  margin: 0 0;
+  width: 100%;
+  border-color: #888888;
+}
+
+#description_wrapper {
+  padding: 10px 0;
+  width: 90%;
+  font-size: 12px;
+}
+
+#comments_div ul {
+  padding: 10px 0;
+  list-style: none;
+}
+
+#stats_header {
+  padding: 2% 2%;
+  width: 100%;
+}
+
+#toggle_like {
+  font-size: 20px;
+}
+
+#toggle_like:hover {
+  color: #e2264d;
+}
+
+.stats_button {
+  display: inline-block;
+  padding: 0 0;
+  padding-right: 20px;
+}
+
+.collection_stats_button {
+  display: inline-block;
+  padding: 0 0;
+  padding-right: 20px;
+}
+
+.stats_icon {
+  display: inline-block;
+  width: 30px;
+}
+
+.collection_stats_icon {
+  display: inline-block;
+  width: 20px;
+}
+
+.stats_number {
+  display: inline-block;
+  vertical-align: middle;
+  margin-bottom: 0;
+}
+
+#non_stat_div {
+  float: right;
+}
+
+.non_stat_icon {
+  width: 25px;
+  border: 1px solid black;
+  border-radius: 4px;
+}
+
+#add_to_playlist {
+  margin-right: 15px;
+}
+
+#post_hr {
+  border-color: #f1f1f1;
+  float: left;
+  margin-left: 2%;
+  margin-top: 10%;
+  margin-bottom: 10%;
+  width: 95%;
+}
+
+#stats_column {
+  position: fixed;
+  display: inline-block;
+  background-color: white;
+  height: 100%;
+  max-width: inherit;
+  width: 21.25%;
+  overflow-y: scroll;
+}
+
+#stats_wrapper {
+  position: relative;
+  padding: 0 15px;
+}
+
+.vertical_line {
+  position: absolute;
+  border-left: 2px solid #f1f1f1;
+  height: 1000px;
+  width: 0;
+  margin: 0 0;
+}
+
+#genre_of_the_day_div {
+  padding: 10px 5px;
+}
+
+#genre_of_the_day {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+#stats_column_title {
+  display: inline;
+}
+
+#stats_title_hr {
+  margin: 5px 0;
+}
+
+.view_div {
+  display: inline-block;
+  width: 50%;
+  border-right: 1px solid #ccc;
+}
+
+#right_half_view_div {
+  border: none;
+}
+
+.view_counter {
+  display: inline-block;
+  width: 100%;
+}
+
+.stat_number {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 500;
+  padding: 5px 0;
+}
+
+#stat_line_separator {
+  display: inline-block;
+  border-left: 2px solid #f1f1f1;
+  height: 50px;
+  vertical-align: top;
+  margin: 0 0;
+}
+
+#seven_days_counter {
+  text-align: right;
+}
+
+#seven_days_views {
+  text-align: right;
+}
+
+#total_plays {
+  padding: 20px 0;
+}
+
+#time_period_title {
+  margin-top: 5%;
+}
+
+.top_location_title {
+}
+
+.top_location {
+  display: inline-block;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.country_icon {
+  display: inline-block;
+  width: 15%;
+  margin-right: 2%;
+}
+
+.view_bar_container {
+  display: inline-block;
+  width: 100%;
+  background-color: #ddd;
+  margin-top: 2%;
+  margin-bottom: 4%;
+}
+
+.view_bar {
+  width: 90%;
+  background-color: #4CAF50;
+  text-align: right;
+  color: white;
+  padding-right: 5%;
+}
+
+.top_viewer_title {
+}
+
+.top_viewer {
+  display: inline-block;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.viewer_icon {
+  display: inline-block;
+  width: 10%;
+  border-radius: 50%;
+  margin-right: 2%;
+}
+
+#who_to_follow_title {
+  margin-top: 5%;
+}
+
+#profile_banner {
+  display: inline-block;
+  height: 200px;
+  width: 75%;
+  background-color: white;
+}
+
+#profile_info {
+  padding: 5% 1%;
+}
+
+#profile_info_image {
+  object-fit: cover;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+#profile_info_text_div {
+  display: inline-block;
+  padding: 0 2%;
+  vertical-align: middle;
+}
+
+.profile_info_text {
+  font-size: 14px;
+}
+
+#profile_info_username {
+  font-weight: 500;
+}
+
+.profile_column_title {
+  display: inline;
+  margin: 0 0;
+}
+
+.collections_div {
+  padding: 10px 0;
+}
+
+#likes_list {
+  padding: 0 0;
+  margin: 0 0;
+}
+
+#likes_list li {
+  display: inline-block;
+  list-style: none;
+}
+
+.likes_list_item_image {
+  max-width: 80px;
+}
+
+#likes_next_button {
+  text-decoration: none;
+  padding: 4px 10px;
+  background-color: #f1f1f1;
+  color: white;
+  border-radius: 50%;
+}
+
+.see_all_link {
+  float: right;
+  text-decoration: none;
+}
+
+#albums_list {
+  padding: 0 0;
+  margin: 0 0;
+}
+
+#albums_list li {
+  display: inline-block;
+  list-style: none;
+}
+
+.albums_list_item_title {
+  margin: 0 0;
+  text-align: center;
+}
+
+.albums_list_item_polaroid {
+  box-shadow: 1px 5px 8px #888888;
+  margin-right: 10px;
+}
+
+.albums_list_item_image {
+  max-width: 80px;
+}
+
+#single_post_polaroid_div {
+  display: inline-block;
+  width: 850px;
+  border: 1px solid #f1f1f1;
+  box-shadow: 5px 10px 8px #888888;
+}
+
+#single_post_image_wrapper {
+  display: inline-block;
+  width: 850px;
+}
+
+#single_post_image {
+  max-width: 850px;
+}
+
+#single_post_tags_div_wrapper {
+  display: inline-block;
+  vertical-align: top;
+  width: 400px;
+  padding: 0 25px;
+}
+
+#single_post_profile_image_div {
+  display: inline-block;
+  height: 50px;
+  width: 50px;
+  margin-top: 10px;
+}
+
+#single_post_header_text {
+  display: inline-block;
+  width: 300px;
+}
+
+#single_post_status {
+  float: right;
+  margin: 0 0;
+}
+
+#single_post_title_div {
+  padding-top: 10px;
+  display: inline-block;
+  height: 35px;
+  width: 100%;
+}
+
+#single_post_title_text {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+#single_post_stats_header {
+  padding: 10px 0;
+}
+
+#collections_type_selector {
+  width: 96%;
+  margin: 20px 2%;
+  color: black;
+  z-index: 1;
+  font-size: 21px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+#collections_wrapper {
+  margin: 0;
+  width: 100%;
+  background-color: white;
+}
+
+#collections_list {
+  height: 100%;
+}
+
+#collections_list li {
+  display: inline-block;
+  list-style: none;
+  text-decoration: none;
+  padding-right: 20px;
+}
+
+.collection_item_div {
+}
+
+.collection_item_img {
+  max-width: 200px;
+}
+
+#input_image_button {
+}
+
+#input_div {
+  display: inline-block;
+  vertical-align: top;
+  width: 400px;
+  padding: 20px 2%;
+}
+
+.input_box {
+  width: 100%;
+  padding: 4px 10px;
+  margin: 8px 0;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+#add_tag_button {
+  display: inline-block;
+  float: left;
+  background-color: #ADD8E6;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#tags_input {
+  width: 100%;
+  text-align: center;
+  border-bottom: 1px solid #ccc;
+  line-height: 2px;
+  margin: 10px 0 20px;
+  font-weight: 600;
+}
+
+#tags_input span {
+  background:#fff;
+  padding:0 10px;
+}
+
+#input_tag_div {
+  display: inline-block;
+  padding: 5px 5px;
+  width: 200px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 5px 10px 8px #888888;
+}
+
+#input_hr {
+  margin: 10px 0;
+  width: 100%;
+  border-color: #ccc;
+}
+
+#form_cancel {
+  padding: 5px 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#form_submit {
+  float:right;
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#outfit_finder_type_selector {
+  display: inline-block;
+  width: 96%;
+  margin: 20px 2%;
+  color: black;
+  z-index: 1;
+  font-size: 21px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+#outfit_finder_person_div {
+  float: left;
+  width: 46%;
+  margin: 10px 2%;
+  border: 1px solid #ccc;
+  height: 600px;
+}
+
+#outfit_finder_title {
+  text-align: center;
+  font-weight: 600;
+  font-size: 24px;
+}
+
+#genre_selector_div {
+  float: right;
+}
+
+#genre_selector_input {
+  width: 300px;
+}
+
+#genre_selector_title {
+  display: inline-block;
+  font-size: 21px;
+  padding: 0 5px;
+}
+
+#add_tags_div {
+  float: right;
+  width: 30%;
+  padding: 0 2%;
+}
+
+#save_tag_button {
+  float: right;
+  padding: 5px 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#upload_tags_div {
+  width: 100%;
+  max-height: 500px;
+  overflow-y: scroll;
+}
+
+#tag_original_input {
+  display: inline-block;
+  padding-right: 5px;
+}
+
+#related_outfits_div {
+  padding: 10px 0;
+}
+
+#related_outfits_title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+#related_outfits_list {
+  text-decoration: none;
+  list-style: none;
+  padding: 0 0;
+  margin: 0 0;
+}
+
+#related_outfits_list li {
+  padding: 10px 0;
+}
+
+#related_outfits_list img {
+  max-width: 100px;
+}
+
+#charts_div {
+  display: inline-block;
+  width: 70%;
+}
+
+#time_selector_div {
+  float: right;
+  width: 100%;
+  padding: 0 2%;
+}
+
+#time_selector {
+  float: right;
+}
+
+#charts_post_wrapper {
+  display: inline-block;
+  width: 100%;
+  padding: 0 2%;
+}
+
+#charts_polaroid_div {
+  display: inline-block;
+  width: 400px;
+  border: 1px solid #f1f1f1;
+  box-shadow: 5px 10px 8px #888888;
+}
+
+#charts_tags_div_wrapper {
+  display: inline-block;
+  vertical-align: top;
+  width: 350px;
+  padding-top: 34px;
+  padding-left: 30px;
+}
+
+#charts_tag_title_hr {
+  border-color: #888888;
+  float: left;
+  margin: 0 0;
+  width: 100%;
+}
+
+#charts_title {
+  display: inline-block;
+  padding-bottom: 5px;
+  width: 100%;
+}
+
+#charts_post_header {
+  height: 60px;
+  width: 100%;
+  padding: 5px 5px;
+}
+
+#charts_post_hr {
+  border-color: #f1f1f1;
+  float: left;
+  margin: 20px 0;
+  margin-left: 2%;
+  width: 95%;
+}
+
+#charts_post_status {
+  float: right;
+}
+
+#playlist_dropdown {
+  float: right;
+}
+
+#time_period_dropdown {
+  float: right;
+  margin: 20px 100px;
+}
+
+#time_period_button {
+}
+
+#time_period_list li {
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+#time_period_list li:hover {
+  background-color: #f1f1f1;
+}
+
+#time_period_button {
+  font-size: 21px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+#views_graph_div {
+  width: 100%;
+  padding: 0 2%;
+}
+
+.stats_title {
+  font-size: 24px;
+  font-weight: 600;
+  padding-bottom: 10px;
+}
+
+.views_graph_stats_number {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 20px;
+}
+
+#graph_wrapper {
+  display: block;
+  margin: 20px auto;
+  height: 500px;
+  background-color: #f1f1f1;
+}
+
+.top_viewed_image {
+  display: inline-block;
+  width: 200px;
+}
+
+.top_viewed_title {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 300;
+  vertical-align: top;
+}
+
+#stats_polaroid_div {
+  display: inline-block;
+  width: 250px;
+  border: 1px solid #f1f1f1;
+  box-shadow: 5px 10px 8px #888888;
+}
+
+.stats_bar_container {
+  display: inline-block;
+  height: 400px;
+  width: 20px;
+  background-color: #ddd;
+  margin: 0 60px;
+  vertical-align: top;
+}
+
+.top_viewer_div {
+  display: inline-block;
+  width: 30%;
+  padding-bottom: 10px;
+}
+
+#left_top_viewer_div {
+  float: left;
+  margin-right: 5%;
+}
+
+#right_top_viewer_div {
+  float: right;
+}
+
+#top_viewer_profile_image {
+  height: 100px;
+  width: 100px;
+  border-radius: 50%;
+  border: 1px solid #f1f1f1;
+}
+
+.top_locations_title {
+  display: block;
+}
+
+.stats_portion_div {
+  padding: 20px 0;
+  border-bottom: 1px solid #ccc;
+}
+
+@media only screen and (max-width: 1300px) {
+  #search_bar {
+    display: inline-block;
+    width: 200px;
+    margin: 0 3%;
+  }
+}
+
+@media only screen and (max-width: 1110px) {
+  #search_bar {
+    display: inline-block;
+    width: 100px;
+    margin: 0 3%;
+  }
+}
