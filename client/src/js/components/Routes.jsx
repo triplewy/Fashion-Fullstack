@@ -1,15 +1,11 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './css/index.css';
-import registerServiceWorker from './registerServiceWorker';
 import {
   BrowserRouter,
   Route,
   Switch
 } from 'react-router-dom';
 
-import Home from './js/components/Home.jsx';
 import Stream from './js/components/Stream.jsx';
+import Home from './js/components/Home.jsx';
 import Profile from './js/components/Profile.jsx';
 import Single_Post_Page from './js/components/SinglePostPage.jsx'
 import Collections from './js/components/Collections.jsx'
@@ -25,7 +21,7 @@ const Routes = () => (
       <Switch>
         <Route exact path='/' component={Stream}/>
         <Route exact path='/upload' component={Upload}/>
-        <Route exact path='/home' component={Home}/>
+        <Route exact path='/login' component={Home}/>
         <Route exact path='/finder' component={Outfit_Finder}/>
         <Route exact path='/search' component={Search}/>
         <Route exact path='/:profile' component={Profile}/>
@@ -38,8 +34,4 @@ const Routes = () => (
   </BrowserRouter>
 );
 
-ReactDOM.render(
-  <Routes/>,
-  document.getElementById('root')
-);
-registerServiceWorker();
+export default Routes;

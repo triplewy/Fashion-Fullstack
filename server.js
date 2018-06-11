@@ -10,28 +10,40 @@ var multer = require('multer');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy
 var RedditStrategy = require('passport-reddit').Strategy
-var session = require('express-session');
+var cookieSession = require('cookie-session');
 var bcrypt = require('bcrypt');
+
 var conn = anyDB.createConnection('sqlite3://fashion.db');
 
 var app = express();
+// app.use(function(req, res, next) {
+//   console.log("CORS shit");
+//   res.header('Access-Control-Allow-Credentials', true);
+//   res.header('Access-Control-Allow-Origin', req.headers.origin);
+//   res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
+//   res.header('Acess-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
+//   if ('OPTIONS' == req.method) {
+//     res.send(200);
+//   } else {
+//     next();
+//   }
+// })
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+app.use(cookieSession({secret: 'secret'}));
 app.use(passport.initialize())
 app.use(passport.session())
 
 passport.use(new LocalStrategy(
- (username, password, done) => {
-   conn.query('SELECT relatedUserId, passwordHash FROM logins WHERE username=$1', username, function(err, result) {
+ function(username, password, done) {
+   conn.query('SELECT * FROM logins WHERE username=$1', username, function(err, result) {
       if (err) {
         return done(err)
       }
-      // User not found
-      if (result.rows.length < 1) {
+      if (!result) {
         return done(null, false)
       }
-      // Always use hashed passwords and fixed time comparison
       bcrypt.compare(password, result.rows[0].passwordHash, (err, isValid) => {
         if (err) {
           return done(err)
@@ -44,6 +56,22 @@ passport.use(new LocalStrategy(
     })
   }
 ))
+
+passport.serializeUser(function(userId, done) {
+  console.log("serializeUser userId is", userId);
+	done(null, userId);
+})
+
+passport.deserializeUser(function(userId, done) {
+  console.log("deserializing user");
+  conn.query('SELECT * FROM users WHERE userId=$1', userId, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      done(err, result.rows[0]);
+    }
+  })
+})
 
 var storage = multer.diskStorage({
     destination: function(request, file, callback) {
@@ -93,7 +121,7 @@ conn.query('CREATE TABLE IF NOT EXISTS posts (postId INTEGER PRIMARY KEY AUTOINC
 
 conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
 'username TEXT NOT NULL UNIQUE, email TEXT NOT NULL UNIQUE, passwordText TEXT, passwordSalt TEXT, ' +
-'passwordHash TEXT, passwordHashAlgorithm TEXT, relatedUserId INTEGER UNIQUE)');
+'passwordHash CHAR(60), passwordHashAlgorithm TEXT, relatedUserId INTEGER UNIQUE)');
 
 conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
 'username TEXT NOT NULL UNIQUE, profileName TEXT NOT NULL, profile_image_src TEXT, ' +
@@ -120,6 +148,18 @@ conn.query('CREATE TABLE IF NOT EXISTS playlists (playlistId INTEGER PRIMARY KEY
 conn.query('CREATE TABLE IF NOT EXISTS playlistsPosts (playlistId INTEGER, postId INTEGER, dateTime DATETIME)');
 
 conn.query('CREATE TABLE IF NOT EXISTS playlistsFollowers (playlistId INTEGER, userId INTEGER, dateTime DATETIME)');
+
+bcrypt.hash('password', 10, function(err, hash) {
+  conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, relatedUserId) VALUES (?,?,?,?,?)',
+    ['jbin', 'jbin', 'password', hash, 1], function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Records successfully added");
+    }
+  })
+});
+
 
 var insertQuery = ["jbin", "Jennifer Bin", "Shanghai, China", 1450, 288, 2, "yuh", 'profile_images/jbin-2.jpg'];
 var insertSQL = 'INSERT INTO users (username, profileName, location, followers, following, numPosts, description, profile_image_src)' +
@@ -167,12 +207,12 @@ insertSQL = 'INSERT INTO tags (itemType, itemBrand, itemName, original)' +
       }
     });
 
-// app.get('/auth/reddit', passport.authenticate('reddit', {failureRedirect: '/login'}), (req, res) => {
-//   res.redirect('/');
-// });
 
 app.get('/api/home', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/home');
+  console.log("req is", req.user);
+
+  var cookie_userId = req.session;
   conn.query('SELECT postId, userId, title, genre, url, imageUrl, original, views, ' +
     'likes, reposts, comments, description, dateTime FROM posts', function(err, result) {
     if (err) {
@@ -269,6 +309,8 @@ app.get('/api/:profile/:postId', function(request, response) {
 
 app.post('/api/upload', function(request, response) {
   console.log('- Request received:', request.method.cyan, '/api/upload');
+  var cookie_userId = request.session.userId;
+  console.log(cookie_userId);
   upload(request, response, function(err) {
     if (err) {
       response.send({message: err.message})
@@ -282,7 +324,6 @@ app.post('/api/upload', function(request, response) {
           if (err) {
             console.log(err);
           } else {
-            console.log("result.lastInsertId is", result.lastInsertId);
             Promise.all([postTagsFromUpload(result.lastInsertId, JSON.parse(request.body.inputTags))])
             .then(function(allData) {
               console.log("Records added succesfully");
@@ -298,6 +339,38 @@ app.post('/api/upload', function(request, response) {
 
 app.get('/api/images/:image_url', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/images/:image_url');
+});
+
+app.post('/api/signup', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/signup');
+  var username = req.body.username;
+  var password = req.body.password;
+  var email = req.body.email;
+
+  conn.query('INSERT INTO users (username, profileName) VALUES (?,?)', [username, username], function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      var relatedUserId = result.lastInsertId;
+      bcrypt.hash(password, 10, function(err, hash) {
+      conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, relatedUserId) VALUES (?,?,?,?,?)',
+        [username, email, password, hash, relatedUserId], function(err, result) {
+          if (err) {
+            console.log(err);
+          } else {
+            req.session.userId = relatedUserId;
+            res.redirect('/');
+          }
+        })
+      })
+    }
+  })
+})
+
+app.post('/api/signin', passport.authenticate('local'), function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/signin');
+  console.log(req.user);
+  res.redirect('/');
 });
 
 app.listen(8081, function(){
@@ -316,7 +389,6 @@ function getUserDetailsFromPost(userIds, question_query) {
             users.push({userId: result.rows[row].userId, username: result.rows[row].username,
               profileName: result.rows[row].profileName, profile_image_src: result.rows[row].profile_image_src})
           }
-          console.log("users is", users);
           return resolve(users);
         }
       });
@@ -352,9 +424,6 @@ function getTagDetailsFromPost(postIds, question_query) {
               response.push({postId: postIds[i], tags: tags});
 
               if (i == postIds.length - 1) {
-                console.log("tag details response is", response);
-                console.log("tag details response.tags is", response[0].tags);
-
                 return resolve(response);
               }
             }
@@ -367,15 +436,12 @@ function getTagDetailsFromPost(postIds, question_query) {
 
 function postTagsFromUpload(postId, inputTags) {
   return new Promise(function(resolve, reject) {
-    console.log("inputTags are", inputTags[0]);
     for (let i = 0; i < inputTags.length; i++) {
       var insertQuery = [];
       insertQuery[0] = inputTags[i].itemType;
       insertQuery[1] = inputTags[i].itemName;
       insertQuery[2] = inputTags[i].itemBrand;
       insertQuery[3] = inputTags[i].original;
-
-      console.log("insertQuery is", insertQuery);
 
       conn.query('INSERT INTO tags (itemType, itemName, itemBrand, original) VALUES (?, ?, ?, ?)', insertQuery, function(err, result) {
         if (err) {

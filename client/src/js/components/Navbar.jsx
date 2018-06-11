@@ -37,8 +37,7 @@ export default class Navbar extends React.Component {
           <div id="search_bar_div">
             <form onSubmit={this.searchSubmit}>
               <input id="search_bar" type="text" placeholder="Search"
-                onChange={this.onChange} value={this.state.search_value}
-                ></input>
+                onChange={this.onChange} value={this.state.search_value}></input>
               <button id="search_bar_button" type="submit" disabled={!this.state.search_value}>Go</button>
             </form>
             {this.state.search_redirect && (<Redirect to={'/search'}/>)}

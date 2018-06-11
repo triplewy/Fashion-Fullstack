@@ -1045,6 +1045,28 @@ textarea {
   border-bottom: 1px solid #ccc;
 }
 
+#login_dropdown_wrapper {
+  display: inline-block;
+  margin: 0 100px;
+}
+
+#login_dropdown {
+  border: none;
+}
+
+.dropdown-menu {
+  padding: 10px 10px;
+}
+
+.form-control {
+  width: 250px;
+}
+
+#create_account_modal {
+  display: inline-block;
+  margin: 0 100px;
+}
+
 @media only screen and (max-width: 1300px) {
   #search_bar {
     display: inline-block;

@@ -43,19 +43,19 @@ export default class StatsColumn extends React.Component {
         <hr id="stats_title_hr"></hr>
         <p id="time_period_title">This Week</p>
         <p className="top_location_title">Top Country:</p>
-        <img className="country_icon" alt="country icon" src={require("../../images/Australia.svg")}></img>
+        <img className="country_icon" alt="country icon"></img>
         <p className="top_location">Australia</p>
         <div className="view_bar_container">
           <div className="view_bar">10,864 views</div>
         </div>
         <p className="top_location_title">Top City:</p>
-        <img className="country_icon" alt="city icon" src={require("../../images/Australia.svg")}></img>
+        <img className="country_icon" alt="city icon"></img>
         <p className="top_location">Perth, Australia</p>
         <div className="view_bar_container">
           <div className="view_bar">1,135 views</div>
         </div>
         <p className="top_viewer_title">Top Viewer:</p>
-        <img className="viewer_icon" alt="viewer icon" src={require("../../images/Yushuf.png")}></img>
+        <img className="viewer_icon" alt="viewer icon"></img>
         <p className="top_viewer">YUSHUF</p>
         <div className="view_bar_container">
           <div className="view_bar">58 views</div>

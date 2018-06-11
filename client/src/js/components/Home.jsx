@@ -1,94 +1,170 @@
 import React from 'react';
-import StatsColumn from './StatsColumn.jsx'
 import Navbar from './Navbar.jsx'
-import RenderedPosts from './RenderedPosts.jsx'
-import TypeSelector from './TypeSelector.jsx'
+import {Redirect} from 'react-router-dom';
 
 export default class Home extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      response: '',
-      json_data: [],
-      post_data: [],
-      rendered_posts: [],
-      type_selector_value: 0
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword:'',
+      redirect: false,
+      redirectURL: ''
     };
 
-    this.getRequest();
-    this.toggle_type = this.toggle_type.bind(this);
+    // this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleLogin = this.handleLogin.bind(this);
+    this.handleSignup = this.handleSignup.bind(this);
   }
 
   componentDidMount() {
-    // window.addEventListener('scroll', this.handleScroll)
-    fetch('/api/home')
-    .then(res => res.json())
-    .then(data => {
-      console.log("api home data is", data);
-      this.setState({post_data: data, json_data: data});
+
+  }
+
+  handleChange(e) {
+    var value = e.target.value;
+    this.setState({[e.target.name]: value});
+  }
+
+  // handleKeyPress(e) {
+  //   console.log("yoooooo");
+  //   if (e.key === 'Enter') {
+  //     console.log("Enter pressed");
+  //     this.handleLogin(e);
+  //   }
+  // }
+
+  handleLogin(e) {
+    fetch('/api/signin', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password,
+      })
+    })
+    .then(res => {
+      console.log(res);
+      console.log("res.status is", res.status);
+      if (res.status == 200) {
+        console.log(res.url);
+        this.setState({redirect: true, redirectURL: res.url});
+      }
+    }).catch(function(err) {
+        console.log(err);
     });
   }
 
-  componentWillUnmount() {
-    // window.removeEventListener('scroll', this.handleScroll)
-  }
-
-  handleScroll(event) {
-    if (window.scrollY > 50) {
-      console.log("scrolled to 50!");
-      // elem.style.height = "40px";
-    } else {
-      // elem.style.height = "70px";
+  handleSignup(e) {
+    if (this.state.password == this.state.confirmPassword) {
+      console.log(true);
     }
-    // do something like call `this.setState`
-    // access window.scrollY etc
-  }
-
-  getRequest() {
-    fetch('http://ec2-18-216-120-197.us-east-2.compute.amazonaws.com:3030/feed/start')
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
+    fetch('/api/signup', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        username: this.state.username,
+        email: this.state.email,
+        password: this.state.password,
       })
-      .catch((error) => {
-        console.error(error);
-      });
-  }
-
-  toggle_type(e) {
-    var data = this.state.json_data
-    var temp_data = [];
-    if (e.target.name == 1) {
-      for (var i = 0; i < data.length; i++) {
-        if(data[i].original) {
-          temp_data.push(data[i]);
-        }
+    })
+    .then(res => {
+      console.log(res);
+      console.log("res.status is", res.status);
+      if (res.status == 200) {
+        console.log(res.url);
+        this.setState({redirect: true, redirectURL: res.url});
       }
-    } else if (e.target.name == 2) {
-      for (i = 0; i < data.length; i++) {
-        if(!data[i].original) {
-          temp_data.push(data[i]);
-        }
-      }
-    } else {
-      temp_data = data;
-    }
-    this.setState({post_data: temp_data, type_selector_value: e.target.name});
+    }).catch(function(err) {
+        console.log(err);
+    });
   }
 
   render() {
+      if (this.state.redirect) {
+        return <Redirect to={'/'}/>
+      }
       return (
         <div>
-        <Navbar />
-        <div id="white_background_wrapper">
-        <div id="content_wrapper">
-          <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Non-Original"]}
-          type_selector_value={this.state.type_selector_value}/>
-          <RenderedPosts post_data={this.state.post_data} />
-        </div>
-          <StatsColumn show_profile={false}/>
-        </div>
+          <div className="btn-group" id="login_dropdown_wrapper">
+            <button type="button" className="btn btn-default dropdown-toggle" id="login_dropdown" data-toggle="dropdown">
+              Sign in<span className="caret"></span></button>
+              <ul className="dropdown-menu" role="menu">
+                <li>
+                  <button id="reddit_login_label">Reddit Login</button>
+
+                    <div className="form-group">
+                        <label className="login_label">Email address</label>
+                        <input type="email" className="form-control"
+                        placeholder="Enter email" name="username" onChange={this.handleChange}
+                        value={this.state.username}></input>
+                    </div>
+                    <div className="form-group">
+                        <label className="login_label">Password</label>
+                        <input type="password" className="form-control"
+                        placeholder="Password" name="password" onChange={this.handleChange}
+                        value={this.state.password}></input>
+                    </div>
+                    <button type="submit" className="btn btn-default" onClick={this.handleLogin}>Submit</button>
+                </li>
+              </ul>
+            </div>
+            <div className="btn-group" id="create_account_modal">
+              <button type="button" className="btn btn-default dropdown-toggle" id="create_account_button" data-toggle="dropdown">
+                Create Account</button>
+                <ul className="dropdown-menu" role="menu">
+                  <li>
+                    <div className="form-group">
+                        <label className="login_label">Username</label>
+                        <input type="text" className="form-control"
+                        placeholder="Enter username" name="username" onChange={this.handleChange}
+                        value={this.state.username}></input>
+                    </div>
+                      <div className="form-group">
+                          <label className="login_label">Email address</label>
+                          <input type="email" className="form-control"
+                          placeholder="Enter email" name="email" onChange={this.handleChange}
+                          value={this.state.email}></input>
+                      </div>
+                      <div className="form-group">
+                          <label className="login_label">Password</label>
+                          <input type="password" className="form-control"
+                          placeholder="Password" name="password" onChange={this.handleChange}
+                          value={this.state.password}></input>
+                      </div>
+                      <div className="form-group">
+                          <label className="login_label">Confirm Password</label>
+                          <input type="password" className="form-control"
+                          placeholder="Password" name="confirmPassword" onChange={this.handleChange}
+                          value={this.state.confirmPassword}></input>
+                      </div>
+                      <button type="submit" className="btn btn-default" onClick={this.handleSignup}>Submit</button>
+                  </li>
+                </ul>
+              </div>
+            <p id="title">Fashion App</p>
+            <div id="search_bar_div">
+              <form>
+                <input id="search_bar" type="text" placeholder="Search"
+                  onChange={this.onChange} value={this.state.search_value}></input>
+                <button id="search_bar_button" type="submit" disabled={!this.state.search_value}>Go</button>
+              </form>
+            </div>
+            <div id="trending_div">
+
+            </div>
       </div>
     );
   }
