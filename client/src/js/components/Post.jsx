@@ -13,8 +13,14 @@ export default class Post extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      polaroid_height: 0
+      polaroid_height: 0,
+      views: this.props.views,
+      likes: this.props.likes,
+      reposts: this.props.reposts,
+      comments: this.props.comments
     };
+
+    this.handleLike = this.handleLike.bind(this);
   }
 
     // componentDidMount() {
@@ -22,47 +28,72 @@ export default class Post extends React.Component {
     //   console.log("height is", height);
     //   this.setState({polaroid_height: height});
     // }
+  handleLike(e) {
+    console.log(this.props.id);
+    fetch('/api/like', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        postId: this.props.id,
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === "success") {
+        this.setState({likes: this.state.likes + 1})
+      } else {
+        console.log(data.message);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
 
   render() {
     return (
       <div id="post_wrapper">
         <div id="polaroid_div">
           <div id="post_header">
-            <Link to={"/" + this.props.username}>
+            <Link to={"/" + this.props.user.username}>
               <div id="profile_image_div">
-                <img id="profile_image" alt="" src={this.props.profile_image_url}></img>
+                <img id="profile_image" alt="" src={this.props.user.profile_image_src}></img>
               </div>
             </Link>
             <div id="header_text">
-              <strong id="user_name">{this.props.profileName}</strong>
+              <strong id="user_name">{this.props.user.profileName}</strong>
               <p id="post_status">posted a fit 2 hours ago</p>
               <button id="genre_button">
                   <p id="genre_text">{this.props.genre}</p>
               </button>
             </div>
           </div>
-          <Link to={{ pathname: '/' + this.props.username + '/' + this.props.id, state: { post_data: this.props} }}>
+          <Link to={{ pathname: '/' + this.props.user.username + '/' + this.props.id, state: { post_data: this.props} }}>
           <div id="image_wrapper">
-            <img id="post_image" alt="" src={this.props.post_image_url}></img>
+            <img id="post_image" alt="" src={this.props.post_image_src}></img>
           </div>
         </Link>
           <div id="stats_header">
             <button id="views" className="stats_button">
               <img id="views_icon" alt="view icon" className="stats_icon" src={view_icon}></img>
-              <p className="stats_number" id="view_number">{this.props.views}</p>
+              <p className="stats_number" id="view_number">{this.state.views}</p>
             </button>
-            <button id="likes" className="stats_button">
+            <button id="likes" className="stats_button" onClick={this.handleLike}>
                 <label id="toggle_like">❤</label>
               <img id="like_icon" alt="like icon" className="stats_icon" src={like_icon}></img>
-              <p className="stats_number" id="like_number">{this.props.likes}</p>
+              <p className="stats_number" id="like_number">{this.state.likes}</p>
             </button>
             <button id="reposts" className="stats_button">
               <img id="repost_icon" alt="repost icon" className="stats_icon" src={repost_icon}></img>
-              <p className="stats_number" id="repost_number">{this.props.reposts}</p>
+              <p className="stats_number" id="repost_number">{this.state.reposts}</p>
             </button>
           <button id="comments" className="stats_button">
             <img id="comment_icon" alt="comment icon" className="stats_icon" src={comment_icon}></img>
-            <p className="stats_number" id="comment_number">{this.props.comments}</p>
+            <p className="stats_number" id="comment_number">{this.state.comments}</p>
           </button>
           <div id="playlist_dropdown" className="dropdown">
             <button id="add_to_playlist" className="dropdown-toggle" type="button" data-toggle="dropdown">

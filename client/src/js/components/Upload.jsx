@@ -52,6 +52,7 @@ export default class Upload extends React.Component {
 
     fetch('/api/upload', {
       method: 'POST',
+      credentials: 'include',
       body: formData
     })
     .then(response => response.json())

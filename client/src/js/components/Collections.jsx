@@ -1,19 +1,16 @@
 import React from 'react';
 import Navbar from './Navbar.jsx'
 import { Link } from 'react-router-dom';
-import posts from '../json/posts.json';
 import StatsHeader from './StatsHeader.jsx'
 import TypeSelector from './TypeSelector.jsx'
-
-var data = posts.posts;
 
 export default class Collections extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      json_data: data,
-      post_data: data,
+      json_data: [],
+      post_data: [],
       rendered_posts: [],
       type_selector_value: 0
     };
@@ -22,7 +19,22 @@ export default class Collections extends React.Component {
 
   }
 
+  componentDidMount() {
+    fetch('/api/you/collections', {
+      credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      this.setState({post_data: data.likes, json_data: data.likes});
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
   toggle_type(e) {
+    var data = this.state.json_data;
     var temp_data = [];
     if (e.target.name == 0) {
       for (var i = 0; i < data.length; i++) {
@@ -44,27 +56,27 @@ export default class Collections extends React.Component {
 
   render() {
     var rendered_posts = [];
-    if (data != null && this.state.type_selector_value === 0) {
-      rendered_posts = data.map((item, index) => {
+    if (this.state.post_data != null && this.state.type_selector_value === 0) {
+      rendered_posts = this.state.post_data.map((item, index) => {
           return (
-            <li className="collection_item" key={item.id}>
+            <li className="collection_item" key={item.postId}>
               <div className="collection_item_div">
-                <Link to={"/profile"}>
-                  <strong className="collection_item_title">{item.user.name}</strong>
+                <Link to={"/" + item.user.username}>
+                  <strong className="collection_item_title">{item.user.profileName}</strong>
                 </Link>
-                <Link to={"/profile/"+index}>
+                <Link to={{ pathname: '/' + item.user.username + '/' + item.postId, state: { post_data: item} }}>
                   <p className="collection_item_title">{item.title}</p>
-                  <img className="collection_item_img" alt="collection item" src={item.img_src}></img>
+                  <img className="collection_item_img" alt="collection item" src={item.post_image_src}></img>
                 </Link>
-                <StatsHeader is_collection={true} view_count={item.view_count}
-                  like_count={item.like_count} repost_count={item.repost_count}
-                  comment_count={item.comment_count}/>
+                <StatsHeader is_collection={true} view_count={item.views}
+                  like_count={item.likes} repost_count={item.reposts}
+                  comment_count={item.comments}/>
               </div>
             </li>
           )
       });
     } else {
-      rendered_posts = data.map((item, index) => {
+      rendered_posts = this.state.post_data.map((item, index) => {
           return (
             <li className="collection_item" key={item.id}>
               <div className="collection_item_div">

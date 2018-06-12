@@ -19,14 +19,18 @@ export default class Profile extends React.Component {
   }
 
   componentDidMount() {
-    fetch('/api/' + this.props.match.params.profile + '/info')
+    fetch('/api/' + this.props.match.params.profile + '/info', {
+      credentials: 'include'
+    })
     .then(res => res.json())
     .then(data => {
       console.log("profile info is", data);
       this.setState({profileInfo: data.userDetails});
     });
 
-    fetch('/api/' + this.props.match.params.profile)
+    fetch('/api/' + this.props.match.params.profile, {
+      credentials: 'include'
+    })
     .then(res => res.json())
     .then(data => {
       console.log("profile data is", data);

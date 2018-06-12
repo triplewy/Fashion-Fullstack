@@ -15,7 +15,7 @@ export default class Home extends React.Component {
       redirectURL: ''
     };
 
-    // this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.handleKeyPress = this.handleKeyPress.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleLogin = this.handleLogin.bind(this);
     this.handleSignup = this.handleSignup.bind(this);
@@ -30,13 +30,12 @@ export default class Home extends React.Component {
     this.setState({[e.target.name]: value});
   }
 
-  // handleKeyPress(e) {
-  //   console.log("yoooooo");
-  //   if (e.key === 'Enter') {
-  //     console.log("Enter pressed");
-  //     this.handleLogin(e);
-  //   }
-  // }
+  handleKeyPress(e) {
+    if (e.key === 'Enter') {
+      console.log("Enter pressed");
+      this.handleLogin(e);
+    }
+  }
 
   handleLogin(e) {
     fetch('/api/signin', {
@@ -52,10 +51,7 @@ export default class Home extends React.Component {
       })
     })
     .then(res => {
-      console.log(res);
-      console.log("res.status is", res.status);
-      if (res.status == 200) {
-        console.log(res.url);
+      if (res.redirected) {
         this.setState({redirect: true, redirectURL: res.url});
       }
     }).catch(function(err) {
@@ -81,10 +77,8 @@ export default class Home extends React.Component {
       })
     })
     .then(res => {
-      console.log(res);
       console.log("res.status is", res.status);
       if (res.status == 200) {
-        console.log(res.url);
         this.setState({redirect: true, redirectURL: res.url});
       }
     }).catch(function(err) {
@@ -115,7 +109,7 @@ export default class Home extends React.Component {
                         <label className="login_label">Password</label>
                         <input type="password" className="form-control"
                         placeholder="Password" name="password" onChange={this.handleChange}
-                        value={this.state.password}></input>
+                        onKeyPress={this.handleKeyPress} value={this.state.password}></input>
                     </div>
                     <button type="submit" className="btn btn-default" onClick={this.handleLogin}>Submit</button>
                 </li>

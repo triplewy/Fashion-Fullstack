@@ -7,10 +7,26 @@ export default class Navbar extends React.Component {
 
     this.state = {
       search_value: '',
-      search_redirect: false
+      search_redirect: false,
+      profileUrl: '',
+      profile_image_src: '',
+      profileName: ''
     };
     this.onChange = this.onChange.bind(this);
     this.searchSubmit = this.searchSubmit.bind(this);
+  }
+
+  componentDidMount() {
+    fetch('/api/navbar', {
+      credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+      this.setState({
+        username: data.username,
+        profile_image_src: data.profile_image_src,
+        profileName: data.profileName});
+    });
   }
 
   searchSubmit(e) {
@@ -28,7 +44,6 @@ export default class Navbar extends React.Component {
   }
 
   render() {
-
       return (
         <div id="banner">
 			    <Link to="/">
@@ -48,15 +63,18 @@ export default class Navbar extends React.Component {
           <Link to="/upload">
             <button id="upload_button" className="banner_button">Upload</button>
           </Link>
-          <Link to="/profile">
-            <button id="profile_button" className="banner_button">Profile</button>
+          <Link to={"/" + this.state.username}>
+            <div id="profile_image_div">
+              <img id="profile_image" alt="" src={this.state.profile_image_src}></img>
+            </div>
+            <strong id="user_name">{this.state.profileName}</strong>
           </Link>
           <img id="notification_button" alt="notifications icon" className="banner_button"
             src={notification_icon}></img>
-          <Link to="/profile/collections">
+          <Link to={"/you/collections"}>
             <button id="collections_button" className="banner_button">Collections</button>
           </Link>
-          <Link to="/profile/stats">
+          <Link to={"/you/stats"}>
             <button id="stats_button" className="banner_button">Stats</button>
           </Link>
 		    </div>

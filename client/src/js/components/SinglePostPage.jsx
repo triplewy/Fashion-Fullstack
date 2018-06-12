@@ -33,17 +33,17 @@ export default class SinglePostPage extends React.Component {
         <div id="white_background_wrapper">
           <div id="single_post_polaroid_div">
             <div id="single_post_image_wrapper">
-                <img id="single_post_image" alt="" src={this.state.post.post_image_url}></img>
+                <img id="single_post_image" alt="" src={this.state.post.post_image_src}></img>
             </div>
           </div>
               <div id="single_post_tags_div_wrapper">
-                <Link to={"/" + this.props.match.params.profile}>
+                <Link to={"/" + this.state.post.user.username}>
                 <div id="single_post_profile_image_div">
-                  <img id="profile_image" alt="" src={this.state.post.profile_image_src}></img>
+                  <img id="profile_image" alt="" src={this.state.post.user.profile_image_src}></img>
                 </div>
                 </Link>
                 <div id="single_post_header_text">
-                  <strong id="user_name">{this.state.post.profileName}</strong>
+                  <strong id="user_name">{this.state.post.user.profileName}</strong>
                   <p id="single_post_status">2 hours ago</p>
                 </div>
                 <div id="single_post_title_div">

@@ -10,28 +10,21 @@ var multer = require('multer');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy
 var RedditStrategy = require('passport-reddit').Strategy
-var cookieSession = require('cookie-session');
+var session = require('express-session');
 var bcrypt = require('bcrypt');
 
 var conn = anyDB.createConnection('sqlite3://fashion.db');
 
 var app = express();
-// app.use(function(req, res, next) {
-//   console.log("CORS shit");
-//   res.header('Access-Control-Allow-Credentials', true);
-//   res.header('Access-Control-Allow-Origin', req.headers.origin);
-//   res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
-//   res.header('Acess-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
-//   if ('OPTIONS' == req.method) {
-//     res.send(200);
-//   } else {
-//     next();
-//   }
-// })
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
-app.use(cookieSession({secret: 'secret'}));
+app.use(session({
+  secret: 'secret',
+  resave: false,
+  saveUninitialized: true
+}));
 app.use(passport.initialize())
 app.use(passport.session())
 
@@ -64,13 +57,7 @@ passport.serializeUser(function(userId, done) {
 
 passport.deserializeUser(function(userId, done) {
   console.log("deserializing user");
-  conn.query('SELECT * FROM users WHERE userId=$1', userId, function(err, result) {
-    if (err) {
-      console.log(err);
-    } else {
-      done(err, result.rows[0]);
-    }
-  })
+  done(null, userId);
 })
 
 var storage = multer.diskStorage({
@@ -161,7 +148,7 @@ bcrypt.hash('password', 10, function(err, hash) {
 });
 
 
-var insertQuery = ["jbin", "Jennifer Bin", "Shanghai, China", 1450, 288, 2, "yuh", 'profile_images/jbin-2.jpg'];
+var insertQuery = ["jbin", "Jennifer Bin", "Shanghai, China", 1450, 288, 2, "yuh", '/profile_images/jbin-2.jpg'];
 var insertSQL = 'INSERT INTO users (username, profileName, location, followers, following, numPosts, description, profile_image_src)' +
   'VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
 conn.query(insertSQL, insertQuery, function(err, result) {
@@ -207,12 +194,29 @@ insertSQL = 'INSERT INTO tags (itemType, itemBrand, itemName, original)' +
       }
     });
 
+app.get('/api/navbar', (req, res) => {
+  var userId = req.user;
+  if (userId == null) {
+    console.log("yoooooooo");
+    res.redirect('/home')
+  }
+  conn.query('SELECT username, profileName, profile_image_src FROM users WHERE userId=$1', userId, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send({username: result.rows[0].username, profileName: result.rows[0].profileName,
+        profile_image_src: result.rows[0].profile_image_src});
+    }
+  })
+})
 
 app.get('/api/home', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/home');
-  console.log("req is", req.user);
-
-  var cookie_userId = req.session;
+  var userId = req.user;
+  if (userId == null) {
+    console.log("yoooooooo");
+    res.redirect('/home')
+  }
   conn.query('SELECT postId, userId, title, genre, url, imageUrl, original, views, ' +
     'likes, reposts, comments, description, dateTime FROM posts', function(err, result) {
     if (err) {
@@ -237,6 +241,53 @@ app.get('/api/home', (req, res) => {
       }
     });
   });
+
+app.post('/api/like', function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/like');
+  var userId = req.user;
+  var postId = req.body.postId;
+  conn.query('INSERT INTO likes (postId, userId, dateTime) VALUES (?,?,?)',
+    [postId, userId, Date.now()], function(err, result) {
+      if (err) {
+        console.log(err);
+        res.send({message: "fail"})
+      } else {
+        conn.query('UPDATE posts SET likes = likes + 1 WHERE postId=$1', postId, function(err, result) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("Liked post successfully");
+            res.send({message: "success"})
+          }
+        })    
+      }
+    })
+})
+
+app.get('/api/you/collections', function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/you/collections');
+  var userId = req.user;
+  conn.query('SELECT postId FROM likes WHERE userId=$1', userId, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      var postIds = [];
+      var question_query = '';
+      for (var i = 0; i < result.rows.length; i++) {
+        postIds.push(result.rows[i].postId);
+        question_query += '?,';
+      }
+      question_query = question_query.slice(0, -1);
+      Promise.all([getPosts(postIds, question_query)])
+        .then(function(allData) {
+          res.send({likes: allData[0]});
+        })
+        .catch(e => {
+          console.log(e);
+        })
+    }
+  })
+})
 
 app.get('/api/:profile', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/profile');
@@ -269,7 +320,7 @@ app.get('/api/:profile', (req, res) => {
                   for (var i = 0; i < result.rows.length; i++) {
                     var row = result.rows[i];
                     posts.push({postId:row.postId, views:row.views, likes:row.likes,
-                      reposts:row.reposts, comments:row.comments, img_src:row.imageUrl,
+                      reposts:row.reposts, comments:row.comments, post_image_src:row.imageUrl,
                       title:row.title, genre:row.genre, description:row.description,
                       date:row.dateTime, original: row.original, user:userDetails,
                       tags:allData[0].filter(function(data) {return data.postId == row.postId})[0].tags});
@@ -309,14 +360,14 @@ app.get('/api/:profile/:postId', function(request, response) {
 
 app.post('/api/upload', function(request, response) {
   console.log('- Request received:', request.method.cyan, '/api/upload');
-  var cookie_userId = request.session.userId;
-  console.log(cookie_userId);
+  var userId = request.user;
+  console.log("userId is", userId);
   upload(request, response, function(err) {
     if (err) {
       response.send({message: err.message})
       console.log(err);
     } else {
-      var insertQuery = [1, request.body.title, request.body.genre, '/jbin/'+request.body.title, '/images/'+ request.file.filename,
+      var insertQuery = [userId, request.body.title, request.body.genre, '/jbin/'+request.body.title, '/images/'+ request.file.filename,
         request.file.filename, 'jpg', request.body.original, 0, 0, 0, 0, request.body.description, Date.now()];
       conn.query('INSERT INTO posts (userId, title, genre, url, imageUrl, fileName, fileExtension, ' +
       'original, views, likes, reposts, comments, description, dateTime)' +
@@ -369,9 +420,9 @@ app.post('/api/signup', (req, res) => {
 
 app.post('/api/signin', passport.authenticate('local'), function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/signin');
-  console.log(req.user);
   res.redirect('/');
 });
+
 
 app.listen(8081, function(){
     console.log('- Server listening on port 8081');
@@ -468,7 +519,7 @@ function compilePosts(userDetails, tagDetails, result) {
   for (var i = 0; i < result.rows.length; i++) {
     var row = result.rows[i];
     posts.push({postId:row.postId, views:row.views, likes:row.likes,
-      reposts:row.reposts, comments:row.comments, img_src:row.imageUrl,
+      reposts:row.reposts, comments:row.comments, post_image_src:row.imageUrl,
       title:row.title, genre:row.genre, description:row.description,
       date:row.dateTime, original: row.original,
       user:userDetails.filter(function(data) {return data.userId == row.userId})[0],
@@ -477,11 +528,29 @@ function compilePosts(userDetails, tagDetails, result) {
   return posts;
 }
 
-function authenticationMiddleware () {
-  return function (request, response, next) {
-    if (request.isAuthenticated()) {
-      return next()
-    }
-    response.redirect('/')
-  }
+function getPosts(postIds, question_query) {
+  return new Promise(function(resolve, reject) {
+    conn.query('SELECT postId, userId, title, genre, url, imageUrl, original, views, ' +
+      'likes, reposts, comments, description, dateTime FROM posts WHERE postId IN (' + question_query + ')',
+      postIds, function(err, result) {
+      if (err) {
+        return reject(err)
+      } else {
+        var userIds = [];
+        var question_query = '';
+        for(var row in result.rows) {
+          question_query += '?,';
+          userIds.push(result.rows[row].userId);
+        }
+        question_query = question_query.slice(0, -1);
+        Promise.all([getUserDetailsFromPost(userIds, question_query), getTagDetailsFromPost(postIds, question_query)])
+          .then(function(allData) {
+            return resolve(compilePosts(allData[0], allData[1], result));
+          }).catch(err => {
+            console.log(err);
+            return reject(err);
+          })
+        }
+      });
+  })
 }

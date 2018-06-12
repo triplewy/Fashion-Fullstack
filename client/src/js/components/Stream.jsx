@@ -3,12 +3,15 @@ import StatsColumn from './StatsColumn.jsx'
 import Navbar from './Navbar.jsx'
 import RenderedPosts from './RenderedPosts.jsx'
 import TypeSelector from './TypeSelector.jsx'
+import {Redirect} from 'react-router-dom';
 
 export default class Stream extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      redirect: false,
+      redirectURL: '',
       response: '',
       json_data: [],
       post_data: [],
@@ -22,11 +25,23 @@ export default class Stream extends React.Component {
 
   componentDidMount() {
     // window.addEventListener('scroll', this.handleScroll)
-    fetch('/api/home')
-    .then(res => res.json())
+    fetch('/api/home', {
+      credentials: 'include'
+    })
+    .then(res => {
+      console.log(res);
+      if (res.redirected) {
+        this.setState({redirect: true, redirectURL: res.url});
+      } else {
+        return res.json()
+      }
+    })
     .then(data => {
       console.log("api home data is", data);
       this.setState({post_data: data, json_data: data});
+    })
+    .catch((error) => {
+      console.error(error);
     });
   }
 
@@ -78,6 +93,9 @@ export default class Stream extends React.Component {
   }
 
   render() {
+    if (this.state.redirect) {
+      return <Redirect to={'/home'}/>
+    }
       return (
         <div>
         <Navbar />
