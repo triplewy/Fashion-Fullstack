@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "any-db": "^2.2.1",
+    "any-db-postgres": "^2.1.5",
     "any-db-sqlite3": "^2.1.4",
     "bcrypt": "^2.0.1",
     "body-parser": "^1.18.3",

@@ -15,6 +15,7 @@ export default class Stream extends React.Component {
       response: '',
       json_data: [],
       post_data: [],
+      repost_data: [],
       rendered_posts: [],
       type_selector_value: 0
     };
@@ -38,7 +39,7 @@ export default class Stream extends React.Component {
     })
     .then(data => {
       console.log("api home data is", data);
-      this.setState({post_data: data, json_data: data});
+      this.setState({post_data: data.posts, repost_data: data.reposts, json_data: data});
     })
     .catch((error) => {
       console.error(error);
@@ -72,7 +73,7 @@ export default class Stream extends React.Component {
   }
 
   toggle_type(e) {
-    var data = this.state.json_data
+    var data = this.state.json_data.posts
     var temp_data = [];
     if (e.target.name == 1) {
       for (var i = 0; i < data.length; i++) {

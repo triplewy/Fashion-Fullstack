@@ -20,13 +20,23 @@ export default class Navbar extends React.Component {
     fetch('/api/navbar', {
       credentials: 'include'
     })
-    .then(res => res.json())
+    .then(res => {
+      if (res.redirected) {
+        return
+      }
+      else {
+        return res.json()
+      }
+    })
     .then(data => {
-      this.setState({
-        username: data.username,
-        profile_image_src: data.profile_image_src,
-        profileName: data.profileName});
-    });
+      if (data) {
+        this.setState({
+          username: data.username,
+          profile_image_src: data.profile_image_src,
+          profileName: data.profileName
+        });
+      }
+    })
   }
 
   searchSubmit(e) {

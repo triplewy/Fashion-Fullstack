@@ -21,6 +21,7 @@ export default class Post extends React.Component {
     };
 
     this.handleLike = this.handleLike.bind(this);
+    this.handleRepost = this.handleRepost.bind(this);
   }
 
     // componentDidMount() {
@@ -45,6 +46,32 @@ export default class Post extends React.Component {
     .then(data => {
       if (data.message === "success") {
         this.setState({likes: this.state.likes + 1})
+      } else {
+        console.log(data.message);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
+  handleRepost(e) {
+    console.log(this.props.id);
+    fetch('/api/repost', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        postId: this.props.id,
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === "success") {
+        this.setState({reposts: this.state.reposts + 1})
       } else {
         console.log(data.message);
       }
@@ -87,7 +114,7 @@ export default class Post extends React.Component {
               <img id="like_icon" alt="like icon" className="stats_icon" src={like_icon}></img>
               <p className="stats_number" id="like_number">{this.state.likes}</p>
             </button>
-            <button id="reposts" className="stats_button">
+            <button id="reposts" className="stats_button" onClick={this.handleRepost}>
               <img id="repost_icon" alt="repost icon" className="stats_icon" src={repost_icon}></img>
               <p className="stats_number" id="repost_number">{this.state.reposts}</p>
             </button>

@@ -13,8 +13,6 @@ var RedditStrategy = require('passport-reddit').Strategy
 var session = require('express-session');
 var bcrypt = require('bcrypt');
 
-var conn = anyDB.createConnection('sqlite3://fashion.db');
-
 var app = express();
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -83,7 +81,6 @@ var upload = multer({
 
 // serve static files
 // app.use(express.static('dist'));
-
 var conn = anyDB.createConnection('sqlite3://fashion.db');
 
 conn.query('DROP TABLE IF EXISTS posts');
@@ -98,7 +95,6 @@ conn.query('DROP TABLE IF EXISTS views');
 conn.query('DROP TABLE IF EXISTS playlists');
 conn.query('DROP TABLE IF EXISTS playlistsPosts');
 conn.query('DROP TABLE IF EXISTS playlistsFollowers');
-
 
 conn.query('CREATE TABLE IF NOT EXISTS posts (postId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
 'userId INTEGER, title TEXT NOT NULL, genre TEXT NOT NULL, url TEXT NOT NULL UNIQUE, ' +
@@ -127,7 +123,7 @@ conn.query('CREATE TABLE IF NOT EXISTS reposts (postId INTEGER, userId INTEGER, 
 
 conn.query('CREATE TABLE IF NOT EXISTS likes (postId INTEGER, userId INTEGER, dateTime DATETIME)');
 
-conn.query('CREATE TABLE IF NOT EXISTS views (postId INTEGER, userId INTEGER, viewCount INTEGER, dateTime DATETIME)');
+conn.query('CREATE TABLE IF NOT EXISTS views (postId INTEGER, userId INTEGER, IP_Address TEXT, viewCount INTEGER, dateTime DATETIME)');
 
 conn.query('CREATE TABLE IF NOT EXISTS playlists (playlistId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
 'userId INTEGER, name TEXT, public BOOLEAN, likes INTEGER, reposts INTEGER, followers INTEGER, dateTime DATETIME)');
@@ -197,50 +193,51 @@ insertSQL = 'INSERT INTO tags (itemType, itemBrand, itemName, original)' +
 app.get('/api/navbar', (req, res) => {
   var userId = req.user;
   if (userId == null) {
-    console.log("yoooooooo");
     res.redirect('/home')
   }
-  conn.query('SELECT username, profileName, profile_image_src FROM users WHERE userId=$1', userId, function(err, result) {
-    if (err) {
-      console.log(err);
-    } else {
-      res.send({username: result.rows[0].username, profileName: result.rows[0].profileName,
-        profile_image_src: result.rows[0].profile_image_src});
-    }
-  })
+  else {
+    conn.query('SELECT username, profileName, profile_image_src FROM users WHERE userId=$1', userId, function(err, result) {
+      if (err) {
+        console.log(err);
+      } else {
+        res.send({username: result.rows[0].username, profileName: result.rows[0].profileName,
+          profile_image_src: result.rows[0].profile_image_src});
+      }
+    })
+  }
 })
 
 app.get('/api/home', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/home');
   var userId = req.user;
   if (userId == null) {
-    console.log("yoooooooo");
     res.redirect('/home')
   }
-  conn.query('SELECT postId, userId, title, genre, url, imageUrl, original, views, ' +
-    'likes, reposts, comments, description, dateTime FROM posts', function(err, result) {
-    if (err) {
-      console.log(err)
-    } else {
-      var postIds = [];
-      var userIds = [];
-      var question_query = '';
-      for(var row in result.rows) {
-        question_query += '?,';
-        postIds.push(result.rows[row].postId);
-        userIds.push(result.rows[row].userId);
+  else {
+    conn.query('SELECT followingId FROM following WHERE userId=$1', userId, function(err, result) {
+      if (err) {
+        console.log(err);
       }
-      question_query = question_query.slice(0, -1);
-      Promise.all([getUserDetailsFromPost(userIds, question_query), getTagDetailsFromPost(postIds, question_query)])
-        .then(function(allData) {
-          var posts = compilePosts(allData[0], allData[1], result);
-          res.send(posts);
-        }).catch(e => {
-          console.log(e);
-        })
+      else {
+        var home_query_ids = [];
+        var question_query = '';
+        for (var i = 0; i < result.rows.length; i++) {
+          home_query_ids.push(result.rows[i].followingId)
+          question_query += '?, ';
+        }
+        home_query_ids.push(userId);
+        question_query += '?';
+        Promise.all([getReposts(home_query_ids, question_query), getPostsFromUsers(home_query_ids, question_query)])
+          .then(function(allData) {
+            res.send({reposts:allData[0], posts:allData[1]})
+          })
+          .catch(e => {
+            console.log(e);
+          })
       }
-    });
-  });
+    })
+  }
+})
 
 app.post('/api/like', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/like');
@@ -259,7 +256,29 @@ app.post('/api/like', function(req, res) {
             console.log("Liked post successfully");
             res.send({message: "success"})
           }
-        })    
+        })
+      }
+    })
+})
+
+app.post('/api/repost', function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/repost');
+  var userId = req.user;
+  var postId = req.body.postId;
+  conn.query('INSERT INTO reposts (postId, userId, dateTime) VALUES (?,?,?)',
+    [postId, userId, Date.now()], function(err, result) {
+      if (err) {
+        console.log(err);
+        res.send({message: "fail"})
+      } else {
+        conn.query('UPDATE posts SET reposts = reposts + 1 WHERE postId=$1', postId, function(err, result) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("Reposted post successfully");
+            res.send({message: "success"})
+          }
+        })
       }
     })
 })
@@ -302,38 +321,75 @@ app.get('/api/:profile', (req, res) => {
         followers: row.followers, following: row.following, location: row.location,
         numPosts: row.numPosts, description: row.description};
 
-        conn.query('SELECT postId, title, genre, url, imageUrl, original, views, likes, ' +
-          'reposts, comments, description, dateTime FROM posts WHERE userId=$1', row.userId, function(err, result) {
+      conn.query('SELECT postId FROM reposts WHERE userId=$1', userId, function(err, result) {
+        if (err) {
+          console.log(err);
+        } else {
+          var postIds = [];
+          var question_query = '';
+          for (var i = 0; i < result.rows.length; i++) {
+            postIds.push(result.rows[i].postId);
+            question_query += '?, ';
+          }
+          question_query = question_query.slice(0, -1);
+          conn.query('SELECT postId, userId, title, genre, url, imageUrl, original, views, ' +
+            'likes, reposts, comments, description, dateTime FROM posts WHERE postId IN (' + question_query + ')',
+            postIds, function(err, result) {
             if (err) {
-              console.log(err);
+              console.log(err)
             } else {
               var postIds = [];
+              var userIds = [];
               var question_query = '';
               for(var row in result.rows) {
                 question_query += '?,';
                 postIds.push(result.rows[row].postId);
+                userIds.push(result.rows[row].userId);
               }
               question_query = question_query.slice(0, -1);
-              Promise.all([getTagDetailsFromPost(postIds, question_query)])
+              Promise.all([getUserDetailsFromPost(userIds, question_query), getTagDetailsFromPost(postIds, question_query)])
                 .then(function(allData) {
-                  var posts = [];
-                  for (var i = 0; i < result.rows.length; i++) {
-                    var row = result.rows[i];
-                    posts.push({postId:row.postId, views:row.views, likes:row.likes,
-                      reposts:row.reposts, comments:row.comments, post_image_src:row.imageUrl,
-                      title:row.title, genre:row.genre, description:row.description,
-                      date:row.dateTime, original: row.original, user:userDetails,
-                      tags:allData[0].filter(function(data) {return data.postId == row.postId})[0].tags});
-                  }
-                  var response = {userDetails: userDetails, posts: posts};
-                  res.send(response);
+                  var posts = compilePosts(allData[0], allData[1], result);
+                  res.send(posts);
                 }).catch(e => {
                   console.log(e);
-              })
-            }
-          })
+                })
+              }
+            });
         }
       })
+      conn.query('SELECT postId, title, genre, url, imageUrl, original, views, likes, ' +
+        'reposts, comments, description, dateTime FROM posts WHERE userId=$1', row.userId, function(err, result) {
+          if (err) {
+            console.log(err);
+          } else {
+            var postIds = [];
+            var question_query = '';
+            for(var row in result.rows) {
+              question_query += '?,';
+              postIds.push(result.rows[row].postId);
+            }
+            question_query = question_query.slice(0, -1);
+            Promise.all([getTagDetailsFromPost(postIds, question_query)])
+              .then(function(allData) {
+                var posts = [];
+                for (var i = 0; i < result.rows.length; i++) {
+                  var row = result.rows[i];
+                  posts.push({postId:row.postId, views:row.views, likes:row.likes,
+                    reposts:row.reposts, comments:row.comments, post_image_src:row.imageUrl,
+                    title:row.title, genre:row.genre, description:row.description,
+                    date:row.dateTime, original: row.original, user:userDetails,
+                    tags:allData[0].filter(function(data) {return data.postId == row.postId})[0].tags});
+                }
+                var response = {userDetails: userDetails, posts: posts};
+                res.send(response);
+              }).catch(e => {
+                console.log(e);
+            })
+          }
+        })
+      }
+    })
 });
 
 app.get('api/:profile/info', (req, res) => {
@@ -435,10 +491,10 @@ function getUserDetailsFromPost(userIds, question_query) {
         if (err) {
           return reject(err);
         } else {
-          var users = [];
+          var users = {};
           for(var row in result.rows) {
-            users.push({userId: result.rows[row].userId, username: result.rows[row].username,
-              profileName: result.rows[row].profileName, profile_image_src: result.rows[row].profile_image_src})
+            users[result.rows[row].userId] = {userId: result.rows[row].userId, username: result.rows[row].username,
+              profileName: result.rows[row].profileName, profile_image_src: result.rows[row].profile_image_src}
           }
           return resolve(users);
         }
@@ -448,41 +504,59 @@ function getUserDetailsFromPost(userIds, question_query) {
 
 function getTagDetailsFromPost(postIds, question_query) {
   return new Promise(function(resolve, reject) {
-    var response = [];
-    for (let i = 0; i < postIds.length; i++) {
-      conn.query('SELECT tagId FROM postTags WHERE postId=$1',
-        postIds[i], function(err, result) {
-        if (err) {
-          return reject(err);
-        } else {
-          var tagIds = [];
-          question_query = '';
-          for (var row in result.rows) {
-            question_query += '?,';
-            tagIds.push(result.rows[row].tagId);
+    conn.query('SELECT postId, tagId FROM postTags WHERE postId IN (' + question_query + ') ORDER BY tagId ASC',
+    postIds, function(err, result) {
+      if (err) {
+        return reject(err);
+      } else {
+        var tagPosts = {};
+        var tagIds = [];
+        question_query = '';
+        if (result.rows.length > 0) {
+          var currentTagId = result.rows[0].tagId;
+          tagIds.push(currentTagId);
+          tagPosts[currentTagId] = [];
+          question_query += '?,';
+          for (var i = 0; i < result.rows.length; i++) {
+            var row = result.rows[i];
+            var tagId = row.tagId;
+            if (currentTagId != tagId) {
+              question_query += '?,';
+              tagIds.push(tagId);
+              tagPosts[tagId] = [];
+              tagPosts[tagId].push(row.postId);
+              currentTagId = tagId
+            } else {
+              tagPosts[currentTagId].push(row.postId);
+            }
           }
           question_query = question_query.slice(0, -1);
-          conn.query('SELECT itemType, itemBrand, itemName, original FROM tags WHERE tagId IN (' + question_query + ')',
-            tagIds, function(err, result) {
-            if (err) {
-              return reject(err);
-            } else {
-              var tags = []
-              for(var row in result.rows) {
-                tags.push({itemType: result.rows[row].itemType, itemBrand: result.rows[row].itemBrand,
-                  itemName: result.rows[row].itemName, original: result.rows[row].original})
-              }
-              response.push({postId: postIds[i], tags: tags});
-
-              if (i == postIds.length - 1) {
-                return resolve(response);
+        }
+        conn.query('SELECT * FROM tags WHERE tagId IN (' + question_query + ') ORDER BY tagId ASC',
+          tagIds, function(err, result) {
+          if (err) {
+            return reject(err);
+          } else {
+            var postTags = {};
+            for(i = 0; i < result.rows.length; i++) {
+              for (var j = 0; j < tagPosts[result.rows[i].tagId].length; j++) {
+                var postId = tagPosts[result.rows[i].tagId][j];
+                if (postTags[postId]) {
+                  postTags[postId].push({itemType: result.rows[i].itemType, itemBrand: result.rows[i].itemBrand,
+                    itemName: result.rows[i].itemName, original: result.rows[i].original})
+                } else {
+                  postTags[postId] = [];
+                  postTags[postId].push({itemType: result.rows[i].itemType, itemBrand: result.rows[i].itemBrand,
+                    itemName: result.rows[i].itemName, original: result.rows[i].original})
+                }
               }
             }
-          })
-        }
-      })
-    }
-  });
+            return resolve(postTags);
+          }
+        })
+      }
+    })
+  })
 }
 
 function postTagsFromUpload(postId, inputTags) {
@@ -522,9 +596,10 @@ function compilePosts(userDetails, tagDetails, result) {
       reposts:row.reposts, comments:row.comments, post_image_src:row.imageUrl,
       title:row.title, genre:row.genre, description:row.description,
       date:row.dateTime, original: row.original,
-      user:userDetails.filter(function(data) {return data.userId == row.userId})[0],
-      tags:tagDetails.filter(function(data) {return data.postId == row.postId})[0].tags});
+      user:userDetails[row.userId],
+      tags:tagDetails[row.postId]});
   }
+  //.filter(function(data) {return data.userId == row.userId})[0]
   return posts;
 }
 
@@ -545,12 +620,56 @@ function getPosts(postIds, question_query) {
         question_query = question_query.slice(0, -1);
         Promise.all([getUserDetailsFromPost(userIds, question_query), getTagDetailsFromPost(postIds, question_query)])
           .then(function(allData) {
+            console.log("getPosts data is", allData);
             return resolve(compilePosts(allData[0], allData[1], result));
           }).catch(err => {
-            console.log(err);
             return reject(err);
           })
         }
       });
+  })
+}
+
+function getPostsFromUsers(userIds, question_query) {
+  return new Promise(function(resolve, reject) {
+    conn.query('SELECT postId, userId, title, genre, url, imageUrl, original, views, ' +
+    'likes, reposts, comments, description, dateTime FROM posts WHERE userId IN (' + question_query + ')',
+    userIds, function(err, result) {
+      if (err) {
+        return reject(err)
+      }
+      else {
+        var postIds = [];
+        question_query = '';
+        for(var row in result.rows) {
+          question_query += '?,';
+          postIds.push(result.rows[row].postId);
+        }
+        question_query = question_query.slice(0, -1);
+        console.log("getPostsFromUsers");
+        return resolve(getPosts(postIds, question_query));
+      }
+    })
+  })
+}
+
+function getReposts(userIds, question_query) {
+  return new Promise(function(resolve, reject) {
+    conn.query('SELECT postId FROM reposts WHERE userId IN (' + question_query + ')', userIds, function(err, result) {
+      if (err) {
+        return reject(err)
+      }
+      else {
+        var postIds = [];
+        question_query = '';
+        for (var i = 0; i < result.rows.length; i++) {
+          postIds.push(result.rows[i].postId);
+          question_query += '?,';
+        }
+        question_query = question_query.slice(0, -1);
+        console.log("getReposts");
+        return resolve(getPosts(postIds, question_query));
+      }
+    })
   })
 }
