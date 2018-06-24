@@ -32,8 +32,7 @@ export default class Tags extends React.Component {
 
   render() {
     var rendered_tags = [];
-    console.log("tags are", this.props.tags[0]);
-    if (this.props.tags[0] !== null) {
+    if (this.props.tags) {
       rendered_tags = this.props.tags.map((item, index) => {
           return (
             <div key={index} className="clothing_tag" id={item.itemType + "_tag"}>

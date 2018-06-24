@@ -3,6 +3,7 @@ import StatsColumn from './StatsColumn.jsx'
 import Navbar from './Navbar.jsx'
 import RenderedPosts from './RenderedPosts.jsx'
 import TypeSelector from './TypeSelector.jsx'
+import memoize from 'memoize-one'
 
 export default class Profile extends React.Component {
   constructor(props) {
@@ -10,33 +11,36 @@ export default class Profile extends React.Component {
 
     this.state = {
       post_data: [],
+      repost_data: [],
       json_data: [],
       profileInfo: {},
       type_selector_value: 0
     };
 
     this.toggle_type = this.toggle_type.bind(this);
+    this.changeProfile = this.changeProfile.bind(this);
   }
 
-  componentDidMount() {
-    fetch('/api/' + this.props.match.params.profile + '/info', {
-      credentials: 'include'
+  changeProfile = memoize((url) => {
+      console.log("we memoized yeeee", url);
+      fetch('/api/' + url, {
+        credentials: 'include'
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log("profile data is", data);
+        var posts = []
+        var reposts = []
+        for (var i = 0; i < data.media.length; i++) {
+          if (data.media[i].source == 'posts') {
+            posts.push(data.media[i])
+          } else {
+            reposts.push(data.media[i])
+          }
+        }
+        this.setState({post_data: posts, repost_data: reposts, json_data: data.media, profileInfo: data.userDetails})
     })
-    .then(res => res.json())
-    .then(data => {
-      console.log("profile info is", data);
-      this.setState({profileInfo: data.userDetails});
-    });
-
-    fetch('/api/' + this.props.match.params.profile, {
-      credentials: 'include'
-    })
-    .then(res => res.json())
-    .then(data => {
-      console.log("profile data is", data);
-      this.setState({post_data: data.posts, json_data: data.posts, profileInfo: data.userDetails});
-    });
-  }
+  })
 
   toggle_type(e) {
     var data = this.state.json_data;
@@ -61,6 +65,9 @@ export default class Profile extends React.Component {
 
 
   render() {
+
+    this.changeProfile(this.props.match.params.profile);
+
       return (
         <div>
         <Navbar />
@@ -71,7 +78,7 @@ export default class Profile extends React.Component {
         <div id="content_wrapper">
           <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Non-Original", "Collections", "Reposts"]}
           type_selector_value={this.state.type_selector_value}/>
-          <RenderedPosts post_data={this.state.post_data} />
+          <RenderedPosts post_data={this.state.json_data} />
         </div>
           <StatsColumn show_profile={true} profileInfo={this.state.profileInfo}/>
         </div>

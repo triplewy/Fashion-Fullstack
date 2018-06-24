@@ -14,7 +14,7 @@ export default class RenderedPosts extends React.Component {
     if (post_data != null) {
       rendered_posts = post_data.map((item, index) => {
           return (
-            <Post key={index} id={item.postId} genre={item.genre} user={item.user}
+            <Post key={index} id={item.mediaId} genre={item.genre} user={item.user}
               post_image_src={item.post_image_src} views={item.views} likes={item.likes}
               reposts={item.reposts} comments={item.comments} title={item.title}
               description={item.description} date={item.date} tags={item.tags} />

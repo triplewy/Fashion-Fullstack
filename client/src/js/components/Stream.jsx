@@ -38,8 +38,17 @@ export default class Stream extends React.Component {
       }
     })
     .then(data => {
-      console.log("api home data is", data);
-      this.setState({post_data: data.posts, repost_data: data.reposts, json_data: data});
+      console.log("api home data is", data.media);
+      var posts = []
+      var reposts = []
+      for (var i = 0; i < data.media.length; i++) {
+        if (data.media[i].source == 'posts') {
+          posts.push(data.media[i])
+        } else {
+          reposts.push(data.media[i])
+        }
+      }
+      this.setState({post_data: posts, repost_data: reposts, json_data: data.media});
     })
     .catch((error) => {
       console.error(error);

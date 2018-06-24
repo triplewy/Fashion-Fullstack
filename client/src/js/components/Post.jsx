@@ -39,7 +39,7 @@ export default class Post extends React.Component {
       },
       credentials: 'include',
       body: JSON.stringify({
-        postId: this.props.id,
+        mediaId: this.props.id,
       })
     })
     .then(res => res.json())
@@ -65,7 +65,7 @@ export default class Post extends React.Component {
       },
       credentials: 'include',
       body: JSON.stringify({
-        postId: this.props.id,
+        mediaId: this.props.id,
       })
     })
     .then(res => res.json())
