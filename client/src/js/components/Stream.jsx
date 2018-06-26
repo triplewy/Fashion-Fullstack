@@ -14,8 +14,9 @@ export default class Stream extends React.Component {
       redirectURL: '',
       response: '',
       json_data: [],
-      post_data: [],
-      repost_data: [],
+      streamData: [],
+      posts: [],
+      reposts: [],
       rendered_posts: [],
       type_selector_value: 0
     };
@@ -25,7 +26,6 @@ export default class Stream extends React.Component {
   }
 
   componentDidMount() {
-    // window.addEventListener('scroll', this.handleScroll)
     fetch('/api/home', {
       credentials: 'include'
     })
@@ -38,17 +38,28 @@ export default class Stream extends React.Component {
       }
     })
     .then(data => {
-      console.log("api home data is", data.media);
-      var posts = []
-      var reposts = []
-      for (var i = 0; i < data.media.length; i++) {
-        if (data.media[i].source == 'posts') {
-          posts.push(data.media[i])
-        } else {
-          reposts.push(data.media[i])
-        }
-      }
-      this.setState({post_data: posts, repost_data: reposts, json_data: data.media});
+      console.log("api home data is", data);
+      var streamData = data.posts.concat(data.playlists)
+      // var posts = []
+      // var reposts = []
+      // for (var i = 0; i < data.posts.length; i++) {
+      //   if (data.posts[i].source == 'posts') {
+      //     posts.push(data.posts[i])
+      //   } else {
+      //     reposts.push(data.posts[i])
+      //   }
+      // }
+      // var playlists = []
+      // var playlistsReposts = []
+      // for (i = 0; i < data.playlists.length; i++) {
+      //   if (data.playlists[i].source == 'playlists') {
+      //     playlists.push(data.playlists[i])
+      //   } else {
+      //     playlistsReposts.push(data.playlists[i])
+      //   }
+      // }
+      console.log("streamData is", streamData);
+      this.setState({streamData: streamData, json_data: data.posts});
     })
     .catch((error) => {
       console.error(error);
@@ -99,7 +110,7 @@ export default class Stream extends React.Component {
     } else {
       temp_data = data;
     }
-    this.setState({post_data: temp_data, type_selector_value: e.target.name});
+    this.setState({posts: temp_data, type_selector_value: e.target.name});
   }
 
   render() {
@@ -113,7 +124,7 @@ export default class Stream extends React.Component {
         <div id="content_wrapper">
           <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Non-Original"]}
           type_selector_value={this.state.type_selector_value}/>
-          <RenderedPosts post_data={this.state.post_data} />
+          <RenderedPosts streamData={this.state.streamData} />
         </div>
           <StatsColumn show_profile={false}/>
         </div>

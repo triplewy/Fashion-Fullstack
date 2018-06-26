@@ -12,6 +12,7 @@ export default class Collections extends React.Component {
       json_data: [],
       post_data: [],
       rendered_posts: [],
+      playlist_data: [],
       type_selector_value: 0
     };
 
@@ -20,7 +21,7 @@ export default class Collections extends React.Component {
   }
 
   componentDidMount() {
-    fetch('/api/you/collections', {
+    fetch('/api/you/collections/likes', {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -37,17 +38,20 @@ export default class Collections extends React.Component {
     var data = this.state.json_data;
     var temp_data = [];
     if (e.target.name == 0) {
-      for (var i = 0; i < data.length; i++) {
-        if(data[i].original) {
-          temp_data.push(data[i]);
-        }
-      }
+      temp_data = this.state.json_data
     } else if (e.target.name == 1) {
-      for (i = 0; i < data.length; i++) {
-        if(!data[i].original) {
-          temp_data.push(data[i]);
-        }
-      }
+      temp_data = this.state.json_data
+      fetch('/api/you/collections/playlists', {
+        credentials: 'include'
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        this.setState({playlist_data: data.playlists});
+      })
+      .catch((error) => {
+        console.error(error);
+      });
     } else {
       temp_data = data;
     }
@@ -56,15 +60,15 @@ export default class Collections extends React.Component {
 
   render() {
     var rendered_posts = [];
-    if (this.state.post_data != null && this.state.type_selector_value === 0) {
-      rendered_posts = this.state.post_data.map((item, index) => {
+    if (this.state.json_data != null && this.state.type_selector_value == 0) {
+      rendered_posts = this.state.json_data.map((item, index) => {
           return (
-            <li className="collection_item" key={item.postId}>
+            <li className="collection_item" key={item.mediaId}>
               <div className="collection_item_div">
                 <Link to={"/" + item.user.username}>
                   <strong className="collection_item_title">{item.user.profileName}</strong>
                 </Link>
-                <Link to={{ pathname: '/' + item.user.username + '/' + item.postId, state: { post_data: item} }}>
+                <Link to={{ pathname: '/' + item.user.username + '/' + item.mediaId, state: { post_data: item} }}>
                   <p className="collection_item_title">{item.title}</p>
                   <img className="collection_item_img" alt="collection item" src={item.post_image_src}></img>
                 </Link>
@@ -76,17 +80,19 @@ export default class Collections extends React.Component {
           )
       });
     } else {
-      rendered_posts = this.state.post_data.map((item, index) => {
+      rendered_posts = this.state.playlist_data.map((item, index) => {
           return (
-            <li className="collection_item" key={item.id}>
+            <li className="collection_item" key={item.mediaId}>
               <div className="collection_item_div">
-                <Link to={"/profile"}>
-                  <strong className="collection_item_title">{item.user.name}</strong>
+                <Link to={"/" + item.user.username}>
+                  <strong className="collection_item_title">{item.user.profileName}</strong>
                 </Link>
-                <Link to={"/profile/playlists/playlist_1"}>
-                  <p className="collection_item_title">Playlist_1</p>
-                  <img className="collection_item_img" alt="collection item" src={item.img_src}></img>
+                <Link to={{ pathname: '/' + item.user.username + '/playlist/' + item.mediaId, state: { post_data: item} }}>
+                  <p className="collection_item_title">{item.title}</p>
+                  <img className="collection_item_img" alt="collection item" src={item.playlist_cover_img_src}></img>
                 </Link>
+                <StatsHeader is_collection={true} like_count={item.likes}
+                  repost_count={item.reposts} comment_count={item.comments}/>
               </div>
             </li>
           )

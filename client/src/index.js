@@ -11,7 +11,8 @@ import {
 import Home from './js/components/Home.jsx';
 import Stream from './js/components/Stream.jsx';
 import Profile from './js/components/Profile.jsx';
-import Single_Post_Page from './js/components/SinglePostPage.jsx'
+import SinglePostPage from './js/components/SinglePostPage.jsx'
+import SinglePlaylistPage from './js/components/SinglePlaylistPage.jsx'
 import Collections from './js/components/Collections.jsx'
 import Upload from './js/components/Upload.jsx'
 import Outfit_Finder from './js/components/OutfitFinder.jsx'
@@ -31,7 +32,8 @@ const Routes = () => (
         <Route exact path='/you/collections' component={Collections} />
         <Route exact path='/you/stats' component={Stats} />
         <Route exact path='/:profile' component={Profile}/>
-        <Route exact path='/:profile/:postId' component={Single_Post_Page}/>
+        <Route exact path='/:profile/:postId' component={SinglePostPage}/>
+        <Route exact path='/:profile/playlist/:playlistId' component={SinglePlaylistPage}/>
         <Route exact path='/:profile/playlists/:playlistId' component={Playlist}/>
       </Switch>
     </div>

@@ -10,9 +10,10 @@ export default class Profile extends React.Component {
     super(props);
 
     this.state = {
-      post_data: [],
-      repost_data: [],
-      json_data: [],
+      jsonData: [],
+      streamData: [],
+      posts: [],
+      reposts: [],
       profileInfo: {},
       type_selector_value: 0
     };
@@ -31,19 +32,19 @@ export default class Profile extends React.Component {
         console.log("profile data is", data);
         var posts = []
         var reposts = []
-        for (var i = 0; i < data.media.length; i++) {
-          if (data.media[i].source == 'posts') {
-            posts.push(data.media[i])
+        for (var i = 0; i < data.media.posts.length; i++) {
+          if (data.media.posts[i].source == 'posts') {
+            posts.push(data.media.posts[i])
           } else {
-            reposts.push(data.media[i])
+            reposts.push(data.media.posts[i])
           }
         }
-        this.setState({post_data: posts, repost_data: reposts, json_data: data.media, profileInfo: data.userDetails})
+        this.setState({posts: posts, reposts: reposts, jsonData: data.media, profileInfo: data.userDetails})
     })
   })
 
   toggle_type(e) {
-    var data = this.state.json_data;
+    var data = this.state.jsonData;
     var temp_data = [];
     if (e.target.name == 1) {
       for (var i = 0; i < data.length; i++) {
@@ -60,7 +61,7 @@ export default class Profile extends React.Component {
     } else {
       temp_data = data;
     }
-    this.setState({post_data: temp_data, type_selector_value: e.target.name});
+    this.setState({posts: temp_data, type_selector_value: e.target.name});
   }
 
 
@@ -78,7 +79,7 @@ export default class Profile extends React.Component {
         <div id="content_wrapper">
           <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Non-Original", "Collections", "Reposts"]}
           type_selector_value={this.state.type_selector_value}/>
-          <RenderedPosts post_data={this.state.json_data} />
+          <RenderedPosts streamData={this.state.posts} />
         </div>
           <StatsColumn show_profile={true} profileInfo={this.state.profileInfo}/>
         </div>

@@ -1067,6 +1067,10 @@ textarea {
   margin: 0 100px;
 }
 
+#plus_icon_dropdown li:hover {
+  cursor: pointer;
+}
+
 @media only screen and (max-width: 1300px) {
   #search_bar {
     display: inline-block;

@@ -1,6 +1,7 @@
 // Create a new React component here!import React from 'react';
 import React from 'react';
 import Tags from './Tags.jsx'
+import PlaylistModalView from './PlaylistModalView.jsx'
 import { Link } from 'react-router-dom';
 
 import view_icon from 'images/view-icon.png'
@@ -17,18 +18,15 @@ export default class Post extends React.Component {
       views: this.props.views,
       likes: this.props.likes,
       reposts: this.props.reposts,
-      comments: this.props.comments
+      comments: this.props.comments,
+      displayPlaylist: false
     };
 
     this.handleLike = this.handleLike.bind(this);
     this.handleRepost = this.handleRepost.bind(this);
+    this.addNewPlaylist = this.addNewPlaylist.bind(this);
   }
 
-    // componentDidMount() {
-    //   const height = this.divElement.clientHeight;
-    //   console.log("height is", height);
-    //   this.setState({polaroid_height: height});
-    // }
   handleLike(e) {
     console.log(this.props.id);
     fetch('/api/like', {
@@ -81,9 +79,14 @@ export default class Post extends React.Component {
     });
   }
 
+  addNewPlaylist(e) {
+    this.setState({displayPlaylist: true})
+  }
+
   render() {
     return (
       <div id="post_wrapper">
+        {this.state.displayPlaylist && <PlaylistModalView />}
         <div id="polaroid_div">
           <div id="post_header">
             <Link to={"/" + this.props.user.username}>
@@ -122,15 +125,10 @@ export default class Post extends React.Component {
             <img id="comment_icon" alt="comment icon" className="stats_icon" src={comment_icon}></img>
             <p className="stats_number" id="comment_number">{this.state.comments}</p>
           </button>
-          <div id="playlist_dropdown" className="dropdown">
-            <button id="add_to_playlist" className="dropdown-toggle" type="button" data-toggle="dropdown">
+          <div id="playlist_dropdown">
+            <button id="add_to_playlist" className="stats_button" onClick={this.addNewPlaylist}>
               <img id="add_to_playlist_icon" alt="add icon" className="stats_icon" src={plus_icon}></img>
             </button>
-            <ul className="dropdown-menu">
-              <li><a>Create New Playlist</a></li>
-              <li>Playlist 1</li>
-              <li><a>Playlist 2</a></li>
-            </ul>
           </div>
         </div>
       </div>
