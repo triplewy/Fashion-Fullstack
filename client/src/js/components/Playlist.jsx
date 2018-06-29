@@ -1,5 +1,6 @@
 import React from 'react';
 import Tags from './Tags.jsx'
+import RepostHeader from './RepostHeader.jsx'
 import { Link } from 'react-router-dom';
 
 import view_icon from 'images/view-icon.png'
@@ -7,6 +8,8 @@ import like_icon from 'images/heart-icon.png'
 import repost_icon from 'images/repost-icon.png'
 import comment_icon from 'images/comment-icon.png'
 import plus_icon from 'images/plus-icon.svg'
+
+const _MS_PER_MINUTE = 1000 * 60;
 
 export default class Playlist extends React.Component {
   constructor(props) {
@@ -18,13 +21,14 @@ export default class Playlist extends React.Component {
       reposts: this.props.reposts,
       comments: this.props.comments,
       playlist_mediaIds: [],
-      playlist_posts: this.props.posts,
-      playlist_index: 0
+      playlistPosts: this.props.posts,
+      playlistIndex: 0
     };
 
     this.handleLike = this.handleLike.bind(this);
     this.handleRepost = this.handleRepost.bind(this);
     this.handleFollow = this.handleFollow.bind(this);
+    this.setPlaylistIndex = this.setPlaylistIndex.bind(this)
   }
 
   componentDidMount() {
@@ -43,26 +47,57 @@ export default class Playlist extends React.Component {
 
   }
 
+  setPlaylistIndex(index, e) {
+    console.log("index is", index);
+    this.setState({playlistIndex: index})
+  }
+
+  dateDiffInDays(date) {
+    return Math.floor((Date.now() - date) / _MS_PER_MINUTE);
+  }
+
   render() {
-    var currentPost = this.state.playlist_posts[this.state.playlist_index]
+    var currentPost = this.state.playlistPosts[this.state.playlistIndex]
+    var rendered_playlist_posts = [];
+    if (this.state.playlistPosts.length > 0) {
+      rendered_playlist_posts = this.state.playlistPosts.map((item, index) => {
+        return (
+          <li key={index} value={index} onClick={this.setPlaylistIndex.bind(this, index)}>
+            <div id="playlist_post_user_title_div">
+              <p id="playlist_post_user">{item.user.profileName}</p>
+              <p id="playlist_post_title">{item.title}</p>
+            </div>
+            <div id="playlist_post_stats_div">
+              <img className="playlist_post_stat_button" src={view_icon}></img>
+              <p className="playlist_post_stat">{item.views}</p>
+              <img className="playlist_post_stat_button" src={like_icon}></img>
+              <p className="playlist_post_stat">{item.likes}</p>
+              <img className="playlist_post_stat_button" src={repost_icon}></img>
+              <p className="playlist_post_stat">{item.reposts}</p>
+              <img className="playlist_post_stat_button" src={comment_icon}></img>
+              <p className="playlist_post_stat">{item.comments}</p>
+            </div>
+          </li>
+          )
+      });
+    }
 
       return (
         <div id="post_wrapper">
           <div id="polaroid_div">
-            <div id="post_header">
-              <Link to={"/" + this.props.user.username}>
-                <div id="profile_image_div">
-                  <img id="profile_image" alt="" src={this.props.user.profile_image_src}></img>
-                </div>
-              </Link>
-              <div id="header_text">
-                <strong id="user_name">{this.props.user.profileName}</strong>
-                <p id="post_status">Updated a Playlist 2 hours ago</p>
-                <button id="genre_button">
-                    <p id="genre_text">{this.props.genre}</p>
-                </button>
+            {this.props.reposter ? <RepostHeader reposter={this.props.reposter}
+              uploader={this.props.user} genre={this.props.genre} repostDate={this.props.repostDate}/> :
+              <div id="post_header">
+                <Link to={"/" + this.props.user.username}>
+                  <div id="profile_image_div">
+                    <img id="profile_image" alt="" src={this.props.user.profile_image_src}></img>
+                  </div>
+                  <strong id="user_name">{this.props.user.profileName}</strong>
+                </Link>
+                <p id="post_status">posted a playlist {this.dateDiffInDays(new Date(this.props.uploadDate))} minutes ago</p>
+                <button id="genre_button">{this.props.genre}</button>
               </div>
-            </div>
+            }
             <Link to={{ pathname: '/' + currentPost.user.username + '/' + currentPost.mediaId, state: { post_data: currentPost} }}>
             <div id="image_wrapper">
               <img id="post_image" alt="" src={currentPost.post_image_src}></img>
@@ -94,6 +129,10 @@ export default class Playlist extends React.Component {
               </div>
               <hr id="tag_title_hr"></hr>
               <Tags tags={currentPost.tags}/>
+              <hr id="tag_title_hr"></hr>
+              <ul id="playlist_list">
+                {rendered_playlist_posts}
+              </ul>
           </div>
           <hr id="post_hr"></hr>
         </div>

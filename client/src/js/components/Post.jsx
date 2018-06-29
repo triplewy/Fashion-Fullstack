@@ -2,6 +2,7 @@
 import React from 'react';
 import Tags from './Tags.jsx'
 import PlaylistModalView from './PlaylistModalView.jsx'
+import RepostHeader from './RepostHeader.jsx'
 import { Link } from 'react-router-dom';
 
 import view_icon from 'images/view-icon.png'
@@ -9,6 +10,8 @@ import like_icon from 'images/heart-icon.png'
 import repost_icon from 'images/repost-icon.png'
 import comment_icon from 'images/comment-icon.png'
 import plus_icon from 'images/plus-icon.svg'
+
+const _MS_PER_MINUTE = 1000 * 60;
 
 export default class Post extends React.Component {
   constructor(props) {
@@ -19,12 +22,13 @@ export default class Post extends React.Component {
       likes: this.props.likes,
       reposts: this.props.reposts,
       comments: this.props.comments,
-      displayPlaylist: false
+      displayPlaylist: false,
     };
 
     this.handleLike = this.handleLike.bind(this);
     this.handleRepost = this.handleRepost.bind(this);
     this.addNewPlaylist = this.addNewPlaylist.bind(this);
+    this.dateDiffInDays = this.dateDiffInDays.bind(this);
   }
 
   handleLike(e) {
@@ -83,25 +87,28 @@ export default class Post extends React.Component {
     this.setState({displayPlaylist: true})
   }
 
+  dateDiffInDays(date) {
+    return Math.floor((Date.now() - date) / _MS_PER_MINUTE);
+  }
+
   render() {
     return (
       <div id="post_wrapper">
         {this.state.displayPlaylist && <PlaylistModalView />}
         <div id="polaroid_div">
-          <div id="post_header">
-            <Link to={"/" + this.props.user.username}>
-              <div id="profile_image_div">
-                <img id="profile_image" alt="" src={this.props.user.profile_image_src}></img>
-              </div>
-            </Link>
-            <div id="header_text">
-              <strong id="user_name">{this.props.user.profileName}</strong>
-              <p id="post_status">posted a fit 2 hours ago</p>
-              <button id="genre_button">
-                  <p id="genre_text">{this.props.genre}</p>
-              </button>
+          {this.props.reposter ? <RepostHeader reposter={this.props.reposter}
+            uploader={this.props.user} genre={this.props.genre} repostDate={this.props.repostDate}/> :
+            <div id="post_header">
+              <Link to={"/" + this.props.user.username}>
+                <div id="profile_image_div">
+                  <img id="profile_image" alt="" src={this.props.user.profile_image_src}></img>
+                </div>
+                <strong id="user_name">{this.props.user.profileName}</strong>
+              </Link>
+              <p id="post_status">posted a fit {this.dateDiffInDays(new Date(this.props.uploadDate))} minutes ago</p>
+              <button id="genre_button">{this.props.genre}</button>
             </div>
-          </div>
+          }
           <Link to={{ pathname: '/' + this.props.user.username + '/' + this.props.id, state: { post_data: this.props} }}>
           <div id="image_wrapper">
             <img id="post_image" alt="" src={this.props.post_image_src}></img>

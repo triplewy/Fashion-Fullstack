@@ -10,7 +10,7 @@ export default class Collections extends React.Component {
 
     this.state = {
       json_data: [],
-      post_data: [],
+      likes: [],
       rendered_posts: [],
       playlist_data: [],
       type_selector_value: 0
@@ -27,7 +27,7 @@ export default class Collections extends React.Component {
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({post_data: data.likes, json_data: data.likes});
+      this.setState({likes: data, json_data: data});
     })
     .catch((error) => {
       console.error(error);

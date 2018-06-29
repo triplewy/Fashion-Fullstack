@@ -39,25 +39,7 @@ export default class Stream extends React.Component {
     })
     .then(data => {
       console.log("api home data is", data);
-      var streamData = data.posts.concat(data.playlists)
-      // var posts = []
-      // var reposts = []
-      // for (var i = 0; i < data.posts.length; i++) {
-      //   if (data.posts[i].source == 'posts') {
-      //     posts.push(data.posts[i])
-      //   } else {
-      //     reposts.push(data.posts[i])
-      //   }
-      // }
-      // var playlists = []
-      // var playlistsReposts = []
-      // for (i = 0; i < data.playlists.length; i++) {
-      //   if (data.playlists[i].source == 'playlists') {
-      //     playlists.push(data.playlists[i])
-      //   } else {
-      //     playlistsReposts.push(data.playlists[i])
-      //   }
-      // }
+      var streamData = data.stream
       console.log("streamData is", streamData);
       this.setState({streamData: streamData, json_data: data.posts});
     })

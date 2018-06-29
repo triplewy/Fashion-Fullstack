@@ -29,17 +29,18 @@ export default class Profile extends React.Component {
       })
       .then(res => res.json())
       .then(data => {
+        var streamData = data.media.stream
         console.log("profile data is", data);
         var posts = []
         var reposts = []
-        for (var i = 0; i < data.media.posts.length; i++) {
-          if (data.media.posts[i].source == 'posts') {
-            posts.push(data.media.posts[i])
-          } else {
-            reposts.push(data.media.posts[i])
-          }
-        }
-        this.setState({posts: posts, reposts: reposts, jsonData: data.media, profileInfo: data.userDetails})
+        // for (var i = 0; i < data.media.posts.length; i++) {
+        //   if (data.media.posts[i].source == 'posts') {
+        //     posts.push(data.stream.posts[i])
+        //   } else {
+        //     reposts.push(data.media.posts[i])
+        //   }
+        // }
+        this.setState({posts: posts, reposts: reposts, streamData: streamData, jsonData: data.media, profileInfo: data.userDetails})
     })
   })
 
@@ -79,7 +80,7 @@ export default class Profile extends React.Component {
         <div id="content_wrapper">
           <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Non-Original", "Collections", "Reposts"]}
           type_selector_value={this.state.type_selector_value}/>
-          <RenderedPosts streamData={this.state.posts} />
+          <RenderedPosts streamData={this.state.streamData} />
         </div>
           <StatsColumn show_profile={true} profileInfo={this.state.profileInfo}/>
         </div>
