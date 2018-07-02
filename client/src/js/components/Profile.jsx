@@ -15,7 +15,7 @@ export default class Profile extends React.Component {
       posts: [],
       reposts: [],
       profileInfo: {},
-      type_selector_value: 0
+      type_selector_value: 0,
     };
 
     this.toggle_type = this.toggle_type.bind(this);
@@ -33,13 +33,6 @@ export default class Profile extends React.Component {
         console.log("profile data is", data);
         var posts = []
         var reposts = []
-        // for (var i = 0; i < data.media.posts.length; i++) {
-        //   if (data.media.posts[i].source == 'posts') {
-        //     posts.push(data.stream.posts[i])
-        //   } else {
-        //     reposts.push(data.media.posts[i])
-        //   }
-        // }
         this.setState({posts: posts, reposts: reposts, streamData: streamData, jsonData: data.media, profileInfo: data.userDetails})
     })
   })
@@ -70,19 +63,29 @@ export default class Profile extends React.Component {
 
     this.changeProfile(this.props.match.params.profile);
 
-      return (
-        <div>
-        <Navbar />
+    return (
+      <div>
+        <Navbar display={this.state.showNavbar}/>
         <div id="white_background_wrapper">
-        <div id="profile_banner" style={{backgroundImage: "url(../../images/flowers-background.jpg)"}}>
-            <p id="featured_title">Featured:</p>
+          <div id="profile_banner">
+            <div id="profile_info">
+              <img id="profile_info_image" alt="" src={this.state.profileInfo.profile_image_src}></img>
+              <div id="profile_info_text_div">
+                <p className="profile_info_text" id="profile_info_username">{this.state.profileInfo.profileName}</p>
+                <p className="profile_info_text" id="profile_info_location">{this.state.profileInfo.location}</p>
+              </div>
+            </div>
+            <div id="profile_description">
+              <p className="profile_info_text" id="profile_info_followers">Followers: {this.state.profileInfo.followers}</p>
+              <p className="profile_info_text" id="profile_info_following">Following: {this.state.profileInfo.following}</p>
+              <p id="profile_description_text">{this.state.profileInfo.description}</p>
+            </div>
           </div>
-        <div id="content_wrapper">
-          <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Non-Original", "Collections", "Reposts"]}
-          type_selector_value={this.state.type_selector_value}/>
-          <RenderedPosts streamData={this.state.streamData} />
-        </div>
-          <StatsColumn show_profile={true} profileInfo={this.state.profileInfo}/>
+          <div id="content_wrapper">
+            <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Non-Original", "Collections", "Reposts"]}
+            type_selector_value={this.state.type_selector_value}/>
+            <RenderedPosts streamData={this.state.streamData} />
+          </div>
         </div>
       </div>
     );

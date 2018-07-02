@@ -88,7 +88,15 @@ export default class Post extends React.Component {
   }
 
   dateDiffInDays(date) {
-    return Math.floor((Date.now() - date) / _MS_PER_MINUTE);
+    var uploadDate = Math.floor((Date.now() - date) / _MS_PER_MINUTE)
+    if (uploadDate > 1439) {
+      uploadDate = "posted a fit " + Math.floor((Date.now() - date) / (_MS_PER_MINUTE * 60 * 24)) + " days ago"
+    } else if (uploadDate > 59) {
+      uploadDate = "posted a fit " + Math.floor((Date.now() - date) / (_MS_PER_MINUTE * 60)) + " hours ago"
+    } else {
+      uploadDate = "posted a fit " + uploadDate + " minutes ago"
+    }
+    return uploadDate
   }
 
   render() {
@@ -105,7 +113,7 @@ export default class Post extends React.Component {
                 </div>
                 <strong id="user_name">{this.props.user.profileName}</strong>
               </Link>
-              <p id="post_status">posted a fit {this.dateDiffInDays(new Date(this.props.uploadDate))} minutes ago</p>
+              <p id="post_status">{this.dateDiffInDays(new Date(this.props.uploadDate))}</p>
               <button id="genre_button">{this.props.genre}</button>
             </div>
           }

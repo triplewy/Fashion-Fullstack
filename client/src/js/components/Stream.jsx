@@ -18,7 +18,7 @@ export default class Stream extends React.Component {
       posts: [],
       reposts: [],
       rendered_posts: [],
-      type_selector_value: 0
+      type_selector_value: 0,
     };
 
     this.getRequest();
@@ -46,21 +46,6 @@ export default class Stream extends React.Component {
     .catch((error) => {
       console.error(error);
     });
-  }
-
-  componentWillUnmount() {
-    // window.removeEventListener('scroll', this.handleScroll)
-  }
-
-  handleScroll(event) {
-    if (window.scrollY > 50) {
-      console.log("scrolled to 50!");
-      // elem.style.height = "40px";
-    } else {
-      // elem.style.height = "70px";
-    }
-    // do something like call `this.setState`
-    // access window.scrollY etc
   }
 
   getRequest() {
@@ -101,15 +86,14 @@ export default class Stream extends React.Component {
     }
       return (
         <div>
-        <Navbar />
-        <div id="white_background_wrapper">
-        <div id="content_wrapper">
-          <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Non-Original"]}
-          type_selector_value={this.state.type_selector_value}/>
-          <RenderedPosts streamData={this.state.streamData} />
-        </div>
-          <StatsColumn show_profile={false}/>
-        </div>
+          <Navbar />
+          <div id="white_background_wrapper">
+            <div id="content_wrapper">
+              <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Non-Original"]}
+              type_selector_value={this.state.type_selector_value}/>
+              <RenderedPosts streamData={this.state.streamData} />
+            </div>
+          </div>
       </div>
     );
   }

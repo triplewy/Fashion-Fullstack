@@ -7,7 +7,6 @@ import view_icon from 'images/view-icon.png'
 import like_icon from 'images/heart-icon.png'
 import repost_icon from 'images/repost-icon.png'
 import comment_icon from 'images/comment-icon.png'
-import plus_icon from 'images/plus-icon.svg'
 
 const _MS_PER_MINUTE = 1000 * 60;
 
@@ -53,7 +52,15 @@ export default class Playlist extends React.Component {
   }
 
   dateDiffInDays(date) {
-    return Math.floor((Date.now() - date) / _MS_PER_MINUTE);
+    var uploadDate = Math.floor((Date.now() - date) / _MS_PER_MINUTE)
+    if (uploadDate > 1439) {
+      uploadDate = "posted a playlist " + Math.floor((Date.now() - date) / (_MS_PER_MINUTE * 60 * 24)) + " days ago"
+    } else if (uploadDate > 59) {
+      uploadDate = "posted a playlist " + Math.floor((Date.now() - date) / (_MS_PER_MINUTE * 60)) + " hours ago"
+    } else {
+      uploadDate = "posted a playlist " + uploadDate + " minutes ago"
+    }
+    return uploadDate
   }
 
   render() {
@@ -62,7 +69,10 @@ export default class Playlist extends React.Component {
     if (this.state.playlistPosts.length > 0) {
       rendered_playlist_posts = this.state.playlistPosts.map((item, index) => {
         return (
-          <li key={index} value={index} onClick={this.setPlaylistIndex.bind(this, index)}>
+          <li key={index} value={index} onClick={this.setPlaylistIndex.bind(this, index)}
+              className={(this.state.playlistIndex == index)?
+                'playlist_post_selected' : null}
+                disabled={(this.state.playlistIndex == index)}>
             <div id="playlist_post_user_title_div">
               <p id="playlist_post_user">{item.user.profileName}</p>
               <p id="playlist_post_title">{item.title}</p>
@@ -94,7 +104,7 @@ export default class Playlist extends React.Component {
                   </div>
                   <strong id="user_name">{this.props.user.profileName}</strong>
                 </Link>
-                <p id="post_status">posted a playlist {this.dateDiffInDays(new Date(this.props.uploadDate))} minutes ago</p>
+                <p id="post_status">{this.dateDiffInDays(new Date(this.props.uploadDate))}</p>
                 <button id="genre_button">{this.props.genre}</button>
               </div>
             }
@@ -106,20 +116,20 @@ export default class Playlist extends React.Component {
             <div id="stats_header">
               <button id="views" className="stats_button">
                 <img id="views_icon" alt="view icon" className="stats_icon" src={view_icon}></img>
-                <p className="stats_number" id="view_number">{currentPost.views}</p>
+                <p className="stats_number" id="view_number">{this.props.views}</p>
               </button>
               <button id="likes" className="stats_button" onClick={this.handleLike}>
                   <label id="toggle_like">❤</label>
                 <img id="like_icon" alt="like icon" className="stats_icon" src={like_icon}></img>
-                <p className="stats_number" id="like_number">{currentPost.likes}</p>
+                <p className="stats_number" id="like_number">{this.props.likes}</p>
               </button>
               <button id="reposts" className="stats_button" onClick={this.handleRepost}>
                 <img id="repost_icon" alt="repost icon" className="stats_icon" src={repost_icon}></img>
-                <p className="stats_number" id="repost_number">{currentPost.reposts}</p>
+                <p className="stats_number" id="repost_number">{this.props.reposts}</p>
               </button>
             <button id="comments" className="stats_button">
               <img id="comment_icon" alt="comment icon" className="stats_icon" src={comment_icon}></img>
-              <p className="stats_number" id="comment_number">{currentPost.comments}</p>
+              <p className="stats_number" id="comment_number">{this.props.comments}</p>
             </button>
           </div>
         </div>

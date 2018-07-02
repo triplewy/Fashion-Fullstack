@@ -1,6 +1,8 @@
 import React from 'react';
+import StatsColumn from './StatsColumn.jsx'
 import { Link, Redirect} from 'react-router-dom';
 import notification_icon from 'images/notification-icon.png'
+
 export default class Navbar extends React.Component {
   constructor(props) {
     super(props);
@@ -10,13 +12,20 @@ export default class Navbar extends React.Component {
       search_redirect: false,
       profileUrl: '',
       profile_image_src: '',
-      profileName: ''
+      profileName: '',
+      showStats: false,
+      showNavbar: true,
+      lastScrollY: 0
     };
     this.onChange = this.onChange.bind(this);
     this.searchSubmit = this.searchSubmit.bind(this);
+    this.showStats = this.showStats.bind(this);
+    this.handleScroll = this.handleScroll.bind(this);
   }
 
   componentDidMount() {
+    window.addEventListener('scroll', this.handleScroll, { passive: true })
+
     fetch('/api/navbar', {
       credentials: 'include'
     })
@@ -39,6 +48,10 @@ export default class Navbar extends React.Component {
     })
   }
 
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleScroll)
+  }
+
   searchSubmit(e) {
     if (this.state.search_value) {
       this.setState({
@@ -53,9 +66,31 @@ export default class Navbar extends React.Component {
     });
   }
 
+  showStats(e) {
+    this.setState({showStats: true})
+  }
+
+  handleScroll(e) {
+    var lastScrollY = this.state.lastScrollY
+    var currentScrollY = window.scrollY
+
+    console.log("current y is", currentScrollY);
+
+    if (currentScrollY < 136) {
+    } else if (this.state.showNavbar && currentScrollY > lastScrollY) {
+      console.log("Hide Navbar");
+      this.setState({showNavbar: false, lastScrollY: currentScrollY})
+    } else if (!this.state.showNavbar && currentScrollY < lastScrollY) {
+      console.log("Show Navbar");
+      this.setState({showNavbar: true, lastScrollY: currentScrollY})
+    } else {
+      this.setState({lastScrollY: currentScrollY})
+    }
+  }
+
   render() {
       return (
-        <div id="banner">
+        <div id={this.state.showNavbar ? 'banner' : 'banner_hide'}>
 			    <Link to="/">
             <h1 id="banner_title">Fashion</h1>
           </Link>
@@ -73,20 +108,35 @@ export default class Navbar extends React.Component {
           <Link to="/upload">
             <button id="upload_button" className="banner_button">Upload</button>
           </Link>
+          <Link to={"/you/collections"}>
+            <button id="collections_button" className="banner_button">Collections</button>
+          </Link>
           <Link to={"/" + this.state.username}>
             <div id="profile_image_div">
               <img id="profile_image" alt="" src={this.state.profile_image_src}></img>
             </div>
-            <strong id="user_name">{this.state.profileName}</strong>
+            <p id="user_name">{this.state.profileName}</p>
           </Link>
-          <img id="notification_button" alt="notifications icon" className="banner_button"
-            src={notification_icon}></img>
-          <Link to={"/you/collections"}>
-            <button id="collections_button" className="banner_button">Collections</button>
-          </Link>
-          <Link to={"/you/stats"}>
-            <button id="stats_button" className="banner_button">Stats</button>
-          </Link>
+          <div className="dropdown">
+            <button className="dropdown-toggle" type="button" date-toggle="dropdown">
+              <img id="notifications_icon" alt="notifications icon" className="banner_button" src={notification_icon}></img>
+              <span className="caret"></span>
+            </button>
+            <ul className="dropdown-menu">
+              <li>
+                <StatsColumn show_profile={false}/>
+              </li>
+            </ul>
+          </div>
+          <div className="dropdown">
+            <button id="stats_button" className="dropdown-toggle" type="button" date-toggle="dropdown">Stats<span className="caret"></span></button>
+            <ul className="dropdown-menu">
+              <li>Yo</li>
+              <li>
+                <StatsColumn show_profile={false}/>
+              </li>
+            </ul>
+          </div>
 		    </div>
     );
   }

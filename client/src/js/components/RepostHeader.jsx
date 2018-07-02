@@ -14,7 +14,15 @@ export default class RepostHeader extends React.Component {
   }
 
   dateDiffInDays(date) {
-    return Math.floor((Date.now() - date) / _MS_PER_MINUTE);
+    var uploadDate = Math.floor((Date.now() - date) / _MS_PER_MINUTE)
+    if (uploadDate > 1439) {
+      uploadDate = "reposted " + Math.floor((Date.now() - date) / (_MS_PER_MINUTE * 60 * 24)) + " days ago by"
+    } else if (uploadDate > 59) {
+      uploadDate = "reposted " + Math.floor((Date.now() - date) / (_MS_PER_MINUTE * 60)) + " hours ago by"
+    } else {
+      uploadDate = "reposted " + uploadDate + " minutes ago by"
+    }
+    return uploadDate
   }
 
   render() {
@@ -26,7 +34,7 @@ export default class RepostHeader extends React.Component {
           </div>
           <strong id="user_name">{this.props.uploader.profileName}</strong>
         </Link>
-        <p id="post_status">reposted {this.dateDiffInDays(new Date(this.props.repostDate))} minutes ago by</p>
+        <p id="post_status">{this.dateDiffInDays(new Date(this.props.repostDate))}</p>
         <Link to={"/" + this.props.reposter.username}>
           <div id="profile_image_div">
             <img id="profile_image" alt="" src={this.props.reposter.profile_image_src}></img>

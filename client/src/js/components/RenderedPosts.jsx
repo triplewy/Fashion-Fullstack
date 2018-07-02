@@ -30,6 +30,10 @@ export default class RenderedPosts extends React.Component {
                   description={item.description} uploadDate={item.uploadDate} followers={item.followers}
                   posts={item.posts} reposter={item.reposter} repostDate={item.repostDate}/>
           )
+        } else {
+          return (
+            <p>Error</p>
+          )
         }
       })
     }
