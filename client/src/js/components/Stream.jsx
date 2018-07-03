@@ -60,24 +60,14 @@ export default class Stream extends React.Component {
   }
 
   toggle_type(e) {
-    var data = this.state.json_data.posts
-    var temp_data = [];
     if (e.target.name == 1) {
-      for (var i = 0; i < data.length; i++) {
-        if(data[i].original) {
-          temp_data.push(data[i]);
-        }
-      }
+      console.log("og");
     } else if (e.target.name == 2) {
-      for (i = 0; i < data.length; i++) {
-        if(!data[i].original) {
-          temp_data.push(data[i]);
-        }
-      }
+      console.log("non og");
     } else {
-      temp_data = data;
+
     }
-    this.setState({posts: temp_data, type_selector_value: e.target.name});
+    this.setState({type_selector_value: e.target.name});
   }
 
   render() {

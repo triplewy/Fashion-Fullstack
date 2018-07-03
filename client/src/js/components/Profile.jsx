@@ -16,10 +16,12 @@ export default class Profile extends React.Component {
       reposts: [],
       profileInfo: {},
       type_selector_value: 0,
+      isFollowing: false
     };
 
     this.toggle_type = this.toggle_type.bind(this);
     this.changeProfile = this.changeProfile.bind(this);
+    this.handleFollow = this.handleFollow.bind(this);
   }
 
   changeProfile = memoize((url) => {
@@ -58,6 +60,18 @@ export default class Profile extends React.Component {
     this.setState({posts: temp_data, type_selector_value: e.target.name});
   }
 
+  handleFollow(e) {
+    fetch('/api/' + this.props.match.params.profile + '/follow', {
+      method: 'POST',
+      credentials: 'include',
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message == 'success') {
+        this.setState({isFollowing: true})
+      }
+    })
+  }
 
   render() {
 
@@ -80,6 +94,7 @@ export default class Profile extends React.Component {
               <p className="profile_info_text" id="profile_info_following">Following: {this.state.profileInfo.following}</p>
               <p id="profile_description_text">{this.state.profileInfo.description}</p>
             </div>
+            <button id="follow_button" onClick={this.handleFollow}>{this.state.isFollowing ? 'Following' : 'Follow'}</button>
           </div>
           <div id="content_wrapper">
             <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Non-Original", "Collections", "Reposts"]}

@@ -1,14 +1,25 @@
 import React from 'react';
 import Tags from './Tags.jsx'
 import RepostHeader from './RepostHeader.jsx'
+import StatsHeader from './StatsHeader.jsx'
 import { Link } from 'react-router-dom';
 
 import view_icon from 'images/view-icon.png'
 import like_icon from 'images/heart-icon.png'
 import repost_icon from 'images/repost-icon.png'
 import comment_icon from 'images/comment-icon.png'
+import plus_icon from 'images/plus-icon.png'
 
 const _MS_PER_MINUTE = 1000 * 60;
+
+{/* <img className="playlist_post_stat_button" src={view_icon}></img>
+<p className="playlist_post_stat">{item.views}</p>
+<img className="playlist_post_stat_button" src={like_icon}></img>
+<p className="playlist_post_stat">{item.likes}</p>
+<img className="playlist_post_stat_button" src={repost_icon}></img>
+<p className="playlist_post_stat">{item.reposts}</p>
+<img className="playlist_post_stat_button" src={comment_icon}></img>
+<p className="playlist_post_stat">{item.comments}</p> */}
 
 export default class Playlist extends React.Component {
   constructor(props) {
@@ -35,11 +46,53 @@ export default class Playlist extends React.Component {
   }
 
   handleLike(e) {
-
+    fetch('/api/playlistLike', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        mediaId: this.props.id,
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === "success") {
+        this.setState({likes: this.state.likes + 1})
+      } else {
+        console.log(data.message);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   }
 
   handleRepost(e) {
-
+    fetch('/api/playlistRepost', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        mediaId: this.props.id,
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === "success") {
+        this.setState({reposts: this.state.reposts + 1})
+      } else {
+        console.log(data.message);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   }
 
   handleFollow(e) {
@@ -77,16 +130,8 @@ export default class Playlist extends React.Component {
               <p id="playlist_post_user">{item.user.profileName}</p>
               <p id="playlist_post_title">{item.title}</p>
             </div>
-            <div id="playlist_post_stats_div">
-              <img className="playlist_post_stat_button" src={view_icon}></img>
-              <p className="playlist_post_stat">{item.views}</p>
-              <img className="playlist_post_stat_button" src={like_icon}></img>
-              <p className="playlist_post_stat">{item.likes}</p>
-              <img className="playlist_post_stat_button" src={repost_icon}></img>
-              <p className="playlist_post_stat">{item.reposts}</p>
-              <img className="playlist_post_stat_button" src={comment_icon}></img>
-              <p className="playlist_post_stat">{item.comments}</p>
-            </div>
+            <StatsHeader is_collection={false} view_count={item.views} like_count={item.likes}
+              repost_count={item.reposts} comment_count={item.comments}/>
           </li>
           )
       });
@@ -114,22 +159,22 @@ export default class Playlist extends React.Component {
             </div>
           </Link>
             <div id="stats_header">
-              <button id="views" className="stats_button">
-                <img id="views_icon" alt="view icon" className="stats_icon" src={view_icon}></img>
-                <p className="stats_number" id="view_number">{this.props.views}</p>
-              </button>
               <button id="likes" className="stats_button" onClick={this.handleLike}>
                   <label id="toggle_like">❤</label>
                 <img id="like_icon" alt="like icon" className="stats_icon" src={like_icon}></img>
-                <p className="stats_number" id="like_number">{this.props.likes}</p>
+                <p className="stats_number" id="like_number">{this.state.likes}</p>
               </button>
               <button id="reposts" className="stats_button" onClick={this.handleRepost}>
                 <img id="repost_icon" alt="repost icon" className="stats_icon" src={repost_icon}></img>
-                <p className="stats_number" id="repost_number">{this.props.reposts}</p>
+                <p className="stats_number" id="repost_number">{this.state.reposts}</p>
               </button>
             <button id="comments" className="stats_button">
               <img id="comment_icon" alt="comment icon" className="stats_icon" src={comment_icon}></img>
               <p className="stats_number" id="comment_number">{this.props.comments}</p>
+            </button>
+            <button id="followers" className="stats_button">
+              <img id="follower_icon" alt="follower icon" className="stats_icon" src={comment_icon}></img>
+              <p className="stats_number" id="followers_number">{this.props.followers}</p>
             </button>
           </div>
         </div>

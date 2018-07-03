@@ -145,7 +145,6 @@ textarea {
 #type_selector {
   display: inline-block;
   position: relative;
-  margin-left: 2%;
   margin-bottom: 20px;
   margin-top: 20px;
   color: black;
@@ -178,7 +177,6 @@ textarea {
 #post_wrapper {
   display: inline-block;
   position: relative;
-  margin-left: 2%;
   list-style-type: none;
   list-style-position: inside;
   background-color: white;
@@ -188,6 +186,9 @@ textarea {
   display: inline-block;
   max-width: 70%;
   border: 1px solid #f1f1f1;
+}
+
+#polaroid_div:hover {
   box-shadow: 5px 10px 8px #888888;
 }
 
@@ -261,7 +262,7 @@ textarea {
   padding: 0 20px;
   display: inline-block;
   vertical-align: top;
-  width: 30%;
+  width: 300px;
 }
 
 #title {
@@ -297,7 +298,7 @@ textarea {
 .tag_image {
   display: inline-block;
   vertical-align: top;
-  width: 10%;
+  width: 25px;
   padding: 5px 0;
   margin-right: 5%;
 }
@@ -309,19 +310,15 @@ textarea {
 }
 
 .tag_brand {
-  margin-top: 2%;
   font-weight: 500;
-  margin-bottom: 0;
 }
 
 .tag_name {
-  margin-top: 2%;
-  margin-bottom: 0;
 }
 
 .og_tag {
   display: inline-block;
-  width: 10%
+  width: 20px
 }
 
 .og_icon {
@@ -554,20 +551,23 @@ textarea {
 }
 
 #profile_info {
-  padding: 5% 1%;
+  display: inline-block;
+  height: 100%;
+  padding: 20px 10px;
 }
 
 #profile_info_image {
+  display: inline-block;
   object-fit: cover;
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  display: inline-block;
+  margin: 30px 0;
 }
 
 #profile_info_text_div {
   display: inline-block;
-  padding: 0 2%;
+  padding: 0 10px;
   vertical-align: middle;
 }
 
@@ -1130,6 +1130,18 @@ textarea {
 
 .playlist_post_selected {
   color: red;
+}
+
+#follow_button {
+  border: 1px solid red;
+  background-color: white;
+  color: red;
+  border-radius: 8px;
+  padding: 10px 10px;
+}
+
+#profile_description {
+  display: inline-block;
 }
 
 @media only screen and (max-width: 1300px) {

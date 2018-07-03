@@ -74,14 +74,10 @@ export default class Navbar extends React.Component {
     var lastScrollY = this.state.lastScrollY
     var currentScrollY = window.scrollY
 
-    console.log("current y is", currentScrollY);
-
     if (currentScrollY < 136) {
     } else if (this.state.showNavbar && currentScrollY > lastScrollY) {
-      console.log("Hide Navbar");
       this.setState({showNavbar: false, lastScrollY: currentScrollY})
     } else if (!this.state.showNavbar && currentScrollY < lastScrollY) {
-      console.log("Show Navbar");
       this.setState({showNavbar: true, lastScrollY: currentScrollY})
     } else {
       this.setState({lastScrollY: currentScrollY})
@@ -117,23 +113,26 @@ export default class Navbar extends React.Component {
             </div>
             <p id="user_name">{this.state.profileName}</p>
           </Link>
-          <div className="dropdown">
-            <button className="dropdown-toggle" type="button" date-toggle="dropdown">
+          <div className="btn-group">
+            <button className="btn btn-default dropdown-toggle" type="button" date-toggle="dropdown">
               <img id="notifications_icon" alt="notifications icon" className="banner_button" src={notification_icon}></img>
               <span className="caret"></span>
             </button>
             <ul className="dropdown-menu">
-              <li>
-                <StatsColumn show_profile={false}/>
+              <li className="form-group">
+                Yo
               </li>
             </ul>
           </div>
-          <div className="dropdown">
-            <button id="stats_button" className="dropdown-toggle" type="button" date-toggle="dropdown">Stats<span className="caret"></span></button>
-            <ul className="dropdown-menu">
+          <div className="btn-group">
+            <button id="stats_button" className="btn btn-default dropdown-toggle" type="button" date-toggle="dropdown">
+              Stats<span className="caret"></span></button>
+            <ul className="dropdown-menu" role="menu">
               <li>Yo</li>
               <li>
-                <StatsColumn show_profile={false}/>
+                <div className="form-group">
+                  <StatsColumn show_profile={false}/>
+                </div>
               </li>
             </ul>
           </div>

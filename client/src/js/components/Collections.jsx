@@ -41,13 +41,13 @@ export default class Collections extends React.Component {
       temp_data = this.state.json_data
     } else if (e.target.name == 1) {
       temp_data = this.state.json_data
-      fetch('/api/you/collections/playlists', {
+      fetch('/api/you/collections/playlistsLikes', {
         credentials: 'include'
       })
       .then(res => res.json())
       .then(data => {
         console.log(data);
-        this.setState({playlist_data: data.playlists});
+        this.setState({playlist_data: data});
       })
       .catch((error) => {
         console.error(error);
@@ -82,7 +82,7 @@ export default class Collections extends React.Component {
     } else {
       rendered_posts = this.state.playlist_data.map((item, index) => {
           return (
-            <li className="collection_item" key={item.mediaId}>
+            <li className="collection_item" key={item.playlistId}>
               <div className="collection_item_div">
                 <Link to={"/" + item.user.username}>
                   <strong className="collection_item_title">{item.user.profileName}</strong>

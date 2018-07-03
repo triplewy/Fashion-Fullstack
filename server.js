@@ -136,7 +136,7 @@ conn.query('CREATE TABLE IF NOT EXISTS playlistsFollowers (playlistId INTEGER, u
 
 conn.query('CREATE TABLE IF NOT EXISTS playlistsReposts (playlistId INTEGER, userId INTEGER, dateTime DATETIME)');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistLikes (playlistId INTEGER, userId INTEGER, dateTime DATETIME)');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsLikes (playlistId INTEGER, userId INTEGER, dateTime DATETIME)');
 
 bcrypt.hash('password', 10, function(err, hash) {
   conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, relatedUserId) VALUES (?,?,?,?,?)',
@@ -221,13 +221,13 @@ conn.query('INSERT INTO postTags (tagId, mediaId) VALUES (?, ?)', [1, 1], functi
     }
   });
 
-conn.query('INSERT INTO following (followingId, userId) VALUES (?, ?)', [2, 1], function(err, result) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("Records successfully added");
-    }
-  });
+// conn.query('INSERT INTO following (followingId, userId) VALUES (?, ?)', [2, 1], function(err, result) {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       console.log("Records successfully added");
+//     }
+//   });
 
 conn.query('INSERT INTO playlists (userId, title, public, likes, reposts, comments, followers, description, dateTime) VALUES ' +
 '(?,?,?,?,?,?,?,?,?)', [1, "Test Playlist", 1, 100, 20, 10, 5, "Test playlist description", Date.now()], function(err, result) {
@@ -277,26 +277,11 @@ app.get('/api/home', (req, res) => {
   if (userId == null) {
     res.redirect('/home')
   } else {
-    conn.query('SELECT followingId FROM following WHERE userId=$1', userId, function(err, result) {
-      if (err) {
-        return reject(err)
-      }
-      else {
-        var userIds = [];
-        var question_query = '';
-        for (var i = 0; i < result.rows.length; i++) {
-          userIds.push(result.rows[i].followingId)
-          question_query += '$'+ (i+1) + ',';
-        }
-        userIds.push(userId);
-        question_query += ('$' + (result.rows.length + 1));
-        Promise.all([getStream(userIds, question_query)])
-        .then(function(allData) {
-          res.send(allData[0])
-        }).catch(err => {
-          console.log(err);
-        })
-      }
+    Promise.all([getStream(userId, true)])
+    .then(function(allData) {
+      res.send(allData[0])
+    }).catch(err => {
+      console.log(err);
     })
   }
 })
@@ -324,7 +309,7 @@ app.post('/api/repost', function(req, res) {
 })
 
 app.post('/api/playlistLike', function(req, res) {
-  console.log('- Request received:', req.method.cyan, '/api/repost');
+  console.log('- Request received:', req.method.cyan, '/api/playlistLike');
   Promise.all([addToCollection(req, 'playlistsLikes', 'playlistId')])
   .then(function(allData) {
     res.send(allData[0])
@@ -335,7 +320,7 @@ app.post('/api/playlistLike', function(req, res) {
 })
 
 app.post('/api/playlistRepost', function(req, res) {
-  console.log('- Request received:', req.method.cyan, '/api/repost');
+  console.log('- Request received:', req.method.cyan, '/api/playlistRepost');
   Promise.all([addToCollection(req, 'playlistsReposts', 'playlistId')])
   .then(function(allData) {
     res.send(allData[0])
@@ -370,25 +355,24 @@ app.get('/api/you/collections/likes', function(req, res) {
   })
 })
 
-app.get('/api/you/collections/playlists', function(req, res) {
+app.get('/api/you/collections/playlistsLikes', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/you/collections/playlists');
   var userId = req.user;
-  conn.query('SELECT playlistId, userId, dateTime FROM playlistsLikes WHERE userId=$1 ORDER BY dateTime DESC', userId, function(err, result) {
+  conn.query('SELECT a.*, b.dateTime as likeTime FROM playlists AS a, playlistsLikes as B WHERE ' +
+  'a.playlistId = b.playlistId AND b.userId=$1 ORDER BY likeTime DESC', userId, function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      var playlistIds = []
-      var sources = []
+      var userIds = []
       var question_query = '';
       for (var i = 0; i < result.rows.length; i++) {
-        mediaIds.push(result.rows[i].playlistId);
-        sources.push('playlists')
+        userIds.push(result.rows[i].userId);
         question_query += '?,';
       }
       question_query = question_query.slice(0, -1);
-      Promise.all([getPlaylists(playlistIds, sources, question_query)])
+      Promise.all([getUserDetails(userIds, question_query)])
         .then(function(allData) {
-          res.send({playlists: allData[0]});
+          res.send(compilePlaylistsLikes(allData[0], result));
         }).catch(err => {
           console.log(err);
         })
@@ -416,7 +400,7 @@ app.get('/api/:profile', (req, res) => {
         console.log("cookie User is same as selected User");
       }
 
-      Promise.all([getStream(row.userId, '$1')])
+      Promise.all([getStream(row.userId, false)])
       .then(function(allData) {
         res.send({media:allData[0], userDetails: userDetails})
       }).catch(err => {
@@ -430,6 +414,34 @@ app.get('/api/:profile/:mediaId', function(request, response) {
   console.log('- Request received:', request.method.cyan, '/api/' + request.params.profile + '/' + request.params.mediaId);
   var username = request.params.profile;
   var mediaId = request.params.mediaId;
+})
+
+app.post('/api/:profile/follow', function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/follow');
+  var username = req.params.profile;
+  var userId = req.user;
+
+  conn.query('INSERT INTO following (followingId, userId, dateTime) VALUES ((SELECT userId FROM users WHERE username=$1),$2,$3)',
+  [username, userId, Date.now()], function(err, result) {
+    if (err) {
+      console.log("insert error");
+      console.log(err);
+    } else {
+      conn.query('UPDATE users SET followers = followers + 1 WHERE username=$1', [username], function(err, result) {
+        if (err) {
+          console.log(err);
+        } else {
+          conn.query('UPDATE users SET following = following + 1 WHERE userId=$1', [userId], function(err, result) {
+            if (err) {
+              console.log(err);
+            } else {
+              res.send({message: 'success'})
+            }
+          })
+        }
+      })
+    }
+  })
 })
 
 app.get('/api/:profile/playlist/:playlistId', function(request, response) {
@@ -645,19 +657,6 @@ function postTagsFromUpload(mediaId, inputTags) {
   })
 }
 
-function compilePosts(userDetails, tagDetails, result, sources) {
-  var posts = [];
-  for (var i = 0; i < result.rows.length; i++) {
-    var row = result.rows[i];
-    posts.push({mediaId:row.mediaId, views:row.views, likes:row.likes,
-      reposts:row.reposts, comments:row.comments, post_image_src:row.imageUrl,
-      title:row.title, genre:row.genre, description:row.description,
-      date:row.dateTime, original: row.original, user:userDetails[row.userId],
-      tags:tagDetails[row.mediaId], dateTime: row.dateTime, source: sources[i]});
-  }
-  return posts;
-}
-
 function compileLikes(userDetails, result) {
   var posts = [];
   for (var i = 0; i < result.rows.length; i++) {
@@ -671,47 +670,37 @@ function compileLikes(userDetails, result) {
   return posts;
 }
 
-function revisedCompilePosts(userDetails, tagDetails, result) {
+function compilePlaylistsLikes(userDetails, result) {
   var posts = [];
   for (var i = 0; i < result.rows.length; i++) {
     var row = result.rows[i];
-    posts.push({mediaId:row.mediaId, views:row.views, likes:row.likes,
-      reposts:row.reposts, comments:row.comments, post_image_src:row.imageUrl,
-      title:row.title, genre:row.genre, description:row.description,
-      date:row.dateTime, original: row.original, user:userDetails[row.userId],
-      tags:tagDetails[row.mediaId], uploadDate: row.dateTime, reposter: userDetails[row.reposter],
-      repostDate: row.orderTime, likeDate: row.likeDate});
+    posts.push({playlistId:row.playlistId, likes:row.likes, reposts:row.reposts,
+      comments:row.comments, genre: row.genre, title:row.title, genre:row.genre,
+      description:row.description, uploadDate:row.dateTime, user:userDetails[row.userId],
+      likeDate: row.likeDate});
   }
   return posts;
 }
 
-function compilePlaylists(userDetails, playlistsPosts, result, sources) {
-  var playlists = [];
-  for (var i = 0; i < result.rows.length; i++) {
-    var row = result.rows[i];
-    playlists.push({playlistId:row.mediaId, likes:row.likes, reposts:row.reposts,
-      comments:row.comments, followers: row.followers, title:row.title, genre:row.genre,
-      description:row.description, dateTime:row.dateTime, public: row.public,
-      user:userDetails[row.userId], source: sources[i], posts: playlistsPosts[row.mediaId]});
-  }
-  return playlists;
-}
-
-function getStream(userIds, question_query) {
+function getStream(userId, isHome) {
   return new Promise(function(resolve, reject) {
+    var followingQuery1 = ''
+    var followingQuery2 = ''
+    if (isHome) {
+      followingQuery1 = ' OR b.userId IN (SELECT followingId FROM following WHERE userId=$1)'
+      followingQuery2 = ' OR userId IN (SELECT followingId as userId FROM following WHERE userId=$1)'
+    }
     conn.query(
     'SELECT null as mediaId, a.playlistId, a.userId, a.title, a.genre, a.public, null as original, null as imageUrl, null AS views, a.likes, a.reposts, a.comments, a.followers, a.description, a.dateTime, b.dateTime as orderTime, b.userId as reposter ' +
-    'FROM playlists AS a, playlistsReposts AS b WHERE a.playlistId = b.playlistId AND b.userId IN (' + question_query + ') UNION ALL ' +
+    'FROM playlists AS a, playlistsReposts AS b WHERE a.playlistId = b.playlistId AND (b.userId=$1' + followingQuery1 + ') UNION ALL ' +
     'SELECT null as mediaId, playlistId, userId, title, genre, public, null as original, null as imageUrl, null AS views, likes, reposts, comments, followers, description, dateTime, dateTime as orderTime, null as reposter ' +
-    'FROM playlists WHERE userId IN (' + question_query + ') UNION ALL ' +
+    'FROM playlists WHERE userId=$1' + followingQuery2 + ' UNION ALL ' +
     'SELECT a.mediaId, null as playlistId, a.userId, a.title, a.genre, a.public, a.original, a.imageUrl, a.views, a.likes, a.reposts, a.comments, null as followers, a.description, a.dateTime, b.dateTime as orderTime, b.userId as reposter ' +
-    'FROM posts AS a, reposts AS b WHERE a.mediaId = b.mediaId AND b.userId IN (' + question_query + ') UNION ALL ' +
+    'FROM posts AS a, reposts AS b WHERE a.mediaId = b.mediaId AND (b.userId=$1' + followingQuery1 + ') UNION ALL ' +
     'SELECT mediaId, null as playlistId, userId, title, genre, public, original, imageUrl, views, likes, reposts, comments, null as followers, description, dateTime, dateTime as orderTime, null as reposter ' +
-    'FROM posts WHERE userId IN (' + question_query + ') ORDER BY orderTime DESC LIMIT 20',
-    userIds, function(err,result) {
-      console.log(result);
+    'FROM posts WHERE userId=$1' + followingQuery2 + ' ORDER BY orderTime DESC LIMIT 20',
+    userId, function(err,result) {
       if (err) {
-        console.log("heererererere");
         return reject(err)
       } else {
         var mediaIds = []
@@ -770,17 +759,28 @@ function addToCollection(req, table, idType) {
     var mediaId = req.body.mediaId;
     var id = ''
     var postsOrPlaylists = ''
-    if (table == 'likes' || table == 'reposts') {
+    var likesOrReposts = ''
+    if (idType == 'mediaId') {
       postsOrPlaylists = 'posts'
+      if (table == 'likes') {
+        likesOrReposts = 'likes'
+      } else {
+        likesOrReposts = 'reposts'
+      }
     } else {
       postsOrPlaylists = 'playlists'
+      if (table == 'playlistsLikes') {
+        likesOrReposts = 'likes'
+      } else {
+        likesOrReposts = 'reposts'
+      }
     }
-    conn.query('INSERT INTO ' + table + ' (' + idType  + ', userId, dateTime) VALUES ($1,$2,$3)',
+    conn.query('INSERT INTO ' + table + ' (' + idType  + ', userId, dateTime) VALUES ($1,$2,$3) ON DUPLICATE KEY DELETE FROM ',
     [mediaId, userId, Date.now()], function(err, result) {
       if (err) {
         return reject(err);
       } else {
-        conn.query('UPDATE ' + postsOrPlaylists + ' SET ' + table + ' = ' + table + ' + 1 WHERE ' + idType + '=$1', mediaId, function(err, result) {
+        conn.query('UPDATE ' + postsOrPlaylists + ' SET ' + likesOrReposts + ' = ' + likesOrReposts + ' + 1 WHERE ' + idType + '=$1', mediaId, function(err, result) {
           if (err) {
             return reject(err);
           } else {
