@@ -42,7 +42,7 @@ export default class Tags extends React.Component {
                   <p className="tag_name">{item.itemName}</p>
                 </div>
             {item.original ? <div className="og_tag">
-              <img className="og_icon" alt="original icon" src="/../images/og-icon.png"></img>
+              <p className="og_icon">✔</p>
             </div> : ''}
           </div>
           )

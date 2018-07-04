@@ -12,7 +12,7 @@ export default class Collections extends React.Component {
       json_data: [],
       likes: [],
       rendered_posts: [],
-      playlist_data: [],
+      playlistsLikes: [],
       type_selector_value: 0
     };
 
@@ -27,7 +27,7 @@ export default class Collections extends React.Component {
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({likes: data, json_data: data});
+      this.setState({likes: data.likes, json_data: data.likes});
     })
     .catch((error) => {
       console.error(error);
@@ -47,7 +47,7 @@ export default class Collections extends React.Component {
       .then(res => res.json())
       .then(data => {
         console.log(data);
-        this.setState({playlist_data: data});
+        this.setState({playlistsLikes: data.likes});
       })
       .catch((error) => {
         console.error(error);
@@ -55,7 +55,7 @@ export default class Collections extends React.Component {
     } else {
       temp_data = data;
     }
-    this.setState({post_data: temp_data, type_selector_value: e.target.name});
+    this.setState({type_selector_value: e.target.name});
   }
 
   render() {
@@ -65,34 +65,33 @@ export default class Collections extends React.Component {
           return (
             <li className="collection_item" key={item.mediaId}>
               <div className="collection_item_div">
-                <Link to={"/" + item.user.username}>
-                  <strong className="collection_item_title">{item.user.profileName}</strong>
+                <Link to={"/" + item.username}>
+                  <strong className="collection_item_title">{item.profileName}</strong>
                 </Link>
-                <Link to={{ pathname: '/' + item.user.username + '/' + item.mediaId, state: { post_data: item} }}>
+                <Link to={{ pathname: '/' + item.username + '/' + item.mediaId, state: { post_data: item} }}>
                   <p className="collection_item_title">{item.title}</p>
                   <img className="collection_item_img" alt="collection item" src={item.post_image_src}></img>
                 </Link>
-                <StatsHeader is_collection={true} view_count={item.views}
-                  like_count={item.likes} repost_count={item.reposts}
-                  comment_count={item.comments}/>
+                <StatsHeader is_collection={true} views={item.views}
+                  likes={item.likes} reposts={item.reposts}/>
               </div>
             </li>
           )
       });
     } else {
-      rendered_posts = this.state.playlist_data.map((item, index) => {
+      rendered_posts = this.state.playlistsLikes.map((item, index) => {
           return (
             <li className="collection_item" key={item.playlistId}>
               <div className="collection_item_div">
-                <Link to={"/" + item.user.username}>
-                  <strong className="collection_item_title">{item.user.profileName}</strong>
+                <Link to={"/" + item.username}>
+                  <strong className="collection_item_title">{item.profileName}</strong>
                 </Link>
-                <Link to={{ pathname: '/' + item.user.username + '/playlist/' + item.mediaId, state: { post_data: item} }}>
+                <Link to={{ pathname: '/' + item.username + '/playlist/' + item.mediaId, state: { post_data: item} }}>
                   <p className="collection_item_title">{item.title}</p>
                   <img className="collection_item_img" alt="collection item" src={item.playlist_cover_img_src}></img>
                 </Link>
-                <StatsHeader is_collection={true} like_count={item.likes}
-                  repost_count={item.reposts} comment_count={item.comments}/>
+                <StatsHeader is_collection={true} likes={item.likes}
+                  reposts={item.reposts} followers={item.followers}/>
               </div>
             </li>
           )

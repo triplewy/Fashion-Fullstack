@@ -22,6 +22,7 @@ export default class Profile extends React.Component {
     this.toggle_type = this.toggle_type.bind(this);
     this.changeProfile = this.changeProfile.bind(this);
     this.handleFollow = this.handleFollow.bind(this);
+    this.handleUnfollow = this.handleUnfollow.bind(this);
   }
 
   changeProfile = memoize((url) => {
@@ -35,7 +36,7 @@ export default class Profile extends React.Component {
         console.log("profile data is", data);
         var posts = []
         var reposts = []
-        this.setState({posts: posts, reposts: reposts, streamData: streamData, jsonData: data.media, profileInfo: data.userDetails})
+        this.setState({isFollowing: data.userDetails.isFollowing, streamData: streamData, jsonData: data.media, profileInfo: data.userDetails})
     })
   })
 
@@ -73,6 +74,19 @@ export default class Profile extends React.Component {
     })
   }
 
+  handleUnfollow(e) {
+    fetch('/api/' + this.props.match.params.profile + '/unfollow', {
+      method: 'POST',
+      credentials: 'include',
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message == 'success') {
+        this.setState({isFollowing: false})
+      }
+    })
+  }
+
   render() {
 
     this.changeProfile(this.props.match.params.profile);
@@ -94,7 +108,9 @@ export default class Profile extends React.Component {
               <p className="profile_info_text" id="profile_info_following">Following: {this.state.profileInfo.following}</p>
               <p id="profile_description_text">{this.state.profileInfo.description}</p>
             </div>
-            <button id="follow_button" onClick={this.handleFollow}>{this.state.isFollowing ? 'Following' : 'Follow'}</button>
+            <button id="follow_button" onClick={this.state.isFollowing ? this.handleUnfollow : this.handleFollow}>
+              {this.state.isFollowing ? 'Following' : 'Follow'}
+            </button>
           </div>
           <div id="content_wrapper">
             <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Non-Original", "Collections", "Reposts"]}

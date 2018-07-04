@@ -262,7 +262,7 @@ textarea {
   padding: 0 20px;
   display: inline-block;
   vertical-align: top;
-  width: 300px;
+  width: 350px;
 }
 
 #title {
@@ -287,7 +287,7 @@ textarea {
 }
 
 #tags_div {
-  padding: 10px 0;
+  padding: 0 0;
   font-size: 13px;
 }
 
@@ -322,8 +322,7 @@ textarea {
 }
 
 .og_icon {
-  display: inline-block;
-  width: 40px;
+  float: right;
 }
 
 #description_hr {
@@ -1142,6 +1141,27 @@ textarea {
 
 #profile_description {
   display: inline-block;
+}
+
+#comments {
+  padding: 0 0;
+}
+
+#comments li {
+  padding: 5px 0;
+}
+
+#comment_user {
+  display: inline-block;
+}
+
+#comment {
+  display: inline-block;
+  padding: 0 5px;
+}
+
+#comment_time {
+  float: right;
 }
 
 @media only screen and (max-width: 1300px) {

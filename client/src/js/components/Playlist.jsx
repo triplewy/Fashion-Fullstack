@@ -2,6 +2,7 @@ import React from 'react';
 import Tags from './Tags.jsx'
 import RepostHeader from './RepostHeader.jsx'
 import StatsHeader from './StatsHeader.jsx'
+import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
 import { Link } from 'react-router-dom';
 
 import view_icon from 'images/view-icon.png'
@@ -11,15 +12,6 @@ import comment_icon from 'images/comment-icon.png'
 import plus_icon from 'images/plus-icon.png'
 
 const _MS_PER_MINUTE = 1000 * 60;
-
-{/* <img className="playlist_post_stat_button" src={view_icon}></img>
-<p className="playlist_post_stat">{item.views}</p>
-<img className="playlist_post_stat_button" src={like_icon}></img>
-<p className="playlist_post_stat">{item.likes}</p>
-<img className="playlist_post_stat_button" src={repost_icon}></img>
-<p className="playlist_post_stat">{item.reposts}</p>
-<img className="playlist_post_stat_button" src={comment_icon}></img>
-<p className="playlist_post_stat">{item.comments}</p> */}
 
 export default class Playlist extends React.Component {
   constructor(props) {
@@ -127,11 +119,12 @@ export default class Playlist extends React.Component {
                 'playlist_post_selected' : null}
                 disabled={(this.state.playlistIndex == index)}>
             <div id="playlist_post_user_title_div">
-              <p id="playlist_post_user">{item.user.profileName}</p>
+              <Link to={"/" + item.username}>
+                <p id="playlist_post_user">{item.profileName}</p>
+              </Link>
               <p id="playlist_post_title">{item.title}</p>
             </div>
-            <StatsHeader is_collection={false} view_count={item.views} like_count={item.likes}
-              repost_count={item.reposts} comment_count={item.comments}/>
+            <StatsHeader views={item.views} likes={item.likes} reposts={item.reposts} comments={item.comments}/>
           </li>
           )
       });
@@ -153,38 +146,22 @@ export default class Playlist extends React.Component {
                 <button id="genre_button">{this.props.genre}</button>
               </div>
             }
-            <Link to={{ pathname: '/' + currentPost.user.username + '/' + currentPost.mediaId, state: { post_data: currentPost} }}>
+            <Link to={{ pathname: '/' + currentPost.username + '/' + currentPost.mediaId, state: { post_data: currentPost} }}>
             <div id="image_wrapper">
               <img id="post_image" alt="" src={currentPost.post_image_src}></img>
             </div>
           </Link>
-            <div id="stats_header">
-              <button id="likes" className="stats_button" onClick={this.handleLike}>
-                  <label id="toggle_like">❤</label>
-                <img id="like_icon" alt="like icon" className="stats_icon" src={like_icon}></img>
-                <p className="stats_number" id="like_number">{this.state.likes}</p>
-              </button>
-              <button id="reposts" className="stats_button" onClick={this.handleRepost}>
-                <img id="repost_icon" alt="repost icon" className="stats_icon" src={repost_icon}></img>
-                <p className="stats_number" id="repost_number">{this.state.reposts}</p>
-              </button>
-            <button id="comments" className="stats_button">
-              <img id="comment_icon" alt="comment icon" className="stats_icon" src={comment_icon}></img>
-              <p className="stats_number" id="comment_number">{this.props.comments}</p>
-            </button>
-            <button id="followers" className="stats_button">
-              <img id="follower_icon" alt="follower icon" className="stats_icon" src={comment_icon}></img>
-              <p className="stats_number" id="followers_number">{this.props.followers}</p>
-            </button>
+          <PlaylistStatsHeader playlistId={this.props.playlistId} likes={this.state.likes} reposts={this.state.reposts} followers={this.state.followers} />
           </div>
-        </div>
             <div id="tags_div_wrapper">
               <div id="title">
                 <p id="title_text">{this.props.title}</p>
               </div>
               <hr id="tag_title_hr"></hr>
               <Tags tags={currentPost.tags}/>
-              <hr id="tag_title_hr"></hr>
+              <div id="description_wrapper">
+                <p id="description">{this.props.description}</p>
+              </div>
               <ul id="playlist_list">
                 {rendered_playlist_posts}
               </ul>

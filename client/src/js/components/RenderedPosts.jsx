@@ -16,7 +16,7 @@ export default class RenderedPosts extends React.Component {
       rendered_posts = streamData.map((item, index) => {
         if (item.mediaId) {
           return (
-            <Post key={index} id={item.mediaId} genre={item.genre} user={item.user}
+            <Post key={index} mediaId={item.mediaId} genre={item.genre} user={item.user}
                   post_image_src={item.post_image_src} views={item.views} likes={item.likes}
                   reposts={item.reposts} comments={item.comments} title={item.title}
                   description={item.description} uploadDate={item.uploadDate} tags={item.tags}
@@ -24,7 +24,7 @@ export default class RenderedPosts extends React.Component {
           )
         } else if (item.playlistId) {
           return (
-            <Playlist key={index} id={item.playlistId} genre={item.genre} user={item.user}
+            <Playlist key={index} playlistId={item.playlistId} genre={item.genre} user={item.user}
                   playlist_image_srcs={item.playlist_image_srcs} likes={item.likes}
                   reposts={item.reposts} comments={item.comments} title={item.title}
                   description={item.description} uploadDate={item.uploadDate} followers={item.followers}
