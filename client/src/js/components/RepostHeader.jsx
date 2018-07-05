@@ -28,18 +28,18 @@ export default class RepostHeader extends React.Component {
   render() {
     return (
       <div id="post_header">
-        <Link to={"/" + this.props.uploader.username}>
+        <Link to={"/" + this.props.username}>
           <div id="profile_image_div">
-            <img id="profile_image" alt="" src={this.props.uploader.profile_image_src}></img>
+            <img id="profile_image" alt="" src={this.props.profile_image_src}></img>
           </div>
-          <strong id="user_name">{this.props.uploader.profileName}</strong>
+          <strong id="user_name">{this.props.profileName}</strong>
         </Link>
         <p id="post_status">{this.dateDiffInDays(new Date(this.props.repostDate))}</p>
-        <Link to={"/" + this.props.reposter.username}>
+        <Link to={"/" + this.props.repost_username}>
           <div id="profile_image_div">
-            <img id="profile_image" alt="" src={this.props.reposter.profile_image_src}></img>
+            <img id="profile_image" alt="" src={this.props.repost_profile_image_src}></img>
           </div>
-          <strong id="user_name">{this.props.reposter.profileName}</strong>
+          <strong id="user_name">{this.props.repost_profileName}</strong>
         </Link>
         <button id="genre_button">{this.props.genre}</button>
       </div>

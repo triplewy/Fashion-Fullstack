@@ -434,7 +434,7 @@ app.get('/api/:profile', (req, res) => {
 
       Promise.all([getStream(row.userId, false)])
       .then(function(allData) {
-        res.send({media:allData[0], userDetails: userDetails})
+        res.send({media: allData[0], userDetails: userDetails})
       }).catch(err => {
         console.log(err);
       })
@@ -597,24 +597,6 @@ app.listen(8081, function(){
     console.log('- Server listening on port 8081');
 });
 
-function getUserDetails(userIds, question_query) {
-  return new Promise(function(resolve, reject) {
-      conn.query('SELECT userId, username, profileName, profile_image_src FROM users WHERE userId IN (' + question_query + ')',
-        userIds, function(err, result) {
-        if (err) {
-          return reject(err);
-        } else {
-          var users = {};
-          for(var row in result.rows) {
-            users[result.rows[row].userId] = {username: result.rows[row].username,
-              profileName: result.rows[row].profileName, profile_image_src: result.rows[row].profile_image_src}
-          }
-          return resolve(users);
-        }
-      });
-    })
-}
-
 function getTagDetails(mediaIds, question_query) {
   return new Promise(function(resolve, reject) {
     conn.query('SELECT a.*, b.mediaId as mediaId FROM tags AS a, postTags AS b ' +
@@ -747,41 +729,45 @@ function getStream(userId, isHome) {
     var followingQuery2 = ''
     if (isHome) {
       followingQuery1 = ' OR b.userId IN (SELECT followingId FROM following WHERE userId=$1)'
-      followingQuery2 = ' OR userId IN (SELECT followingId as userId FROM following WHERE userId=$1)'
+      followingQuery2 = ' OR a.userId IN (SELECT followingId as userId FROM following WHERE userId=$1)'
     }
     conn.query(
     'SELECT null as mediaId, a.playlistId, a.userId, a.title, a.genre, a.public, null as original, null as imageUrl, ' +
-    'null AS views, a.likes, a.reposts, a.comments, a.followers, a.description, a.dateTime, b.dateTime as orderTime, b.userId as reposter ' +
-    'FROM playlists AS a, playlistsReposts AS b WHERE a.playlistId = b.playlistId AND (b.userId=$1' + followingQuery1 + ') UNION ALL ' +
-    'SELECT null as mediaId, playlistId, userId, title, genre, public, null as original, null as imageUrl, ' +
-    'null AS views, likes, reposts, comments, followers, description, dateTime, dateTime as orderTime, null as reposter ' +
-    'FROM playlists WHERE userId=$1' + followingQuery2 + ' UNION ALL ' +
+    'null AS views, a.likes, a.reposts, a.comments, a.followers, a.description, a.dateTime, b.dateTime as orderTime, ' +
+    'd.username as repost_username, d.profileName as repost_profileName, d.profile_image_src AS repost_profile_image_src, ' +
+    'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src ' +
+    'FROM playlists AS a, playlistsReposts AS b, users AS c, users AS d WHERE a.playlistId = b.playlistId AND c.userId = a.userId AND d.userId = b.userId AND (b.userId=$1' + followingQuery1 + ') UNION ALL ' +
+    'SELECT null as mediaId, a.playlistId, a.userId, a.title, a.genre, a.public, null as original, null as imageUrl, ' +
+    'null AS views, a.likes, a.reposts, a.comments, a.followers, a.description, a.dateTime, a.dateTime as orderTime, ' +
+    'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, ' +
+    'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src ' +
+    'FROM playlists AS a, users AS c WHERE c.userId = a.userId AND a.userId=$1' + followingQuery2 + ' UNION ALL ' +
     'SELECT a.mediaId, null as playlistId, a.userId, a.title, a.genre, a.public, a.original, a.imageUrl, a.views, ' +
-    'a.likes, a.reposts, a.comments, null as followers, a.description, a.dateTime, b.dateTime as orderTime, b.userId as reposter ' +
-    'FROM posts AS a, reposts AS b WHERE a.mediaId = b.mediaId AND (b.userId=$1' + followingQuery1 + ') UNION ALL ' +
-    'SELECT mediaId, null as playlistId, userId, title, genre, public, original, imageUrl, views, likes, reposts, ' +
-    'comments, null as followers, description, dateTime, dateTime as orderTime, null as reposter ' +
-    'FROM posts WHERE userId=$1' + followingQuery2 + ' ORDER BY orderTime DESC LIMIT 20',
+    'a.likes, a.reposts, a.comments, null as followers, a.description, a.dateTime, b.dateTime as orderTime, ' +
+    'd.username as repost_username, d.profileName as repost_profileName, d.profile_image_src AS repost_profile_image_src, ' +
+    'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src ' +
+    'FROM posts AS a, reposts AS b, users AS c, users AS d WHERE a.mediaId = b.mediaId AND c.userId = a.userId AND d.userId = b.userId AND (b.userId=$1' + followingQuery1 + ') UNION ALL ' +
+    'SELECT a.mediaId, null as playlistId, a.userId, a.title, a.genre, a.public, a.original, a.imageUrl, a.views, a.likes, a.reposts, ' +
+    'a.comments, null as followers, a.description, a.dateTime, a.dateTime as orderTime, ' +
+    'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, ' +
+    'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src ' +
+    'FROM posts AS a, users AS c WHERE c.userId = a.userId AND a.userId=$1' + followingQuery2 + ' ORDER BY orderTime DESC LIMIT 20',
     userId, function(err,result) {
       if (err) {
         return reject(err)
       } else {
+        console.log(result);
         var mediaIds = []
-        var userIds = []
         var playlistIds = []
         var media_question_query = ''
-        var user_question_query = ''
         for (var i = 0; i < result.rows.length; i++) {
-          userIds.push(result.rows[i].reposter, result.rows[i].userId)
-          user_question_query += '?,?,'
           playlistIds.push(result.rows[i].playlistId)
           mediaIds.push(result.rows[i].mediaId)
           media_question_query += '?,'
         }
-        user_question_query = user_question_query.slice(0, -1)
         media_question_query = media_question_query.slice(0, -1);
-        Promise.all([getUserDetails(userIds, user_question_query), getTagDetails(mediaIds, media_question_query),
-          getComments(mediaIds, media_question_query), getPlaylistsPosts(playlistIds, media_question_query)])
+        Promise.all([getTagDetails(mediaIds, media_question_query), getComments(mediaIds, media_question_query),
+          getPlaylistsPosts(playlistIds, media_question_query)])
         .then(function(allData) {
           var stream = []
           for (var i = 0; i < result.rows.length; i++) {
@@ -792,16 +778,20 @@ function getStream(userId, isHome) {
               var post = {mediaId:row.mediaId, views:row.views, likes:row.likes,
                 reposts:row.reposts, comments:row.comments, post_image_src:row.imageUrl,
                 title:row.title, genre:row.genre, description:row.description,
-                date:row.dateTime, original: row.original, user:allData[0][row.userId],
-                tags:allData[1][row.mediaId], comments:allData[2][row.mediaId], uploadDate: row.dateTime,
-                reposter: allData[0][row.reposter], repostDate: row.orderTime}
+                date:row.dateTime, original: row.original, username: row.username,
+                profileName: row.profileName, profile_image_src: row.profile_image_src,
+                tags:allData[0][row.mediaId], comments:allData[1][row.mediaId], uploadDate: row.dateTime,
+                repost_username: row.repost_username, repost_profileName: row.repost_profileName,
+                repost_profile_image_src: row.repost_profile_image_src, repostDate: row.orderTime}
               stream.push(post)
             } else if (playlistId) {
               var playlist = {playlistId:row.playlistId, likes:row.likes, reposts:row.reposts,
                 genre: row.genre, comments:row.comments, followers: row.followers, title:row.title,
                 description:row.description, uploadDate:row.dateTime, public: row.public,
-                reposter: allData[0][row.reposter], repostDate: row.orderTime,
-                user:allData[0][row.userId], posts: allData[3][row.playlistId]}
+                repost_username: row.repost_username, repost_profileName: row.repost_profileName,
+                repost_profile_image_src: row.repost_profile_image_src, repostDate: row.orderTime,
+                username: row.username, profileName: row.profileName, profile_image_src: row.profile_image_src,
+                posts: allData[2][row.playlistId]}
               stream.push(playlist)
             } else {
               return reject("ERROR - Neither post or playlist");
