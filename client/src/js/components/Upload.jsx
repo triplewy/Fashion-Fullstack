@@ -114,9 +114,7 @@ export default class Upload extends React.Component {
                 <hr id="input_hr"></hr>
                 <input id="form_submit" type="button" onClick={this.handleSubmit} value="Submit"></input>
               </form>
-
             </div>
-
             </div>
           </div>
   );

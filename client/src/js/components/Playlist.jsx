@@ -5,12 +5,6 @@ import StatsHeader from './StatsHeader.jsx'
 import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
 import { Link } from 'react-router-dom';
 
-import view_icon from 'images/view-icon.png'
-import like_icon from 'images/heart-icon.png'
-import repost_icon from 'images/repost-icon.png'
-import comment_icon from 'images/comment-icon.png'
-import plus_icon from 'images/plus-icon.png'
-
 const _MS_PER_MINUTE = 1000 * 60;
 
 export default class Playlist extends React.Component {
@@ -124,7 +118,7 @@ export default class Playlist extends React.Component {
               </Link>
               <p id="playlist_post_title">{item.title}</p>
             </div>
-            <StatsHeader views={item.views} likes={item.likes} reposts={item.reposts} comments={item.comments}/>
+            <StatsHeader mediaId={item.mediaId} views={item.views} likes={item.likes} reposts={item.reposts} comments={item.comments}/>
           </li>
           )
       });

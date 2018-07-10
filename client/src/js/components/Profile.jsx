@@ -4,6 +4,7 @@ import Navbar from './Navbar.jsx'
 import RenderedPosts from './RenderedPosts.jsx'
 import TypeSelector from './TypeSelector.jsx'
 import memoize from 'memoize-one'
+import flower_background from 'images/flowers-background.jpg'
 
 export default class Profile extends React.Component {
   constructor(props) {
@@ -95,7 +96,7 @@ export default class Profile extends React.Component {
       <div>
         <Navbar display={this.state.showNavbar}/>
         <div id="white_background_wrapper">
-          <div id="profile_banner">
+          <div id="profile_banner" style={{backgroundImage: `url(${flower_background})`}}>
             <div id="profile_info">
               <img id="profile_info_image" alt="" src={this.state.profileInfo.profile_image_src}></img>
               <div id="profile_info_text_div">

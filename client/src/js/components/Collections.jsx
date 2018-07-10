@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from './Navbar.jsx'
 import { Link } from 'react-router-dom';
 import StatsHeader from './StatsHeader.jsx'
+import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
 import TypeSelector from './TypeSelector.jsx'
 
 export default class Collections extends React.Component {
@@ -63,18 +64,18 @@ export default class Collections extends React.Component {
     if (this.state.json_data != null && this.state.type_selector_value == 0) {
       rendered_posts = this.state.json_data.map((item, index) => {
           return (
-            <li className="collection_item" key={item.mediaId}>
-              <div className="collection_item_div">
+            <li id="polaroid_div" key={item.mediaId}>
                 <Link to={"/" + item.username}>
                   <strong className="collection_item_title">{item.profileName}</strong>
                 </Link>
                 <Link to={{ pathname: '/' + item.username + '/' + item.mediaId, state: { post_data: item} }}>
-                  <p className="collection_item_title">{item.title}</p>
-                  <img className="collection_item_img" alt="collection item" src={item.post_image_src}></img>
+                  <div>
+                    <p className="collection_item_title">{item.title}</p>
+                    <img className="collection_item_img" alt="collection item" src={item.post_image_src}></img>
+                  </div>
                 </Link>
-                <StatsHeader is_collection={true} views={item.views}
-                  likes={item.likes} reposts={item.reposts}/>
-              </div>
+                <StatsHeader mediaId={item.mediaId} is_collection={true} views={item.views}
+                  likes={item.likes} reposts={item.reposts} liked={item.liked}/>
             </li>
           )
       });
@@ -90,8 +91,8 @@ export default class Collections extends React.Component {
                   <p className="collection_item_title">{item.title}</p>
                   <img className="collection_item_img" alt="collection item" src={item.playlist_cover_img_src}></img>
                 </Link>
-                <StatsHeader is_collection={true} likes={item.likes}
-                  reposts={item.reposts} followers={item.followers}/>
+                <PlaylistStatsHeader playlistId={item.playlistId} likes={item.likes}
+                  reposts={item.reposts} followers={item.followers} liked={item.liked}/>
               </div>
             </li>
           )

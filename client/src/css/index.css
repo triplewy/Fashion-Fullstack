@@ -145,6 +145,7 @@ textarea {
 #type_selector {
   display: inline-block;
   position: relative;
+  width: 100%;
   margin-bottom: 20px;
   margin-top: 20px;
   color: black;
@@ -544,8 +545,8 @@ textarea {
 
 #profile_banner {
   display: inline-block;
-  height: 200px;
-  width: 75%;
+  height: 250px;
+  width: 100%;
   background-color: white;
 }
 
@@ -561,7 +562,7 @@ textarea {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  margin: 30px 0;
+  margin: 55px 0;
 }
 
 #profile_info_text_div {
@@ -713,20 +714,22 @@ textarea {
 
 #collections_list {
   height: 100%;
+  padding: 0 0;
 }
 
 #collections_list li {
   display: inline-block;
   list-style: none;
   text-decoration: none;
-  padding-right: 20px;
+  margin-right: 20px;
+  vertical-align: top;
 }
 
 .collection_item_div {
 }
 
 .collection_item_img {
-  max-width: 200px;
+  max-width: 250px;
 }
 
 #input_image_button {
@@ -1105,7 +1108,7 @@ textarea {
 }
 
 #playlist_list li:hover {
-  color: red;
+  border: 1px solid red;
   cursor: pointer;
 }
 
@@ -1128,10 +1131,11 @@ textarea {
 }
 
 .playlist_post_selected {
-  color: red;
+  border: 1px solid red;
 }
 
 #follow_button {
+  float: right;
   border: 1px solid red;
   background-color: white;
   color: red;
@@ -1140,7 +1144,7 @@ textarea {
 }
 
 #profile_description {
-  display: inline-block;
+  float: right;
 }
 
 #comments {

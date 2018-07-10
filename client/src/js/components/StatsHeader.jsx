@@ -1,9 +1,13 @@
 import React from 'react';
 import view_icon from 'images/view-icon.png'
+import view_icon_revised from 'images/view-icon-revised.png'
 import like_icon from 'images/heart-icon.png'
+import like_icon_liked from 'images/heart-icon-liked.png'
 import repost_icon from 'images/repost-icon.png'
-import comment_icon from 'images/comment-icon.png'
+import repost_icon_reposted from 'images/repost-icon-reposted.png'
 import plus_icon from 'images/plus-icon.svg'
+import more_icon from 'images/more-icon.png'
+
 
 // <button id="comments" className={stats_button_style} onClick={this.handleComment}>
 //   <img id="comment_icon" alt="comment icon" className={stats_icon_style} src={comment_icon}></img>
@@ -17,8 +21,8 @@ export default class StatsHeader extends React.Component {
       views: this.props.views,
       likes: this.props.likes,
       reposts: this.props.reposts,
-      liked: false,
-      reposted: false,
+      liked: this.props.liked,
+      reposted: this.props.reposted,
       displayPlaylist: false
     };
 
@@ -55,6 +59,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleUnlike(e) {
+    console.log("props Id is", this.props.mediaId);
     fetch('/api/unlike', {
       method: 'POST',
       headers: {
@@ -144,24 +149,29 @@ export default class StatsHeader extends React.Component {
     return (
       <div id="stats_header">
         <button id="views" className={stats_button_style}>
-          <img id="views_icon" alt="view icon" className={stats_icon_style} src={view_icon}></img>
+          <img id="views_icon" alt="view icon" className={stats_icon_style} src={view_icon_revised}></img>
           <p className="stats_number" id="view_number">{this.state.views}</p>
         </button>
         <button id="likes" className={stats_button_style} onClick={this.state.liked ? this.handleUnlike : this.handleLike}>
-          <img id="like_icon" alt="like icon" className={stats_icon_style} src={like_icon}></img>
+          <img id="like_icon" alt="like icon" className={stats_icon_style} src={this.state.liked ? like_icon_liked : like_icon}></img>
           <p className="stats_number" id="like_number">{this.state.likes}</p>
         </button>
         <button id="reposts" className={stats_button_style} onClick={this.state.reposted ? this.handleUnrepost : this.handleRepost}>
-          <img id="repost_icon" alt="repost icon" className={stats_icon_style} src={repost_icon}></img>
+          <img id="repost_icon" alt="repost icon" className={stats_icon_style} src={this.state.reposted ? repost_icon_reposted : repost_icon}></img>
           <p className="stats_number" id="repost_number">{this.state.reposts}</p>
         </button>
-      {this.props.is_collection ? null :
-        <div id="playlist_dropdown">
-          <button id="add_to_playlist" className="stats_button" onClick={this.addNewPlaylist}>
-            <img id="add_to_playlist_icon" alt="add icon" className="stats_icon" src={plus_icon}></img>
-          </button>
-        </div>
-    }
+        <div id="non_stat_div">
+        {this.props.is_collection ? null :
+          <div id="playlist_dropdown">
+            <button id="add_to_playlist" className="stats_button" onClick={this.addNewPlaylist}>
+              <img id="add_to_playlist_icon" alt="add icon" className="stats_icon" src={plus_icon}></img>
+            </button>
+          </div>
+        }
+        <button id="more">
+        <img id="more_icon" alt="more icon" className="non_stat_icon" src={more_icon}></img>
+        </button>
+      </div>
     </div>
     );
   }

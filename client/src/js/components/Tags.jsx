@@ -28,7 +28,7 @@ export default class Tags extends React.Component {
       default:
         return null;
       }
-}
+    }
 
   render() {
     var rendered_tags = [];

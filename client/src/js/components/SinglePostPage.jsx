@@ -1,12 +1,37 @@
 import React from 'react';
 import Navbar from './Navbar.jsx'
 import Tags from './Tags.jsx'
+import Comments from './Comments.jsx'
+import StatsHeader from './StatsHeader.jsx'
 import { Link } from 'react-router-dom';
 import view_icon from 'images/view-icon.png'
 import like_icon from 'images/heart-icon.png'
 import repost_icon from 'images/repost-icon.png'
 import plus_icon from 'images/plus-icon.svg'
 import more_icon from 'images/more-icon.png'
+
+{/* <div id="single_post_stats_header">
+  <button id="views" className="stats_button">
+    <img id="views_icon" alt="views icon" className="stats_icon" src={view_icon}></img>
+    <p className="stats_number" id="view_number">{this.state.post.views}</p>
+  </button>
+  <button id="likes" className="stats_button">
+    <img id="like_icon" alt="likes icon" className="stats_icon" src={like_icon}></img>
+    <p className="stats_number" id="like_number">{this.state.post.likes}</p>
+  </button>
+  <button id="reposts" className="stats_button">
+    <img id="repost_icon" alt="reposts icon" className="stats_icon" src={repost_icon}></img>
+    <p className="stats_number" id="repost_number">{this.state.post.reposts}</p>
+  </button>
+  <div id="non_stat_div">
+    <button id="add_to_playlist">
+      <img id="add_to_playlist_icon" alt="add icon" className="non_stat_icon" src={plus_icon}></img>
+    </button>
+    <button id="more">
+      <img id="more_icon" alt="more icon" className="non_stat_icon" src={more_icon}></img>
+    </button>
+  </div>
+</div> */}
 
 export default class SinglePostPage extends React.Component {
   constructor(props) {
@@ -37,11 +62,11 @@ export default class SinglePostPage extends React.Component {
             </div>
           </div>
               <div id="single_post_tags_div_wrapper">
-                <Link to={"/" + this.state.post.user.username}>
+                <Link to={"/" + this.state.post.username}>
                 <div id="single_post_profile_image_div">
-                  <img id="profile_image" alt="" src={this.state.post.user.profile_image_src}></img>
+                  <img id="profile_image" alt="" src={this.state.post.profile_image_src}></img>
                 </div>
-                <strong id="user_name">{this.state.post.user.profileName}</strong>
+                <strong id="user_name">{this.state.post.profileName}</strong>
                 </Link>
                 <p id="single_post_status">2 hours ago</p>
                 <div id="single_post_title_div">
@@ -51,44 +76,13 @@ export default class SinglePostPage extends React.Component {
                 <hr id="tag_title_hr"></hr>
                 <Tags tags={this.state.post.tags}/>
                 <hr id="tag_title_hr"></hr>
-                <div id="single_post_stats_header">
-                  <button id="views" className="stats_button">
-                    <img id="views_icon" alt="views icon" className="stats_icon" src={view_icon}></img>
-                    <p className="stats_number" id="view_number">{this.state.post.views}</p>
-                  </button>
-                  <button id="likes" className="stats_button">
-                    <img id="like_icon" alt="likes icon" className="stats_icon" src={like_icon}></img>
-                    <p className="stats_number" id="like_number">{this.state.post.likes}</p>
-                  </button>
-                  <button id="reposts" className="stats_button">
-                    <img id="repost_icon" alt="reposts icon" className="stats_icon" src={repost_icon}></img>
-                    <p className="stats_number" id="repost_number">{this.state.post.reposts}</p>
-                  </button>
-                  <div id="non_stat_div">
-                    <button id="add_to_playlist">
-                      <img id="add_to_playlist_icon" alt="add icon" className="non_stat_icon" src={plus_icon}></img>
-                    </button>
-                    <button id="more">
-                      <img id="more_icon" alt="more icon" className="non_stat_icon" src={more_icon}></img>
-                    </button>
-                  </div>
-
-              </div>
+              <StatsHeader mediaId={this.state.post.mediaId} views={this.state.post.views}
+                likes={this.state.post.likes} reposts={this.state.post.reposts} />
               <div id="description_wrapper">
               <p id="description">{this.state.post.description}</p>
               </div>
               <hr id="description_hr"></hr>
-              <div id="comments_div">
-                <p>{this.state.post.comments} comments</p>
-                <ul id="comments_list">
-                  <li className="comment">
-                    This is a comment
-                  </li>
-                  <li className="comment">
-                    This is a comment
-                  </li>
-                </ul>
-              </div>
+              <Comments comments={this.state.post.comments} />
               <hr id="description_hr"></hr>
               <div id="related_outfits_div">
                 <p id="related_outfits_title">Related Outfits</p>

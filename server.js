@@ -308,6 +308,17 @@ app.post('/api/like', function(req, res) {
   })
 })
 
+app.post('/api/unlike', function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/unlike');
+  Promise.all([removeFromCollection(req, 'likes', 'mediaId')])
+  .then(function(allData) {
+    res.send(allData[0])
+  }).catch(err => {
+    console.log(err);
+    res.send({message: 'failed'})
+  })
+})
+
 app.post('/api/repost', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/repost');
   Promise.all([addToCollection(req, 'reposts', 'mediaId')])
@@ -322,6 +333,17 @@ app.post('/api/repost', function(req, res) {
 app.post('/api/playlistLike', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/playlistLike');
   Promise.all([addToCollection(req, 'playlistsLikes', 'playlistId')])
+  .then(function(allData) {
+    res.send(allData[0])
+  }).catch(err => {
+    console.log(err);
+    res.send({message: 'failed'})
+  })
+})
+
+app.post('/api/playlistUnlike', function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/playlistUnlike');
+  Promise.all([removeFromCollection(req, 'playlistsLikes', 'playlistId')])
   .then(function(allData) {
     res.send(allData[0])
   }).catch(err => {
@@ -379,7 +401,7 @@ app.get('/api/you/collections/likes', function(req, res) {
           reposts:row.reposts, comments:row.comments, post_image_src:row.imageUrl,
           title:row.title, genre:row.genre, description:row.description,
           original: row.original, username: row.username, profileName: row.profileName,
-          uploadDate: row.dateTime, likeDate: row.likeDate});
+          uploadDate: row.dateTime, likeDate: row.likeDate, liked: true});
       }
       res.send({likes: likes})
     }
@@ -400,9 +422,9 @@ app.get('/api/you/collections/playlistsLikes', function(req, res) {
       for (var i = 0; i < result.rows.length; i++) {
         var row = result.rows[i]
         likes.push({playlistId:row.playlistId, likes:row.likes, reposts:row.reposts,
-          comments:row.comments, genre: row.genre, title:row.title, genre:row.genre,
+          comments:row.comments, followers: row.followers, genre: row.genre, title:row.title, genre:row.genre,
           description:row.description, uploadDate:row.dateTime, username: row.username,
-          profileName: row.profileName, likeDate: row.likeDate});
+          profileName: row.profileName, likeDate: row.likeDate, liked: true});
       }
       res.send({likes: likes})
     }
@@ -446,6 +468,12 @@ app.get('/api/:profile/:mediaId', function(request, response) {
   console.log('- Request received:', request.method.cyan, '/api/' + request.params.profile + '/' + request.params.mediaId);
   var username = request.params.profile;
   var mediaId = request.params.mediaId;
+  Promise.all([getComments(mediaId, '?')])
+  .then(function(allData) {
+    res.send({comments: allData[0]})
+  }).catch(err => {
+    console.log(err);
+  })
 })
 
 app.post('/api/:profile/follow', function(req, res) {
@@ -597,6 +625,7 @@ app.listen(8081, function(){
     console.log('- Server listening on port 8081');
 });
 
+
 function getTagDetails(mediaIds, question_query) {
   return new Promise(function(resolve, reject) {
     conn.query('SELECT a.*, b.mediaId as mediaId FROM tags AS a, postTags AS b ' +
@@ -662,7 +691,7 @@ function getPlaylistsPosts(playlistIds, question_query) {
         question_query += '?,'
       }
       question_query = question_query.slice(0, -1);
-      Promise.all([getTagDetails(mediaIds, question_query)])
+      Promise.all([getTagDetails(mediaIds, question_query), getComments(mediaIds, question_query)])
       .then(function(allData) {
         var playlistsPosts = {}
         for (var i = 0; i < result.rows.length; i++) {
@@ -672,7 +701,7 @@ function getPlaylistsPosts(playlistIds, question_query) {
             reposts:row.reposts, comments:row.comments, post_image_src:row.imageUrl,
             title:row.title, genre:row.genre, description:row.description,
             date:row.dateTime, original: row.original, username: row.username, profileName: row.profileName,
-            tags:allData[0][row.mediaId], dateTime: row.dateTime}
+            tags:allData[0][row.mediaId], comments: allData[1][row.mediaId], dateTime: row.dateTime}
           if (playlistsPosts[playlistId]) {
             playlistsPosts[playlistId].push(post)
           } else {
@@ -729,7 +758,7 @@ function getStream(userId, isHome) {
     var followingQuery2 = ''
     if (isHome) {
       followingQuery1 = ' OR b.userId IN (SELECT followingId FROM following WHERE userId=$1)'
-      followingQuery2 = ' OR a.userId IN (SELECT followingId as userId FROM following WHERE userId=$1)'
+      followingQuery2 = ' OR a.userId IN (SELECT followingId FROM following WHERE userId=$1)'
     }
     conn.query(
     'SELECT null as mediaId, a.playlistId, a.userId, a.title, a.genre, a.public, null as original, null as imageUrl, ' +
@@ -837,7 +866,7 @@ function addToCollection(req, table, idType) {
       if (err) {
         return reject(err);
       } else {
-        conn.query('UPDATE ' + postsOrPlaylists + ' SET ' + likesOrReposts + ' = ' + likesOrReposts + ' + 1 WHERE ' + idType + '=$1', result.lastInsertId, function(err, result) {
+        conn.query('UPDATE ' + postsOrPlaylists + ' SET ' + likesOrReposts + ' = ' + likesOrReposts + ' + 1 WHERE ' + idType + '=$1', id, function(err, result) {
           if (err) {
             return reject(err);
           } else {
@@ -859,7 +888,6 @@ function removeFromCollection(req, table, idType) {
     } else {
       id = req.body.playlistId
     }
-    var id = ''
     var postsOrPlaylists = ''
     var likesOrReposts = ''
     if (idType == 'mediaId') {
@@ -877,7 +905,8 @@ function removeFromCollection(req, table, idType) {
         likesOrReposts = 'reposts'
       }
     }
-    conn.query('DELETE FROM ' + table + ' WHERE mediaId=$2, userId=$1', [id, userId], function(err, result) {
+    console.log("id is", id);
+    conn.query('DELETE FROM ' + table + ' WHERE ' + idType + '=$1 AND userId=$2', [id, userId], function(err, result) {
       if (err) {
         return reject(err);
       } else {
@@ -885,7 +914,7 @@ function removeFromCollection(req, table, idType) {
           if (err) {
             return reject(err);
           } else {
-            console.log(table + "ed post successfully");
+            console.log('un' + table + "ed post successfully");
             return resolve({message: "success"})
           }
         })

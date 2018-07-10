@@ -1,7 +1,9 @@
 import React from 'react';
 import like_icon from 'images/heart-icon.png'
+import like_icon_liked from 'images/heart-icon-liked.png'
 import repost_icon from 'images/repost-icon.png'
-
+import followers_icon from 'images/followers-icon.png'
+import more_icon from 'images/more-icon.png'
 
 export default class StatsHeader extends React.Component {
   constructor(props) {
@@ -10,7 +12,7 @@ export default class StatsHeader extends React.Component {
       likes: this.props.likes,
       reposts: this.props.reposts,
       followers: this.props.followers,
-      liked: false,
+      liked: this.props.liked,
       reposted: false,
       followed: false,
     };
@@ -135,18 +137,21 @@ export default class StatsHeader extends React.Component {
   render() {
     return (
       <div id="stats_header">
+        <button id="followers" className="stats_button" onClick={this.state.followed ? this.handleUnfollow : this.handleFollow}>
+          <img id="follower_icon" alt="follower icon" className="stats_icon" src={followers_icon}></img>
+          <p className="stats_number" id="follower_number">{this.state.followers}</p>
+        </button>
         <button id="likes" className="stats_button" onClick={this.state.liked ? this.handleUnlike : this.handleLike}>
-          <img id="like_icon" alt="like icon" className="stats_icon" src={like_icon}></img>
+          <img id="like_icon" alt="like icon" className="stats_icon" src={this.state.liked ? like_icon_liked : like_icon}></img>
           <p className="stats_number" id="like_number">{this.state.likes}</p>
         </button>
         <button id="reposts" className="stats_button" onClick={this.state.reposted ? this.handleUnrepost : this.handleRepost}>
           <img id="repost_icon" alt="repost icon" className="stats_icon" src={repost_icon}></img>
           <p className="stats_number" id="repost_number">{this.state.reposts}</p>
         </button>
-        <button id="followers" className="stats_button" onClick={this.state.followed ? this.handleUnfollow : this.handleFollow}>
-          <img id="follower_icon" alt="follower icon" className="stats_icon" src={repost_icon}></img>
-          <p className="stats_number" id="follower_number">{this.state.followers}</p>
-        </button>
+        <div id="non_stat_div">
+          <img id="more_icon" alt="more icon" className="non_stat_icon" src={more_icon}></img>
+        </div>
     </div>
     );
   }

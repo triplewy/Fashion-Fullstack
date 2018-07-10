@@ -60,7 +60,7 @@ export default class Post extends React.Component {
               <button id="genre_button">{this.props.genre}</button>
             </div>
           }
-          <Link to={{ pathname: '/' + this.props.username + '/' + this.props.id, state: { post_data: this.props} }}>
+          <Link to={{ pathname: '/' + this.props.username + '/' + this.props.mediaId, state: { post_data: this.props}}}>
           <div id="image_wrapper">
             <img id="post_image" alt="" src={this.props.post_image_src}></img>
           </div>

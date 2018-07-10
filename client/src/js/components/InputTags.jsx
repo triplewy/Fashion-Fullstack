@@ -1,4 +1,8 @@
 import React from 'react';
+import shirt from 'images/shirt-icon.png'
+import jacket from 'images/jacket-icon.png'
+import shorts from 'images/shorts-icon.png'
+import shoes from 'images/shoes-icon.png'
 
 export default class InputTags extends React.Component {
   constructor(props) {
@@ -18,7 +22,23 @@ export default class InputTags extends React.Component {
     this.cancelInputTag = this.cancelInputTag.bind(this);
     this.editTag = this.editTag.bind(this);
     this.deleteTag = this.deleteTag.bind(this);
+    this.renderClothingIcon = this.renderClothingIcon.bind(this);
   }
+
+  renderClothingIcon(itemType) {
+    switch(itemType) {
+      case 'shirt':
+        return shirt;
+      case 'jacket':
+        return jacket;
+      case 'shorts':
+        return shorts;
+      case 'shoes':
+        return shoes;
+      default:
+        return null;
+      }
+    }
 
   showInputBox() {
     this.setState({
@@ -82,7 +102,7 @@ export default class InputTags extends React.Component {
       rendered_tags = input_tags.map((item, index) => {
           return (
             <div key={index} className="clothing_tag" id={item.itemType + "_tag"}>
-              <img className="tag_image" alt="clothing item" src={"../images/" + item.itemType + "-icon.png"}></img>
+              <img className="tag_image" alt="clothing item" src={this.renderClothingIcon(item.itemType)}></img>
                 <div className="tags_text_div">
                   <p className="tag_brand">{item.itemBrand}</p>
                   <p className="tag_name">{item.itemName}</p>
