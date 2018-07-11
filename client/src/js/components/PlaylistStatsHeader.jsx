@@ -2,6 +2,7 @@ import React from 'react';
 import like_icon from 'images/heart-icon.png'
 import like_icon_liked from 'images/heart-icon-liked.png'
 import repost_icon from 'images/repost-icon.png'
+import repost_icon_reposted from 'images/repost-icon-reposted.png'
 import followers_icon from 'images/followers-icon.png'
 import more_icon from 'images/more-icon.png'
 
@@ -13,7 +14,7 @@ export default class StatsHeader extends React.Component {
       reposts: this.props.reposts,
       followers: this.props.followers,
       liked: this.props.liked,
-      reposted: false,
+      reposted: this.props.reposted,
       followed: false,
     };
 
@@ -146,7 +147,7 @@ export default class StatsHeader extends React.Component {
           <p className="stats_number" id="like_number">{this.state.likes}</p>
         </button>
         <button id="reposts" className="stats_button" onClick={this.state.reposted ? this.handleUnrepost : this.handleRepost}>
-          <img id="repost_icon" alt="repost icon" className="stats_icon" src={repost_icon}></img>
+          <img id="repost_icon" alt="repost icon" className="stats_icon" src={this.state.reposted ? repost_icon_reposted : repost_icon}></img>
           <p className="stats_number" id="repost_number">{this.state.reposts}</p>
         </button>
         <div id="non_stat_div">

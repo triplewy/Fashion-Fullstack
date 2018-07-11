@@ -406,13 +406,7 @@ textarea {
 }
 
 #stats_column {
-  position: fixed;
-  display: inline-block;
-  background-color: white;
-  height: 100%;
-  max-width: inherit;
-  width: 21.25%;
-  overflow-y: scroll;
+  width: 300px;
 }
 
 #stats_wrapper {
@@ -454,6 +448,7 @@ textarea {
 
 #right_half_view_div {
   border: none;
+  text-align: right;
 }
 
 .view_counter {
@@ -485,7 +480,7 @@ textarea {
 }
 
 #total_plays {
-  padding: 20px 0;
+  padding: 10px 0;
 }
 
 #time_period_title {
@@ -1147,6 +1142,20 @@ textarea {
   float: right;
 }
 
+#comments_input_bar {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0 10px;
+}
+
+#comments_input {
+  border: none;
+}
+
+#comment_button {
+  float: right;
+}
+
 #comments {
   padding: 0 0;
 }
@@ -1166,6 +1175,10 @@ textarea {
 
 #comment_time {
   float: right;
+}
+
+#navbar_stats_dropdown {
+  display: inline-block;
 }
 
 @media only screen and (max-width: 1300px) {

@@ -76,7 +76,6 @@ export default class Post extends React.Component {
         <div id="description_wrapper">
           <p id="description">{this.props.description}</p>
         </div>
-        {this.props.description && <hr id="tag_title_hr"></hr>}
         <Comments mediaId={this.props.mediaId} comments={this.props.comments} />
       </div>
       <hr id="post_hr"></hr>

@@ -363,6 +363,17 @@ app.post('/api/playlistRepost', function(req, res) {
   })
 })
 
+app.post('/api/playlistUnrepost', function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/playlistRepost');
+  Promise.all([removeFromCollection(req, 'playlistsReposts', 'playlistId')])
+  .then(function(allData) {
+    res.send(allData[0])
+  }).catch(err => {
+    console.log(err);
+    res.send({message: 'failed'})
+  })
+})
+
 app.post('/api/comment', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/comment');
   var userId = req.user;
@@ -388,9 +399,9 @@ app.post('/api/comment', function(req, res) {
 app.get('/api/you/collections/likes', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/you/collections/likes');
   var userId = req.user;
-  conn.query('SELECT a.*, b.dateTime AS likeTime, c.username AS username, c.profileName AS profileName ' +
-  'FROM posts AS a, likes AS b, users AS c WHERE a.mediaId = b.mediaId AND b.userId=$1 AND ' +
-  'c.userId = a.userId ORDER BY likeTime DESC', userId, function(err, result) {
+  conn.query('SELECT posts.*, b.dateTime AS likeTime, c.username AS username, c.profileName AS profileName, ((SELECT COUNT(*) FROM reposts WHERE userId=$1 AND mediaId = posts.mediaId) > 0) AS reposted ' +
+  'FROM posts INNER JOIN likes AS b ON posts.mediaId = b.mediaId INNER JOIN users AS c ON c.userId = posts.userId ' +
+  'WHERE b.userId=$1 ORDER BY likeTime DESC', userId, function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -401,7 +412,7 @@ app.get('/api/you/collections/likes', function(req, res) {
           reposts:row.reposts, comments:row.comments, post_image_src:row.imageUrl,
           title:row.title, genre:row.genre, description:row.description,
           original: row.original, username: row.username, profileName: row.profileName,
-          uploadDate: row.dateTime, likeDate: row.likeDate, liked: true});
+          uploadDate: row.dateTime, likeDate: row.likeDate, liked: true, reposted: row.reposted});
       }
       res.send({likes: likes})
     }
@@ -411,9 +422,9 @@ app.get('/api/you/collections/likes', function(req, res) {
 app.get('/api/you/collections/playlistsLikes', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/you/collections/playlistsLikes');
   var userId = req.user;
-  conn.query('SELECT a.*, b.dateTime as likeTime, c.username AS username, c.profileName AS profileName ' +
-  'FROM playlists AS a, playlistsLikes as b, users AS c WHERE a.playlistId = b.playlistId AND b.userId=$1 AND ' +
-  'c.userId = a.userId ORDER BY likeTime DESC', userId, function(err, result) {
+  conn.query('SELECT playlists.*, b.dateTime as likeTime, c.username AS username, c.profileName AS profileName, ((SELECT COUNT(*) FROM playlistsReposts WHERE userId=$1 AND playlistId = playlists.playlistId) > 0) AS reposted ' +
+  'FROM playlists INNER JOIN playlistsLikes AS b ON playlists.playlistId = b.playlistId INNER JOIN users AS c ON c.userId = playlists.userId ' +
+  'WHERE b.userId=$1 ORDER BY likeTime DESC', userId, function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -424,7 +435,7 @@ app.get('/api/you/collections/playlistsLikes', function(req, res) {
         likes.push({playlistId:row.playlistId, likes:row.likes, reposts:row.reposts,
           comments:row.comments, followers: row.followers, genre: row.genre, title:row.title, genre:row.genre,
           description:row.description, uploadDate:row.dateTime, username: row.username,
-          profileName: row.profileName, likeDate: row.likeDate, liked: true});
+          profileName: row.profileName, likeDate: row.likeDate, liked: true, reposted: row.reposted});
       }
       res.send({likes: likes})
     }
@@ -761,31 +772,32 @@ function getStream(userId, isHome) {
       followingQuery2 = ' OR a.userId IN (SELECT followingId FROM following WHERE userId=$1)'
     }
     conn.query(
-    'SELECT null as mediaId, a.playlistId, a.userId, a.title, a.genre, a.public, null as original, null as imageUrl, ' +
-    'null AS views, a.likes, a.reposts, a.comments, a.followers, a.description, a.dateTime, b.dateTime as orderTime, ' +
-    'd.username as repost_username, d.profileName as repost_profileName, d.profile_image_src AS repost_profile_image_src, ' +
-    'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src ' +
-    'FROM playlists AS a, playlistsReposts AS b, users AS c, users AS d WHERE a.playlistId = b.playlistId AND c.userId = a.userId AND d.userId = b.userId AND (b.userId=$1' + followingQuery1 + ') UNION ALL ' +
-    'SELECT null as mediaId, a.playlistId, a.userId, a.title, a.genre, a.public, null as original, null as imageUrl, ' +
-    'null AS views, a.likes, a.reposts, a.comments, a.followers, a.description, a.dateTime, a.dateTime as orderTime, ' +
+    'SELECT null as mediaId, a.playlistId, a.title, a.genre, a.public, null as original, null as imageUrl, ' +
+    'null AS views, a.likes, a.reposts, a.comments, a.followers, a.description, a.dateTime AS uploadDate, playlistsReposts.dateTime as orderTime, ' +
+    'b.username AS repost_username, b.profileName AS repost_profileName, b.profile_image_src AS repost_profile_image_src, ' +
+    'c.username AS username, c.profileName AS profileName, c.profile_image_src AS profile_image_src ' +
+    'FROM playlistsReposts INNER JOIN playlists AS a ON a.playlistId = playlistsReposts.playlistId INNER JOIN users AS c ON c.userId = a.userId INNER JOIN users AS b ON b.userId = playlistsReposts.userId ' +
+    'WHERE playlistsReposts.userId IN (SELECT followingId FROM following WHERE userId=$1) OR playlistsReposts.userId=$1 UNION ALL ' +
+    'SELECT null as mediaId, playlistId, title, genre, public, null as original, null as imageUrl, ' +
+    'null AS views, likes, reposts, comments, playlists.followers, playlists.description, dateTime AS uploadDate, dateTime as orderTime, ' +
     'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, ' +
+    'username AS username, profileName AS profileName, profile_image_src AS profile_image_src ' +
+    'FROM playlists INNER JOIN users ON users.userId = playlists.userId WHERE playlists.userId IN (SELECT followingId FROM following WHERE userId=$1) OR playlists.userId=$1 UNION ALL ' +
+    'SELECT a.mediaId, null as playlistId, a.title, a.genre, a.public, a.original, a.imageUrl, a.views, ' +
+    'a.likes, a.reposts, a.comments, null as followers, a.description, a.dateTime AS uploadDate, reposts.dateTime as orderTime, ' +
+    'b.username as repost_username, b.profileName as repost_profileName, b.profile_image_src AS repost_profile_image_src, ' +
     'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src ' +
-    'FROM playlists AS a, users AS c WHERE c.userId = a.userId AND a.userId=$1' + followingQuery2 + ' UNION ALL ' +
-    'SELECT a.mediaId, null as playlistId, a.userId, a.title, a.genre, a.public, a.original, a.imageUrl, a.views, ' +
-    'a.likes, a.reposts, a.comments, null as followers, a.description, a.dateTime, b.dateTime as orderTime, ' +
-    'd.username as repost_username, d.profileName as repost_profileName, d.profile_image_src AS repost_profile_image_src, ' +
-    'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src ' +
-    'FROM posts AS a, reposts AS b, users AS c, users AS d WHERE a.mediaId = b.mediaId AND c.userId = a.userId AND d.userId = b.userId AND (b.userId=$1' + followingQuery1 + ') UNION ALL ' +
-    'SELECT a.mediaId, null as playlistId, a.userId, a.title, a.genre, a.public, a.original, a.imageUrl, a.views, a.likes, a.reposts, ' +
-    'a.comments, null as followers, a.description, a.dateTime, a.dateTime as orderTime, ' +
+    'FROM reposts INNER JOIN posts AS a ON a.mediaId = reposts.mediaId INNER JOIN users AS c ON c.userId = a.userId INNER JOIN users AS b ON b.userId = reposts.userId ' +
+    'WHERE reposts.userId IN (SELECT followingId FROM following WHERE userId=$1) OR reposts.userId=$1 UNION ALL ' +
+    'SELECT mediaId, null as playlistId, title, genre, public, original, imageUrl, views, likes, reposts, ' +
+    'comments, null as followers, posts.description, dateTime AS uploadDate, dateTime as orderTime, ' +
     'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, ' +
-    'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src ' +
-    'FROM posts AS a, users AS c WHERE c.userId = a.userId AND a.userId=$1' + followingQuery2 + ' ORDER BY orderTime DESC LIMIT 20',
+    'username AS username, profileName AS profileName, profile_image_src AS profile_image_src ' +
+    'FROM posts INNER JOIN users ON users.userId = posts.userId WHERE posts.userId IN (SELECT followingId FROM following WHERE userId=$1) OR posts.userId=$1 ORDER BY orderTime DESC LIMIT 20',
     userId, function(err,result) {
       if (err) {
         return reject(err)
       } else {
-        console.log(result);
         var mediaIds = []
         var playlistIds = []
         var media_question_query = ''
@@ -809,14 +821,14 @@ function getStream(userId, isHome) {
                 title:row.title, genre:row.genre, description:row.description,
                 date:row.dateTime, original: row.original, username: row.username,
                 profileName: row.profileName, profile_image_src: row.profile_image_src,
-                tags:allData[0][row.mediaId], comments:allData[1][row.mediaId], uploadDate: row.dateTime,
+                tags:allData[0][row.mediaId], comments:allData[1][row.mediaId], uploadDate: row.uploadDate,
                 repost_username: row.repost_username, repost_profileName: row.repost_profileName,
                 repost_profile_image_src: row.repost_profile_image_src, repostDate: row.orderTime}
               stream.push(post)
             } else if (playlistId) {
               var playlist = {playlistId:row.playlistId, likes:row.likes, reposts:row.reposts,
                 genre: row.genre, comments:row.comments, followers: row.followers, title:row.title,
-                description:row.description, uploadDate:row.dateTime, public: row.public,
+                description:row.description, uploadDate:row.uploadDate, public: row.public,
                 repost_username: row.repost_username, repost_profileName: row.repost_profileName,
                 repost_profile_image_src: row.repost_profile_image_src, repostDate: row.orderTime,
                 username: row.username, profileName: row.profileName, profile_image_src: row.profile_image_src,

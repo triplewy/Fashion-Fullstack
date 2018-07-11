@@ -104,17 +104,31 @@ export default class Navbar extends React.Component {
           <Link to="/upload">
             <button id="upload_button" className="banner_button">Upload</button>
           </Link>
-          <Link to={"/you/collections"}>
-            <button id="collections_button" className="banner_button">Collections</button>
-          </Link>
-          <Link to={"/" + this.state.username}>
-            <div id="profile_image_div">
-              <img id="profile_image" alt="" src={this.state.profile_image_src}></img>
-            </div>
-            <p id="user_name">{this.state.profileName}</p>
-          </Link>
           <div className="btn-group">
-            <button className="btn btn-default dropdown-toggle" type="button" date-toggle="dropdown">
+            <button className="dropdown-toggle" type="button" data-toggle="dropdown">
+              <div id="profile_image_div">
+                <img id="profile_image" alt="" src={this.state.profile_image_src}></img>
+              </div>
+              <p id="user_name">{this.state.profileName}</p>
+              <span className="caret"></span>
+            </button>
+            <ul className="dropdown-menu">
+              <li>
+                <Link to={"/" + this.state.username}>Profile</Link>
+              </li>
+              <li>
+                <Link to={"/you/collections"}>Collections</Link>
+              </li>
+              <li>
+                <StatsColumn show_profile={false}/>
+              </li>
+              <li>
+                <p>Logout</p>
+              </li>
+            </ul>
+          </div>
+          <div className="btn-group">
+            <button className="dropdown-toggle" type="button" data-toggle="dropdown">
               <img id="notifications_icon" alt="notifications icon" className="banner_button" src={notification_icon}></img>
               <span className="caret"></span>
             </button>
@@ -125,14 +139,12 @@ export default class Navbar extends React.Component {
             </ul>
           </div>
           <div className="btn-group">
-            <button id="stats_button" className="btn btn-default dropdown-toggle" type="button" date-toggle="dropdown">
-              Stats<span className="caret"></span></button>
-            <ul className="dropdown-menu" role="menu">
-              <li>Yo</li>
-              <li>
-                <div className="form-group">
-                  <StatsColumn show_profile={false}/>
-                </div>
+            <button className="dropdown-toggle" type="button" data-toggle="dropdown">
+              Messages<span className="caret"></span>
+            </button>
+            <ul className="dropdown-menu">
+              <li className="form-group">
+                Yo
               </li>
             </ul>
           </div>

@@ -75,7 +75,7 @@ export default class Collections extends React.Component {
                   </div>
                 </Link>
                 <StatsHeader mediaId={item.mediaId} is_collection={true} views={item.views}
-                  likes={item.likes} reposts={item.reposts} liked={item.liked}/>
+                  likes={item.likes} reposts={item.reposts} liked={item.liked} reposted={item.reposted}/>
             </li>
           )
       });
@@ -92,7 +92,7 @@ export default class Collections extends React.Component {
                   <img className="collection_item_img" alt="collection item" src={item.playlist_cover_img_src}></img>
                 </Link>
                 <PlaylistStatsHeader playlistId={item.playlistId} likes={item.likes}
-                  reposts={item.reposts} followers={item.followers} liked={item.liked}/>
+                  reposts={item.reposts} followers={item.followers} liked={item.liked} reposted={item.reposted}/>
               </div>
             </li>
           )

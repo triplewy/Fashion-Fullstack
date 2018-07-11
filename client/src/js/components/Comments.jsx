@@ -64,9 +64,11 @@ export default class Comments extends React.Component {
 
     return (
       <div id="comments_wrapper">
-        <p>{renderedComments.length} Comments</p>
-        <input type="text" value={this.state.commentInput} onChange={this.handleChange}></input>
-        <button type="button" onClick={this.handleComment}>Comment</button>
+        <div id="comments_input_bar">
+          <input id="comments_input" type="text" value={this.state.commentInput}
+            onChange={this.handleChange} placeholder="Comment"></input>
+          <button id="comment_button" type="button" onClick={this.handleComment}>Send</button>
+        </div>
         <div id="comments_div">
           <ul id="comments">
             {renderedComments}
