@@ -22,7 +22,8 @@ export default class RenderedPosts extends React.Component {
                   reposts={item.reposts} comments={item.comments} title={item.title}
                   description={item.description} uploadDate={item.uploadDate} tags={item.tags}
                   repost_username={item.repost_username} repost_profileName={item.repost_profileName}
-                  repost_profile_image_src={item.repost_profile_image_src} repostDate={item.repostDate}/>
+                  repost_profile_image_src={item.repost_profile_image_src} repostDate={item.repostDate}
+                  reposted={item.reposted} liked={item.liked}/>
           )
         } else if (item.playlistId) {
           return (
@@ -32,7 +33,8 @@ export default class RenderedPosts extends React.Component {
                   reposts={item.reposts} comments={item.comments} title={item.title}
                   description={item.description} uploadDate={item.uploadDate} followers={item.followers}
                   posts={item.posts} repost_username={item.repost_username} repost_profileName={item.repost_profileName}
-                  repost_profile_image_src={item.repost_profile_image_src} repostDate={item.repostDate}/>
+                  repost_profile_image_src={item.repost_profile_image_src} repostDate={item.repostDate}
+                  reposted={item.reposted} liked={item.liked}/>
           )
         } else {
           return (

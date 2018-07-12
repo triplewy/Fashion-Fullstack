@@ -11,7 +11,6 @@ export default class Profile extends React.Component {
     super(props);
 
     this.state = {
-      jsonData: [],
       streamData: [],
       posts: [],
       reposts: [],
@@ -35,14 +34,12 @@ export default class Profile extends React.Component {
       .then(data => {
         var streamData = data.media.stream
         console.log("profile data is", data);
-        var posts = []
-        var reposts = []
-        this.setState({isFollowing: data.userDetails.isFollowing, streamData: streamData, jsonData: data.media, profileInfo: data.userDetails})
+        this.setState({isFollowing: data.userDetails.isFollowing, streamData: streamData, profileInfo: data.userDetails})
     })
   })
 
   toggle_type(e) {
-    var data = this.state.jsonData;
+    var data = this.state.streamData;
     var temp_data = [];
     if (e.target.name == 1) {
       for (var i = 0; i < data.length; i++) {

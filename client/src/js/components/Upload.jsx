@@ -45,9 +45,6 @@ export default class Upload extends React.Component {
     formData.append('description', this.state.description);
     formData.append('original', this.state.original);
     formData.append('userId', 1);
-    // for (var i = 0; i < this.state.inputTags.length; i++) {
-    //   formData.append('inputTags[]', this.state.inputTags[i]);
-    // }
     formData.append('inputTags', JSON.stringify(this.state.inputTags));
 
     fetch('/api/upload', {

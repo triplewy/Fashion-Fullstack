@@ -116,9 +116,10 @@ export default class Playlist extends React.Component {
               <Link to={"/" + item.username}>
                 <p id="playlist_post_user">{item.profileName}</p>
               </Link>
-              <p id="playlist_post_title">{item.title}</p>
+              <p id="playlist_post_title">- {item.title}</p>
             </div>
-            <StatsHeader mediaId={item.mediaId} views={item.views} likes={item.likes} reposts={item.reposts} comments={item.comments}/>
+            <StatsHeader mediaId={item.mediaId} views={item.views} likes={item.likes} reposts={item.reposts} comments={item.comments}
+            reposted={item.reposted} liked={item.liked}/>
           </li>
           )
       });
@@ -147,7 +148,10 @@ export default class Playlist extends React.Component {
               <img id="post_image" alt="" src={currentPost.post_image_src}></img>
             </div>
           </Link>
-          <PlaylistStatsHeader playlistId={this.props.playlistId} likes={this.state.likes} reposts={this.state.reposts} followers={this.state.followers} />
+          <div id="stats_wrapper">
+            <PlaylistStatsHeader playlistId={this.props.playlistId} likes={this.state.likes} reposts={this.state.reposts} followers={this.state.followers}
+            reposted={this.props.reposted} liked={this.props.liked}/>
+          </div>
           </div>
             <div id="tags_div_wrapper">
               <div id="title">

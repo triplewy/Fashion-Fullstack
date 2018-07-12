@@ -5,14 +5,8 @@ import like_icon from 'images/heart-icon.png'
 import like_icon_liked from 'images/heart-icon-liked.png'
 import repost_icon from 'images/repost-icon.png'
 import repost_icon_reposted from 'images/repost-icon-reposted.png'
-import plus_icon from 'images/plus-icon.svg'
+import plus_icon from 'images/plus-icon.png'
 import more_icon from 'images/more-icon.png'
-
-
-// <button id="comments" className={stats_button_style} onClick={this.handleComment}>
-//   <img id="comment_icon" alt="comment icon" className={stats_icon_style} src={comment_icon}></img>
-//   <p className="stats_number" id="comment_number">{this.state.comments}</p>
-// </button>
 
 export default class StatsHeader extends React.Component {
   constructor(props) {
@@ -23,14 +17,16 @@ export default class StatsHeader extends React.Component {
       reposts: this.props.reposts,
       liked: this.props.liked,
       reposted: this.props.reposted,
-      displayPlaylist: false
+      playlists: []
     };
 
     this.handleLike = this.handleLike.bind(this);
     this.handleUnlike = this.handleUnlike.bind(this);
     this.handleRepost = this.handleRepost.bind(this);
     this.handleUnrepost = this.handleUnrepost.bind(this);
-    this.addNewPlaylist = this.addNewPlaylist.bind(this);
+    this.displayPlaylists = this.displayPlaylists.bind(this);
+    this.addToPlaylist = this.addToPlaylist.bind(this);
+    this.createNewPlaylist = this.createNewPlaylist.bind(this);
   }
 
   handleLike(e) {
@@ -134,8 +130,49 @@ export default class StatsHeader extends React.Component {
     });
   }
 
-  addNewPlaylist(e) {
-    this.setState({displayPlaylist: true})
+  displayPlaylists(e) {
+    console.log("yoo");
+    fetch('/api/getPlaylists', {
+      credentials: 'include'
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      this.setState({playlists: data.playlists})
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
+  addToPlaylist(playlistId) {
+    fetch('/api/addToPlaylist', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        playlistId: playlistId,
+        mediaId: this.props.mediaId
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === "success") {
+        console.log("Added to playlist successfully");
+      } else {
+        console.log(data.message);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
+  createNewPlaylist(e) {
+    
   }
 
   render() {
@@ -144,6 +181,20 @@ export default class StatsHeader extends React.Component {
     if (this.props.is_collection) {
       stats_icon_style = "collection_stats_icon";
       stats_button_style="collection_stats_button";
+    }
+
+    var renderedPlaylists = []
+    if (this.state.playlists.length > 0) {
+      renderedPlaylists = this.state.playlists.map((item, index) => {
+        return (
+          <li className="playlist_selector" key={index} onClick={this.addToPlaylist.bind(this, item.playlistId)}>
+            <p>{item.title}</p>
+            <p>Followers: {item.followers}</p>
+            {item.public ? <p>Public</p> : <p>Private</p>}
+            <p>Posts: {item.numPosts}</p>
+          </li>
+        )
+      })
     }
 
     return (
@@ -161,16 +212,32 @@ export default class StatsHeader extends React.Component {
           <p className="stats_number" id="repost_number">{this.state.reposts}</p>
         </button>
         <div id="non_stat_div">
+          <button id="more" className={stats_button_style}>
+            <img id="more_icon" alt="more icon" className="non_stat_icon" src={more_icon}></img>
+          </button>
         {this.props.is_collection ? null :
-          <div id="playlist_dropdown">
-            <button id="add_to_playlist" className="stats_button" onClick={this.addNewPlaylist}>
+          <div id="add_playlist_wrapper">
+            <button id="add_to_playlist" type="button" className={stats_button_style} data-toggle="modal" data-target="#playlistModal" onClick={this.displayPlaylists}>
               <img id="add_to_playlist_icon" alt="add icon" className="stats_icon" src={plus_icon}></img>
             </button>
+            <div className="modal fade" id="playlistModal" role="dialog">
+              <div className="modal-dialog">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <button type="button" className="close" data-dismiss="modal">&times;</button>
+                    <h4 className="modal-title">Add to Playlist</h4>
+                  </div>
+                  <div className="modal-body">
+                    <div id="create_new_playlist" className="playlist_selector" onClick={this.createNewPlaylist}>New Playlist +</div>
+                    <ul>
+                      {renderedPlaylists}
+                    </ul>
+                  </div>
+                </div>
+            </div>
+            </div>
           </div>
         }
-        <button id="more">
-        <img id="more_icon" alt="more icon" className="non_stat_icon" src={more_icon}></img>
-        </button>
       </div>
     </div>
     );

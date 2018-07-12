@@ -1,7 +1,6 @@
 // Create a new React component here!import React from 'react';
 import React from 'react';
 import Tags from './Tags.jsx'
-import PlaylistModalView from './PlaylistModalView.jsx'
 import RepostHeader from './RepostHeader.jsx'
 import StatsHeader from './StatsHeader.jsx'
 import Comments from './Comments.jsx'
@@ -19,6 +18,7 @@ export default class Post extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      comments: this.props.comments
     };
 
     this.dateDiffInDays = this.dateDiffInDays.bind(this);
@@ -43,7 +43,6 @@ export default class Post extends React.Component {
   render() {
     return (
       <div id="post_wrapper">
-        {this.state.displayPlaylist && <PlaylistModalView />}
         <div id="polaroid_div">
           {this.props.repost_username ? <RepostHeader username={this.props.username} profileName={this.props.profileName}
             profile_image_src={this.props.profile_image_src} repost_username={this.props.repost_username}
@@ -65,7 +64,10 @@ export default class Post extends React.Component {
             <img id="post_image" alt="" src={this.props.post_image_src}></img>
           </div>
         </Link>
-        <StatsHeader mediaId={this.props.mediaId} views={this.props.views} likes={this.props.likes} reposts={this.props.reposts}/>
+        <div id="stats_wrapper">
+          <StatsHeader mediaId={this.props.mediaId} views={this.props.views} likes={this.props.likes} reposts={this.props.reposts}
+            reposted={this.props.reposted} liked={this.props.liked}/>
+        </div>
       </div>
       <div id="tags_div_wrapper">
         <div id="title">
@@ -76,7 +78,7 @@ export default class Post extends React.Component {
         <div id="description_wrapper">
           <p id="description">{this.props.description}</p>
         </div>
-        <Comments mediaId={this.props.mediaId} comments={this.props.comments} />
+        <Comments mediaId={this.props.mediaId} comments={this.state.comments} />
       </div>
       <hr id="post_hr"></hr>
     </div>

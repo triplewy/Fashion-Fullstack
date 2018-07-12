@@ -15,16 +15,26 @@ export default class SinglePostPage extends React.Component {
     super(props);
 
     this.state = {
-      post: this.props.location.state.post_data
+      post: this.props.location.state.post_data,
+      comments: this.props.location.state.post_data.comments
     };
   }
 
-  componentDidMount() {
-    fetch('/api/' + this.props.match.params.profile + '/' + this.props.match.params.postId)
-    .then(res => res.json())
-    .then(data => {
-      console.log("post data is", data);
-    });
+  component() {
+    console.log("prop comments are", this.props.comments);
+    if (!this.props.comments) {
+      console.log("yooooooo");
+      fetch('/api/' + this.props.match.params.profile + '/' + this.props.match.params.mediaId + '/comments', {
+        credentials: 'include'
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        this.setState({comments: data.comments})
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    }
   }
 
   render() {

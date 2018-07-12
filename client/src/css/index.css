@@ -344,7 +344,7 @@ textarea {
 }
 
 #stats_header {
-  padding: 2% 2%;
+  padding: 15px 0;
   width: 100%;
 }
 
@@ -394,8 +394,8 @@ textarea {
   border-radius: 4px;
 }
 
-#add_to_playlist {
-  margin-right: 15px;
+#add_playlist_wrapper {
+  display: inline-block;
 }
 
 #post_hr {
@@ -410,7 +410,6 @@ textarea {
 }
 
 #stats_wrapper {
-  position: relative;
   padding: 0 15px;
 }
 
@@ -1181,6 +1180,16 @@ textarea {
   display: inline-block;
 }
 
+.modal {
+  text-align: center;
+}
+
+.modal-dialog {
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle;
+}
+
 @media only screen and (max-width: 1300px) {
   #search_bar {
     display: inline-block;
@@ -1194,5 +1203,14 @@ textarea {
     display: inline-block;
     width: 100px;
     margin: 0 3%;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .modal:before {
+    display: inline-block;
+    vertical-align: middle;
+    content: " ";
+    height: 100%;
   }
 }
