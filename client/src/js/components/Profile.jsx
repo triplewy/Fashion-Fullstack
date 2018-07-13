@@ -1,5 +1,4 @@
 import React from 'react';
-import StatsColumn from './StatsColumn.jsx'
 import Navbar from './Navbar.jsx'
 import RenderedPosts from './RenderedPosts.jsx'
 import TypeSelector from './TypeSelector.jsx'

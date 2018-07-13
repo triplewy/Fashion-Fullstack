@@ -3,7 +3,8 @@ import like_icon from 'images/heart-icon.png'
 import like_icon_liked from 'images/heart-icon-liked.png'
 import repost_icon from 'images/repost-icon.png'
 import repost_icon_reposted from 'images/repost-icon-reposted.png'
-import followers_icon from 'images/followers-icon.png'
+import followers_icon_notFollowed from 'images/followers-icon-notFollowed.png'
+import followers_icon_followed from 'images/followers-icon-followed.png'
 import more_icon from 'images/more-icon.png'
 
 export default class StatsHeader extends React.Component {
@@ -15,7 +16,7 @@ export default class StatsHeader extends React.Component {
       followers: this.props.followers,
       liked: this.props.liked,
       reposted: this.props.reposted,
-      followed: false,
+      followed: this.props.followed,
     };
 
     this.handleLike = this.handleLike.bind(this);
@@ -128,18 +129,60 @@ export default class StatsHeader extends React.Component {
   }
 
   handleFollow(e) {
-
+    fetch('/api/playlistFollow', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        playlistId: this.props.playlistId,
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === "success") {
+        this.setState({followers: this.state.followers + 1, followed: true})
+      } else {
+        console.log(data.message);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   }
 
   handleUnfollow(e) {
-
+    fetch('/api/playlistUnfollow', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        playlistId: this.props.playlistId,
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === "success") {
+        this.setState({followers: this.state.followers - 1, followed: false})
+      } else {
+        console.log(data.message);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   }
 
   render() {
     return (
       <div id="stats_header">
         <button id="followers" className="stats_button" onClick={this.state.followed ? this.handleUnfollow : this.handleFollow}>
-          <img id="follower_icon" alt="follower icon" className="stats_icon" src={followers_icon}></img>
+          <img id="follower_icon" alt="follower icon" className="stats_icon" src={this.state.followed ? followers_icon_followed : followers_icon_notFollowed}></img>
           <p className="stats_number" id="follower_number">{this.state.followers}</p>
         </button>
         <button id="likes" className="stats_button" onClick={this.state.liked ? this.handleUnlike : this.handleLike}>

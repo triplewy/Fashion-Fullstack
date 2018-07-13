@@ -2,6 +2,7 @@ import React from 'react';
 import Tags from './Tags.jsx'
 import RepostHeader from './RepostHeader.jsx'
 import StatsHeader from './StatsHeader.jsx'
+import Comments from './Comments.jsx'
 import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
 import { Link } from 'react-router-dom';
 
@@ -150,7 +151,7 @@ export default class Playlist extends React.Component {
           </Link>
           <div id="stats_wrapper">
             <PlaylistStatsHeader playlistId={this.props.playlistId} likes={this.state.likes} reposts={this.state.reposts} followers={this.state.followers}
-            reposted={this.props.reposted} liked={this.props.liked}/>
+            reposted={this.props.reposted} liked={this.props.liked} followed={this.props.followed}/>
           </div>
           </div>
             <div id="tags_div_wrapper">
@@ -162,6 +163,7 @@ export default class Playlist extends React.Component {
               <div id="description_wrapper">
                 <p id="description">{this.props.description}</p>
               </div>
+              <Comments playlistId={this.props.playlistId} comments={this.state.comments} />
               <ul id="playlist_list">
                 {rendered_playlist_posts}
               </ul>

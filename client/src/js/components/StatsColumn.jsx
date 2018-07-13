@@ -1,5 +1,4 @@
 import React from 'react';
-import ProfileColumn from './ProfileColumn.jsx'
 import { Link } from 'react-router-dom';
 
 export default class StatsColumn extends React.Component {

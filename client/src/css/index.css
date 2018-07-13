@@ -257,6 +257,7 @@ textarea {
 
 #post_image {
   max-width: 100%;
+  /* max-height: 776px; */
 }
 
 #tags_div_wrapper {
@@ -299,7 +300,7 @@ textarea {
 .tag_image {
   display: inline-block;
   vertical-align: top;
-  width: 25px;
+  width: 30px;
   padding: 5px 0;
   margin-right: 5%;
 }
@@ -1188,6 +1189,10 @@ textarea {
   display: inline-block;
   text-align: left;
   vertical-align: middle;
+}
+
+#comments_wrapper {
+  padding: 10px 0;
 }
 
 @media only screen and (max-width: 1300px) {

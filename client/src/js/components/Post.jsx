@@ -6,12 +6,6 @@ import StatsHeader from './StatsHeader.jsx'
 import Comments from './Comments.jsx'
 import { Link } from 'react-router-dom';
 
-import view_icon from 'images/view-icon.png'
-import like_icon from 'images/heart-icon.png'
-import repost_icon from 'images/repost-icon.png'
-import comment_icon from 'images/comment-icon.png'
-import plus_icon from 'images/plus-icon.svg'
-
 const _MS_PER_MINUTE = 1000 * 60;
 
 export default class Post extends React.Component {
@@ -78,7 +72,7 @@ export default class Post extends React.Component {
         <div id="description_wrapper">
           <p id="description">{this.props.description}</p>
         </div>
-        <Comments mediaId={this.props.mediaId} comments={this.state.comments} />
+        <Comments mediaId={this.props.mediaId} username={this.props.username} comments={this.state.comments} />
       </div>
       <hr id="post_hr"></hr>
     </div>

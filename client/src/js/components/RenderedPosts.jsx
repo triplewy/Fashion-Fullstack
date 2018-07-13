@@ -34,7 +34,7 @@ export default class RenderedPosts extends React.Component {
                   description={item.description} uploadDate={item.uploadDate} followers={item.followers}
                   posts={item.posts} repost_username={item.repost_username} repost_profileName={item.repost_profileName}
                   repost_profile_image_src={item.repost_profile_image_src} repostDate={item.repostDate}
-                  reposted={item.reposted} liked={item.liked}/>
+                  reposted={item.reposted} liked={item.liked} followed={item.followed}/>
           )
         } else {
           return (

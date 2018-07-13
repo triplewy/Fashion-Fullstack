@@ -4,11 +4,6 @@ import Tags from './Tags.jsx'
 import Comments from './Comments.jsx'
 import StatsHeader from './StatsHeader.jsx'
 import { Link } from 'react-router-dom';
-import view_icon from 'images/view-icon.png'
-import like_icon from 'images/heart-icon.png'
-import repost_icon from 'images/repost-icon.png'
-import plus_icon from 'images/plus-icon.svg'
-import more_icon from 'images/more-icon.png'
 
 export default class SinglePostPage extends React.Component {
   constructor(props) {
@@ -18,23 +13,6 @@ export default class SinglePostPage extends React.Component {
       post: this.props.location.state.post_data,
       comments: this.props.location.state.post_data.comments
     };
-  }
-
-  component() {
-    console.log("prop comments are", this.props.comments);
-    if (!this.props.comments) {
-      console.log("yooooooo");
-      fetch('/api/' + this.props.match.params.profile + '/' + this.props.match.params.mediaId + '/comments', {
-        credentials: 'include'
-      })
-      .then((response) => response.json())
-      .then((data) => {
-        this.setState({comments: data.comments})
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-    }
   }
 
   render() {
@@ -62,13 +40,13 @@ export default class SinglePostPage extends React.Component {
                 </div>
               <hr id="tag_title_hr"></hr>
               <StatsHeader mediaId={this.state.post.mediaId} views={this.state.post.views}
-                likes={this.state.post.likes} reposts={this.state.post.reposts} />
+                likes={this.state.post.likes} reposts={this.state.post.reposts} liked={this.state.post.liked} reposted={this.state.post.reposted}/>
               <Tags tags={this.state.post.tags}/>
               <div id="description_wrapper">
                 <p id="description">{this.props.description}</p>
               </div>
               {this.props.description && <hr id="tag_title_hr"></hr>}
-              <Comments comments={this.state.post.comments} />
+              <Comments comments={this.state.comments} mediaId={this.state.post.mediaId} username={this.state.post.username}/>
               <div id="related_outfits_div">
                 <p id="related_outfits_title">Related Outfits</p>
                 <ul id="related_outfits_list">

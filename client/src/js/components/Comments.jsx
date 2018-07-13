@@ -1,5 +1,4 @@
 import React from 'react';
-import comment_icon from 'images/comment-icon.png'
 import { Link } from 'react-router-dom';
 
 
@@ -14,6 +13,22 @@ export default class Comments extends React.Component {
     this.handleComment = this.handleComment.bind(this);
     this.handleChange = this.handleChange.bind(this);
   }
+
+  // componentDidMount() {
+  //   if (!this.props.comments) {
+  //     fetch('/api/' + this.props.username + '/' + this.props.mediaId + '/comments', {
+  //       credentials: 'include'
+  //     })
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       console.log(data);
+  //       this.setState({comments: data.comments})
+  //     })
+  //     .catch((error) => {
+  //       console.error(error);
+  //     });
+  //   }
+  // }
 
   handleComment(e) {
     fetch('/api/comment', {
@@ -30,8 +45,18 @@ export default class Comments extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message === "success") {
-        this.setState({commentInput: ''})
+      if (data.message == "success") {
+        fetch('/api/' + this.props.username + '/' + this.props.mediaId + '/comments', {
+          credentials: 'include'
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data.comments);
+          this.setState({commentInput: '', comments: data.comments})
+        })
+        .catch((error) => {
+          console.error(error);
+        });
       } else {
         console.log(data.message);
       }
@@ -42,13 +67,13 @@ export default class Comments extends React.Component {
   }
 
   handleChange(e) {
-    console.log(this.state.commentInput);
     this.setState({commentInput: e.target.value})
   }
 
   render() {
+    console.log(this.state.comments);
     var renderedComments = [];
-    if (this.state.comments != null) {
+    if (this.state.comments) {
       renderedComments = this.state.comments.map((item, index) => {
         return (
           <li key={index}>

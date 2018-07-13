@@ -1,6 +1,4 @@
 import React from 'react';
-import Navbar from './Navbar.jsx'
-import StatsColumn from './StatsColumn.jsx'
 import {Redirect} from 'react-router-dom';
 
 export default class Home extends React.Component {

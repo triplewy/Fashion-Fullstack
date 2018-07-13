@@ -1,5 +1,4 @@
 import React from 'react';
-import view_icon from 'images/view-icon.png'
 import view_icon_revised from 'images/view-icon-revised.png'
 import like_icon from 'images/heart-icon.png'
 import like_icon_liked from 'images/heart-icon-liked.png'
@@ -137,7 +136,7 @@ export default class StatsHeader extends React.Component {
     })
     .then((response) => response.json())
     .then((data) => {
-      console.log(data);
+      console.log(data.playlists);
       this.setState({playlists: data.playlists})
     })
     .catch((error) => {
@@ -172,7 +171,7 @@ export default class StatsHeader extends React.Component {
   }
 
   createNewPlaylist(e) {
-    
+
   }
 
   render() {
@@ -212,32 +211,32 @@ export default class StatsHeader extends React.Component {
           <p className="stats_number" id="repost_number">{this.state.reposts}</p>
         </button>
         <div id="non_stat_div">
+          {this.props.is_collection ? null :
+            <div id="add_playlist_wrapper">
+              <button id="add_to_playlist" type="button" className={stats_button_style} data-toggle="modal" data-target="#playlistModal" onClick={this.displayPlaylists}>
+                <img id="add_to_playlist_icon" alt="add icon" className="stats_icon" src={plus_icon}></img>
+              </button>
+              <div className="modal fade" id="playlistModal" role="dialog">
+                <div className="modal-dialog">
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      <button type="button" className="close" data-dismiss="modal">&times;</button>
+                      <h4 className="modal-title">Add to Playlist</h4>
+                    </div>
+                    <div className="modal-body">
+                      <div id="create_new_playlist" className="playlist_selector" onClick={this.createNewPlaylist}>New Playlist +</div>
+                      <ul>
+                        {renderedPlaylists}
+                      </ul>
+                    </div>
+                  </div>
+              </div>
+              </div>
+            </div>
+          }
           <button id="more" className={stats_button_style}>
             <img id="more_icon" alt="more icon" className="non_stat_icon" src={more_icon}></img>
           </button>
-        {this.props.is_collection ? null :
-          <div id="add_playlist_wrapper">
-            <button id="add_to_playlist" type="button" className={stats_button_style} data-toggle="modal" data-target="#playlistModal" onClick={this.displayPlaylists}>
-              <img id="add_to_playlist_icon" alt="add icon" className="stats_icon" src={plus_icon}></img>
-            </button>
-            <div className="modal fade" id="playlistModal" role="dialog">
-              <div className="modal-dialog">
-                <div className="modal-content">
-                  <div className="modal-header">
-                    <button type="button" className="close" data-dismiss="modal">&times;</button>
-                    <h4 className="modal-title">Add to Playlist</h4>
-                  </div>
-                  <div className="modal-body">
-                    <div id="create_new_playlist" className="playlist_selector" onClick={this.createNewPlaylist}>New Playlist +</div>
-                    <ul>
-                      {renderedPlaylists}
-                    </ul>
-                  </div>
-                </div>
-            </div>
-            </div>
-          </div>
-        }
       </div>
     </div>
     );
