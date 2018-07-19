@@ -87,7 +87,6 @@ export default class Playlist extends React.Component {
   }
 
   setPlaylistIndex(index, e) {
-    console.log("index is", index);
     this.setState({playlistIndex: index})
   }
 
@@ -164,7 +163,7 @@ export default class Playlist extends React.Component {
                 <p id="description">{this.props.description}</p>
               </div>
               <Comments playlistId={this.props.playlistId} comments={this.state.comments} />
-              <ul id="playlist_list">
+              <ul id="playlist_posts_list">
                 {rendered_playlist_posts}
               </ul>
           </div>

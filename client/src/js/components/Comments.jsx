@@ -71,7 +71,6 @@ export default class Comments extends React.Component {
   }
 
   render() {
-    console.log(this.state.comments);
     var renderedComments = [];
     if (this.state.comments) {
       renderedComments = this.state.comments.map((item, index) => {

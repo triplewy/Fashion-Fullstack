@@ -1,6 +1,6 @@
 import React from 'react';
 import Navbar from './Navbar.jsx'
-import InputTags from './InputTags.jsx'
+import InputTag from './InputTag.jsx'
 import Charts from './Charts.jsx'
 // import posts from '../json/posts.json';
 
@@ -61,7 +61,7 @@ export default class OutfitFinder extends React.Component {
               <option value="time_all_time">All Time</option>
             </select>
           </div>
-          <InputTags />
+          <InputTag />
         </div>
 
         </div>

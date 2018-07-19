@@ -1,4 +1,5 @@
 import React from 'react';
+import PlaylistModalView from './PlaylistModalView.jsx'
 import view_icon_revised from 'images/view-icon-revised.png'
 import like_icon from 'images/heart-icon.png'
 import like_icon_liked from 'images/heart-icon-liked.png'
@@ -23,9 +24,7 @@ export default class StatsHeader extends React.Component {
     this.handleUnlike = this.handleUnlike.bind(this);
     this.handleRepost = this.handleRepost.bind(this);
     this.handleUnrepost = this.handleUnrepost.bind(this);
-    this.displayPlaylists = this.displayPlaylists.bind(this);
     this.addToPlaylist = this.addToPlaylist.bind(this);
-    this.createNewPlaylist = this.createNewPlaylist.bind(this);
   }
 
   handleLike(e) {
@@ -129,22 +128,8 @@ export default class StatsHeader extends React.Component {
     });
   }
 
-  displayPlaylists(e) {
-    console.log("yoo");
-    fetch('/api/getPlaylists', {
-      credentials: 'include'
-    })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log(data.playlists);
-      this.setState({playlists: data.playlists})
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-  }
-
   addToPlaylist(playlistId) {
+    console.log(this.props.media);
     fetch('/api/addToPlaylist', {
       method: 'POST',
       headers: {
@@ -170,10 +155,6 @@ export default class StatsHeader extends React.Component {
     });
   }
 
-  createNewPlaylist(e) {
-
-  }
-
   render() {
     var stats_icon_style = "stats_icon";
     var stats_button_style="stats_button";
@@ -187,10 +168,10 @@ export default class StatsHeader extends React.Component {
       renderedPlaylists = this.state.playlists.map((item, index) => {
         return (
           <li className="playlist_selector" key={index} onClick={this.addToPlaylist.bind(this, item.playlistId)}>
-            <p>{item.title}</p>
-            <p>Followers: {item.followers}</p>
-            {item.public ? <p>Public</p> : <p>Private</p>}
-            <p>Posts: {item.numPosts}</p>
+            <p id="playlist_title">{item.title}</p>
+            <p className="playlist_icon">Followers: {item.followers}</p>
+            <p className="playlist_icon">Posts: {item.numPosts}</p>
+            {item.public ? <p id="public_indicator">Public</p> : <p id="public_indicator">Private</p>}
           </li>
         )
       })
@@ -211,32 +192,22 @@ export default class StatsHeader extends React.Component {
           <p className="stats_number" id="repost_number">{this.state.reposts}</p>
         </button>
         <div id="non_stat_div">
-          {this.props.is_collection ? null :
-            <div id="add_playlist_wrapper">
-              <button id="add_to_playlist" type="button" className={stats_button_style} data-toggle="modal" data-target="#playlistModal" onClick={this.displayPlaylists}>
-                <img id="add_to_playlist_icon" alt="add icon" className="stats_icon" src={plus_icon}></img>
-              </button>
-              <div className="modal fade" id="playlistModal" role="dialog">
-                <div className="modal-dialog">
-                  <div className="modal-content">
-                    <div className="modal-header">
-                      <button type="button" className="close" data-dismiss="modal">&times;</button>
-                      <h4 className="modal-title">Add to Playlist</h4>
-                    </div>
-                    <div className="modal-body">
-                      <div id="create_new_playlist" className="playlist_selector" onClick={this.createNewPlaylist}>New Playlist +</div>
-                      <ul>
-                        {renderedPlaylists}
-                      </ul>
-                    </div>
-                  </div>
-              </div>
-              </div>
-            </div>
-          }
-          <button id="more" className={stats_button_style}>
-            <img id="more_icon" alt="more icon" className="non_stat_icon" src={more_icon}></img>
-          </button>
+          <div id="add_playlist_wrapper">
+            <button id="add_to_playlist" type="button" className={stats_button_style} data-toggle="modal" data-target={"#playlistModal" + this.props.mediaId}>
+              <img id="add_to_playlist_icon" alt="add icon" className="stats_icon" src={plus_icon}></img>
+            </button>
+            <PlaylistModalView mediaId={this.props.mediaId} />
+          </div>
+          <div className="btn-group">
+            <button id="more" className="dropdown-toggle" type="button" data-toggle="dropdown">
+              <img id="more_icon" alt="more icon" className="non_stat_icon" src={more_icon}></img>
+            </button>
+            <ul className="dropdown-menu">
+              <li className="form-group">
+                Yo
+              </li>
+            </ul>
+          </div>
       </div>
     </div>
     );

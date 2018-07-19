@@ -194,7 +194,16 @@ export default class StatsHeader extends React.Component {
           <p className="stats_number" id="repost_number">{this.state.reposts}</p>
         </button>
         <div id="non_stat_div">
-          <img id="more_icon" alt="more icon" className="non_stat_icon" src={more_icon}></img>
+          <div className="btn-group">
+            <button id="more" className="dropdown-toggle" type="button" data-toggle="dropdown">
+              <img id="more_icon" alt="more icon" className="non_stat_icon" src={more_icon}></img>
+            </button>
+            <ul className="dropdown-menu">
+              <li className="form-group">
+                Yo
+              </li>
+            </ul>
+          </div>
         </div>
     </div>
     );

@@ -7,6 +7,9 @@ import {
   Route,
   Switch
 } from 'react-router-dom';
+import Dropzone from 'react-dropzone'
+import RoutesComponent from './js/components/Routes.jsx'
+
 
 import Home from './js/components/Home.jsx';
 import Stream from './js/components/Stream.jsx';
@@ -40,8 +43,9 @@ const Routes = () => (
   </BrowserRouter>
 );
 
+
 ReactDOM.render(
-  <Routes/>,
+  <RoutesComponent/>,
   document.getElementById('root')
 );
 registerServiceWorker();

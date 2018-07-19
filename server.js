@@ -133,7 +133,7 @@ conn.query('CREATE TABLE IF NOT EXISTS comments (commentId INTEGER PRIMARY KEY A
 
 conn.query('CREATE TABLE IF NOT EXISTS playlists (playlistId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
 'userId INTEGER, title TEXT, genre TEXT, public BOOLEAN, likes INTEGER, reposts INTEGER, comments INTEGER, ' +
-'followers INTEGER, description TEXT, dateTime DATETIME, numPosts INTEGER)');
+'followers INTEGER, description TEXT, dateTime DATETIME, UNIQUE(title, userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS playlistsPosts (playlistId INTEGER, mediaId INTEGER, dateTime DATETIME, UNIQUE(playlistId, mediaId))');
 
@@ -252,8 +252,8 @@ conn.query('INSERT INTO playlistsComments (playlistId, userId, comment, dateTime
       }
   });
 
-conn.query('INSERT INTO playlists (userId, title, public, likes, reposts, comments, followers, description, dateTime, numPosts) VALUES ' +
-'(?,?,?,?,?,?,?,?,?,?)', [1, "Test Playlist", 1, 0, 0, 0, 0, "Test playlist description", Date.now(), 2], function(err, result) {
+conn.query('INSERT INTO playlists (userId, title, public, likes, reposts, comments, followers, description, dateTime) VALUES ' +
+'(?,?,?,?,?,?,?,?,?)', [1, "Test Playlist", 1, 0, 0, 0, 0, "Test playlist description", Date.now()], function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -312,7 +312,9 @@ app.get('/api/home', (req, res) => {
 app.get('/api/getPlaylists', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/getPlaylists');
   var userId = req.user;
-  conn.query('SELECT * FROM playlists WHERE userId=$1 ORDER BY dateTime', userId, function(err, result) {
+  conn.query('SELECT *, (SELECT COUNT(*) FROM playlistsPosts WHERE playlistId = playlists.playlistId) AS numPosts FROM playlists ' +
+  'WHERE userId=$1 ORDER BY dateTime',
+  userId, function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -323,6 +325,34 @@ app.get('/api/getPlaylists', (req, res) => {
         numPosts: row.numPosts, genre: row.genre, followers: row.followers, dateTime: row.dateTime})
       }
       res.send({playlists: playlists})
+    }
+  })
+})
+
+app.post('/api/newPlaylist', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/newPlaylist');
+  var userId = req.user
+  var mediaId = req.body.mediaId
+  var title = req.body.title
+  var isPublic = req.body.isPublic
+  var genre = req.body.genre
+  var description = req.body.description
+
+  conn.query('INSERT OR IGNORE INTO playlists (userId, title, genre, public, likes, ' +
+  'reposts, comments, followers, description, dateTime) VALUES ' +
+  '($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [userId, title, genre, isPublic, 0, 0, 0, 0, description, Date.now()], function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(result.lastInsertId);
+      conn.query('INSERT OR IGNORE INTO playlistsPosts (playlistId, mediaId, dateTime) VALUES ($1,$2,$3)', [result.lastInsertId, mediaId, Date.now()], function(err, result) {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("Created playlist successfully");
+          res.send({message: "success"})
+        }
+      })
     }
   })
 })
@@ -473,19 +503,13 @@ app.post('/api/addToPlaylist', function(req, res) {
   var userId = req.user
   var playlistId = req.body.playlistId
   var mediaId = req.body.mediaId
+  console.log("mediaId is", mediaId);
   conn.query('INSERT OR IGNORE INTO playlistsPosts (playlistId, mediaId, dateTime) VALUES ($1, $2, $3)',
   [playlistId, mediaId, Date.now()], function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      conn.query('UPDATE playlists SET numPosts = (SELECT COUNT(*) FROM playlistsPosts WHERE playlistId=$1) WHERE playlistId=$1', playlistId, function(err, result) {
-        if (err) {
-          console.log(err);
-        } else {
-          console.log("Added to playlist successfully");
-          res.send({message: "success"})
-        }
-      })
+      res.send({message: "success"})
     }
   })
 })
@@ -506,7 +530,7 @@ app.get('/api/you/collections/likes', function(req, res) {
         likes.push({mediaId:row.mediaId, views:row.views, likes:row.likes,
           reposts:row.reposts, post_image_src:row.imageUrl, title:row.title,
           genre:row.genre, description:row.description, original: row.original,
-          username: row.username, profileName: row.profileName, profile_image_src: row.profile_image_src, 
+          username: row.username, profileName: row.profileName, profile_image_src: row.profile_image_src,
           uploadDate: row.dateTime, likeDate: row.likeDate, liked: true, reposted: row.reposted});
       }
       res.send({likes: likes})
@@ -803,7 +827,7 @@ function getPlaylistsPosts(playlistIds, question_query) {
     conn.query('SELECT a.*, playlistId, b.username AS username , b.profileName AS profileName, b.profile_image_src AS profile_image_src, ' +
     '((SELECT COUNT(*) FROM reposts WHERE userId=1 AND mediaId = a.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=1 AND mediaId = a.mediaId) > 0) AS liked ' +
     'FROM playlistsPosts INNER JOIN posts AS a ON a.mediaId = playlistsPosts.mediaId INNER JOIN users AS b ON b.userId = a.userId ' +
-    'WHERE playlistsPosts.playlistId IN (' + question_query + ')',
+    'WHERE playlistsPosts.playlistId IN (' + question_query + ') ORDER BY dateTime DESC',
     playlistIds, function(err, result) {
       var mediaIds = []
       question_query = ''
