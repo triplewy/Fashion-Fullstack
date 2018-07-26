@@ -1,44 +1,34 @@
 import React from 'react';
-import shirt from 'images/shirt-icon.png'
-import jacket from 'images/jacket-icon.png'
-import shorts from 'images/shorts-icon.png'
-import shoes from 'images/shoes-icon.png'
+import memoize from 'memoize-one'
+
 
 export default class InputTag extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      show_tag_input_box: false,
       itemType: 'shirt',
       itemBrand: '',
       itemName: '',
       original: 0,
-      input_tags: [],
     };
+
+    this.changeDisplay = this.changeDisplay.bind(this);
     this.showInputBox = this.showInputBox.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.saveTag = this.saveTag.bind(this);
-    this.cancelInputTag = this.cancelInputTag.bind(this);
+    this.cancelTag = this.cancelTag.bind(this);
     this.editTag = this.editTag.bind(this);
     this.deleteTag = this.deleteTag.bind(this);
-    this.renderClothingIcon = this.renderClothingIcon.bind(this);
   }
 
-  renderClothingIcon(itemType) {
-    switch(itemType) {
-      case 'shirt':
-        return shirt;
-      case 'jacket':
-        return jacket;
-      case 'shorts':
-        return shorts;
-      case 'shoes':
-        return shoes;
-      default:
-        return null;
-      }
-    }
+  componentDidMount() {
+    console.log(this.state.display);
+  }
+
+  changeDisplay = memoize((display) => {
+      this.setState({display: display})
+  })
 
   showInputBox() {
     this.setState({
@@ -68,10 +58,9 @@ export default class InputTag extends React.Component {
 
   }
 
-  cancelInputTag() {
-    this.setState({
-      show_tag_input_box: false
-    });
+  cancelTag(e) {
+    this.props.handleTagCancel();
+    this.setState({itemType: '', itemBrand: '', itemName: '', original: false});
   }
 
   editTag(e) {
@@ -95,61 +84,39 @@ export default class InputTag extends React.Component {
     });
   }
 
-  render() {
-    var input_tags = this.state.input_tags;
-    var rendered_tags = [];
-    if (input_tags != null) {
-      rendered_tags = input_tags.map((item, index) => {
-          return (
-            <div key={index} className="clothing_tag" id={item.itemType + "_tag"}>
-              <img className="tag_image" alt="clothing item" src={this.renderClothingIcon(item.itemType)}></img>
-                <div className="tags_text_div">
-                  <p className="tag_brand">{item.itemBrand}</p>
-                  <p className="tag_name">{item.itemName}</p>
-                  {item.original ? <div className="og_tag">
-                    <img className="og_icon" alt="original icon" src="../images/og-icon.png"></img>
-                  </div> : ''}
-                  <button id="edit_tag_button" type="button" onClick={this.editTag}>Edit</button>
-                  <button id="delete_tag_button" type="button" onClick={this.deleteTag}>Delete</button>
-                </div>
-            </div>
-          )
-      });
-    }
+  saveTag(e) {
+    this.props.handleTagSave(this.state.itemType, this.state.itemBrand, this.state.itemName, this.state.original);
+    this.setState({itemType: '', itemBrand: '', itemName: '', original: false});
+  }
 
+  render() {
       return (
-        <div>
-          <p className="form_input_text" id="tags_input"><span>Tags</span></p>
-          <div id="input_tag_header_div">
-            <button id="add_tag_button" type="button" onClick={this.showInputBox}>Add Tag</button>
-            {this.state.show_tag_input_box ?
-            <div id="input_tag_div">
-              <p className="form_tags_input_text" id="tag_brand_input">Clothing Item:</p>
-              <select id="item_dropdown" name="itemType"
-                value={this.state.itemType} onChange={this.handleChange}>
-                <option value="shirt">shirt</option>
-                <option value="shorts">shorts</option>
-                <option value="shoes">shoes</option>
-                <option value="jacket">jacket</option>
-              </select>
-              <p className="form_tags_input_text" id="tag_brand_input">Clothing Brand:</p>
-              <input className="input_box" type="text" name="itemBrand"
-                value={this.state.itemBrand} onChange={this.handleChange}></input>
-              <p className="form_tags_input_text" id="tag_name_input">Clothing Name:</p>
-              <input className="input_box" type="text" name="itemName"
-                value={this.state.itemName} onChange={this.handleChange}></input>
-              <p className="form_tags_input_text" id="tag_original_input">Original:</p>
-              <input name="original" type="checkbox" checked={this.state.original}
-                onChange={this.handleChange}></input>
-              <br />
-              <button id="form_cancel" type="button" onClick={this.cancelInputTag}>Cancel</button>
-              <button id="save_tag_button" type="button" onClick={this.saveTag}>Save</button>
-            </div> : null}
-          </div>
-          <div id="upload_tags_div">
-            {rendered_tags}
+        <div id="tags_input_box" style={{'left': this.props.left, 'top': this.props.top,
+          'display': this.props.display}}>
+          <div id="input_tag_div">
+            <p className="form_tags_input_text" id="tag_brand_input">Clothing Item:</p>
+            <select id="item_dropdown" name="itemType"
+              value={this.state.itemType} onChange={this.handleChange}>
+              <option value="shirt">shirt</option>
+              <option value="shorts">shorts</option>
+              <option value="shoes">shoes</option>
+              <option value="jacket">jacket</option>
+            </select>
+            <p className="form_tags_input_text" id="tag_brand_input">Clothing Brand:</p>
+            <input className="input_box" type="text" name="itemBrand"
+              value={this.state.itemBrand} onChange={this.handleChange}></input>
+            <p className="form_tags_input_text" id="tag_name_input">Clothing Name:</p>
+            <input className="input_box" type="text" name="itemName"
+              value={this.state.itemName} onChange={this.handleChange}></input>
+            <p className="form_tags_input_text" id="tag_original_input">Original:</p>
+            <input name="original" type="checkbox" checked={this.state.original}
+              onChange={this.handleChange}></input>
+            <br />
+            <button id="form_cancel" type="button" onClick={this.cancelTag}>Cancel</button>
+            <button id="save_tag_button" type="button"
+              onClick={this.saveTag}>Save</button>
           </div>
         </div>
-  );
+      );
   }
 }

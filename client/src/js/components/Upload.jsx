@@ -6,6 +6,9 @@ import shirt from 'images/shirt-icon.png'
 import jacket from 'images/jacket-icon.png'
 import shorts from 'images/shorts-icon.png'
 import shoes from 'images/shoes-icon.png'
+import * as loadImage from 'blueimp-load-image'
+import Cookies from 'js-cookie';
+
 
 export default class Upload extends React.Component {
   constructor(props) {
@@ -17,6 +20,7 @@ export default class Upload extends React.Component {
       title: '',
       genre: '',
       description: '',
+      orientation: null,
       dateTime: '',
       inputTags: [],
       original: 0,
@@ -26,15 +30,16 @@ export default class Upload extends React.Component {
       currentTagRelativeY: 0,
       displayTagInput: 'none',
       imageUploaded: false,
-      inputTags: []
+      inputTags: [],
+      userId: Cookies.get('user')
     };
 
-    this.getTags = this.getTags.bind(this);
     this.readImageFile = this.readImageFile.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleClick = this.handleClick.bind(this)
     this.handleTagSave = this.handleTagSave.bind(this)
+    this.handleTagCancel = this.handleTagCancel.bind(this)
     this.renderClothingIcon = this.renderClothingIcon.bind(this);
   }
 
@@ -52,10 +57,6 @@ export default class Upload extends React.Component {
     }
   }
 
-  getTags(val) {
-    this.setState({inputTags: val});
-  }
-
   handleChange(e) {
     const target = e.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
@@ -65,7 +66,10 @@ export default class Upload extends React.Component {
   }
 
   handleSubmit(e) {
-    console.log(this.state.inputTags);
+    console.log("submit inputTags are", this.state.inputTags);
+    console.log("cookie userId is", this.state.userId);
+    console.log("orientation is", this.state.orientation);
+
     var formData = new FormData();
     formData.append('image', this.state.file);
     formData.append('title', this.state.title);
@@ -88,19 +92,37 @@ export default class Upload extends React.Component {
 
   readImageFile(e) {
     e.preventDefault();
-    var reader = new FileReader();
     var file = e.target.files[0];
 
-    reader.onloadend = () => {
-      console.log(reader.result);
-      console.log("file is", file);
-      this.setState({
-        file: file,
-        imagePreviewUrl: reader.result,
-        imageUploaded: true
-      });
-    }
-    reader.readAsDataURL(file);
+    const loadImageOptions = { maxWidth: 850 }
+    loadImage.parseMetaData(file, (data) => {
+      if (data.exif) {
+        loadImageOptions.orientation = data.exif.get('Orientation')
+        console.log("loadImageOptions are", loadImageOptions);
+      }
+      loadImage(file, (canvas) => {
+        console.log("file is", file);
+        file.preview = canvas.toDataURL(file.type)
+        this.setState({
+          file: file,
+          imagePreviewUrl: file.preview,
+          orientation: loadImageOptions.orientation,
+          imageUploaded: true
+        })
+      }, loadImageOptions)
+    })
+
+    // var reader = new FileReader();
+    // reader.onloadend = () => {
+    //   console.log(reader.result);
+    //   console.log("file is", file);
+    //   this.setState({
+    //     file: file,
+    //     imagePreviewUrl: reader.result,
+    //     imageUploaded: true
+    //   });
+    // }
+    // reader.readAsDataURL(file);
   }
 
   handleClick(e) {
@@ -116,8 +138,15 @@ export default class Upload extends React.Component {
     })
   }
 
-  handleTagSave(e) {
+  handleTagSave(itemType, itemBrand, itemName, original) {
+    var tempInputTags = this.state.inputTags;
+    tempInputTags.push({itemType: itemType, itemBrand: itemBrand, itemName: itemName,
+      original: original, x: this.state.currentTagRelativeX, y: this.state.currentTagRelativeY})
+    this.setState({inputTags: tempInputTags, displayTagInput: 'none'})
+  }
 
+  handleTagCancel(e) {
+    this.setState({displayTagInput: 'none'})
   }
 
   renderClothingIcon(itemType) {
@@ -136,18 +165,16 @@ export default class Upload extends React.Component {
     }
 
   render() {
-    // var imagePreview = null;
-    //   if (this.state.imagePreviewUrl) {
-    //     imagePreview = (<img src={this.state.imagePreviewUrl}></img>);
-    //   } else {
-    //     imagePreview = (<div className="previewText">Please select an Image for Preview</div>);
-    //   }
 
     var renderedTags = [];
     if (this.state.inputTags != null) {
       renderedTags = this.state.inputTags.map((item, index) => {
           return (
             <div key={index} className="clothing_tag" id={item.itemType + "_tag"}>
+              <div id="outer_circle">
+                <div id="inner_circle">
+                </div>
+              </div>
               <img className="tag_image" alt="clothing item" src={this.renderClothingIcon(item.itemType)}></img>
                 <div className="tags_text_div">
                   <p className="tag_brand">{item.itemBrand}</p>
@@ -155,8 +182,10 @@ export default class Upload extends React.Component {
                   {item.original ? <div className="og_tag">
                     <img className="og_icon" alt="original icon" src="../images/og-icon.png"></img>
                   </div> : ''}
-                  <button id="edit_tag_button" type="button" onClick={this.editTag}>Edit</button>
-                  <button id="delete_tag_button" type="button" onClick={this.deleteTag}>Delete</button>
+                </div>
+                <div id="tag_modifiers_div">
+                  <button className="tag_modifier_button" id="edit_tag_button" type="button" onClick={this.editTag}>Edit</button>
+                  <button className="tag_modifier_button" id="delete_tag_button" type="button" onClick={this.deleteTag}>Delete</button>
                 </div>
             </div>
           )
@@ -166,30 +195,8 @@ export default class Upload extends React.Component {
       return (
         <div>
         <Navbar />
-        <div id="tags_input_box" style={{'left': this.state.currentTagScreenX, 'top': this.state.currentTagScreenY, 'display': this.state.displayTagInput}}>
-          <div id="input_tag_div">
-            <p className="form_tags_input_text" id="tag_brand_input">Clothing Item:</p>
-            <select id="item_dropdown" name="itemType"
-              value={this.state.itemType} onChange={this.handleChange}>
-              <option value="shirt">shirt</option>
-              <option value="shorts">shorts</option>
-              <option value="shoes">shoes</option>
-              <option value="jacket">jacket</option>
-            </select>
-            <p className="form_tags_input_text" id="tag_brand_input">Clothing Brand:</p>
-            <input className="input_box" type="text" name="itemBrand"
-              value={this.state.itemBrand} onChange={this.handleChange}></input>
-            <p className="form_tags_input_text" id="tag_name_input">Clothing Name:</p>
-            <input className="input_box" type="text" name="itemName"
-              value={this.state.itemName} onChange={this.handleChange}></input>
-            <p className="form_tags_input_text" id="tag_original_input">Original:</p>
-            <input name="original" type="checkbox" checked={this.state.original}
-              onChange={this.handleChange}></input>
-            <br />
-            <button id="form_cancel" type="button" onClick={this.cancelInputTag}>Cancel</button>
-            <button id="save_tag_button" type="button" onClick={this.saveTag}>Save</button>
-          </div>
-        </div>
+        <InputTag left={this.state.currentTagScreenX} top={this.state.currentTagScreenY}
+          display={this.state.displayTagInput} handleTagSave={this.handleTagSave} handleTagCancel={this.handleTagCancel}/>
         <div id="white_background_wrapper">
           {this.state.imageUploaded ?
           <div>
@@ -217,11 +224,19 @@ export default class Upload extends React.Component {
                   <textarea className="input_box" id="description_input_box" name="description"
                     onChange={this.handleChange} placeholder="Description of your post" cols="10"
                     value={this.state.description}></textarea>
-                  <InputTag handleTagSave={this.handleTagSave}/>
+                  <p className="form_input_text" id="tags_input"><span>Tags</span></p>
+                  <div id="input_tag_header_div">
+                    <button id="add_tag_button" type="button" onClick={this.showInputBox}>Add Tag</button>
+                  </div>
                   <div id="upload_tags_div">
                     {renderedTags}
                   </div>
                   <hr id="input_hr"></hr>
+                  <label htmlFor="input_image_button" id="image_upload_label">
+                    Change image
+                  </label>
+                  <input id="input_image_button" type="file" name="post_pic" accept="image/*"
+                    onChange={this.readImageFile}></input>
                   <input id="form_submit" type="button" onClick={this.handleSubmit} value="Submit"></input>
                 </form>
               </div>
@@ -230,7 +245,7 @@ export default class Upload extends React.Component {
           <div id="input_box">
             <p id="input_box_title">Upload to this website</p>
             <div id="image_upload_wrapper">
-              <label for="input_image_button" id="image_upload_label">
+              <label htmlFor="input_image_button" id="image_upload_label">
                 Upload an image
               </label>
               <input id="input_image_button" type="file" name="post_pic" accept="image/*"

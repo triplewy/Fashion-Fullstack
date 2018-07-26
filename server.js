@@ -12,6 +12,10 @@ var LocalStrategy = require('passport-local').Strategy
 var RedditStrategy = require('passport-reddit').Strategy
 var session = require('express-session');
 var bcrypt = require('bcrypt');
+var jo = require('jpeg-autorotate')
+var fs = require('fs')
+
+
 
 var app = express();
 
@@ -58,21 +62,24 @@ passport.use(new LocalStrategy(
   }
 ))
 
-var storage = multer.diskStorage({
-    destination: function(request, file, callback) {
-      callback(null, 'public/images')
-    },
-    filename: function(request, file, callback) {
-      callback(null, file.fieldname + '-' + Date.now() +'.jpg')
-    },
-});
+// var storage = multer.diskStorage({
+//     destination: function(request, file, callback) {
+//       callback(null, 'public/images')
+//     },
+//     filename: function(request, file, callback) {
+//       callback(null, file.fieldname + '-' + Date.now() +'.jpg')
+//     },
+// });
+
+var storage =  multer.memoryStorage()
 
 var upload = multer({
   storage: storage,
   limits: {fileSize: 10000000, files: 1},
   fileFilter: function(request, file, callback) {
      var ext = path.extname(file.originalname)
-     if (ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg') {
+     console.log("ext is", ext);
+     if (ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg' && ext !== '.JPG') {
           return callback(new Error('Only images are allowed'), false);
       }
       callback(null, true)
@@ -689,31 +696,24 @@ app.get('/api/:profile/playlist/:playlistId', function(request, response) {
   })
 })
 
-app.post('/api/upload', function(request, response) {
-  console.log('- Request received:', request.method.cyan, '/api/upload');
-  var userId = request.user;
-  console.log("userId is", userId);
-  upload(request, response, function(err) {
+app.post('/api/upload', function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/upload');
+  upload(req, res, function(err) {
     if (err) {
-      response.send({message: err.message})
       console.log(err);
+      res.send({message: err.message})
     } else {
-      var insertQuery = [userId, request.body.title, request.body.genre, '/images/'+ request.file.filename,
-        request.body.original, 0, 0, 0, 0, request.body.description, Date.now()];
-      conn.query('INSERT INTO posts (userId, title, genre, imageUrl, ' +
-      'original, views, likes, reposts, comments, description, dateTime)' +
-      'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', insertQuery, function(err, result) {
-        if (err) {
-          console.log(err);
+      var filename = "/images/" + req.file.fieldname + '-' + Date.now() +'.jpg'
+      Promise.all([rotateImage(req.file.buffer, filename), uploadImageMetadata(req, filename)])
+      .then(function(allData) {
+        if (allData[0].message == 'success' && allData[1].message == 'success') {
+          console.log("Records added successfully");
+          res.send({message: 'Post Uploaded Successfully!'})
         } else {
-          Promise.all([postTagsFromUpload(result.lastInsertId, JSON.parse(request.body.inputTags))])
-          .then(function(allData) {
-            console.log("Records added successfully");
-            response.send({message: 'Post Uploaded Successfully!'})
-          }).catch(e => {
-            console.log(e);
-          })
+          res.send({message: 'Failed'})
         }
+      }).catch(err => {
+        console.log(err);
       })
     }
   })
@@ -865,6 +865,7 @@ function getPlaylistsPosts(playlistIds, question_query) {
 
 function postTagsFromUpload(mediaId, inputTags) {
   return new Promise(function(resolve, reject) {
+    console.log("inputTags are", inputTags);
     var question_query = '';
     var insertQuery = [];
     for (var i = 0; i < inputTags.length; i++) {
@@ -874,6 +875,7 @@ function postTagsFromUpload(mediaId, inputTags) {
     question_query = question_query.slice(0, -1);
     conn.query('INSERT INTO tags (itemType, itemName, itemBrand, original) VALUES ' + question_query, insertQuery, function(err, result) {
       if (err) {
+        console.log("insert tag error");
         return reject(err)
       } else {
         console.log("first inserted tagId is", result.lastInsertId);
@@ -1066,4 +1068,46 @@ function removeFromCollection(req, table, idType) {
       }
     })
   })
+}
+
+function rotateImage(imageBuffer, filename) {
+  return new Promise(function(resolve, reject) {
+    jo.rotate(imageBuffer, {}, function(error, buffer) {
+      if (error) {
+        return reject('An error occurred when rotating the file: ' + error.message)
+      }
+      fs.writeFile("public" + filename, buffer, function(err) {
+        if (err) {
+          return reject(err)
+        }
+          return resolve({message: 'success'});
+      });
+    })
+  });
+}
+
+function uploadImageMetadata(req, filename) {
+  return new Promise(function(resolve, reject) {
+    var insertQuery = [req.user, req.body.title, req.body.genre, filename,
+      req.body.original, 0, 0, 0, 0, req.body.description, Date.now()];
+    conn.query('INSERT INTO posts (userId, title, genre, imageUrl, ' +
+    'original, views, likes, reposts, comments, description, dateTime) ' +
+    'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', insertQuery, function(err, result) {
+      if (err) {
+        console.log("upload error");
+        return reject(err);
+      } else {
+        if (JSON.parse(req.body.inputTags).length > 0) {
+          Promise.all([postTagsFromUpload(result.lastInsertId, JSON.parse(req.body.inputTags))])
+          .then(function(allData) {
+            return resolve({message: 'success'})
+          }).catch(e => {
+            return reject(e);
+          })
+        } else {
+          return resolve({message: 'success'})
+        }
+      }
+    })
+  });
 }

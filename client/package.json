@@ -4,7 +4,9 @@
   "private": true,
   "proxy": "http://localhost:8081/",
   "dependencies": {
+    "blueimp-load-image": "^2.19.0",
     "file-loader": "^1.1.11",
+    "js-cookie": "^2.2.0",
     "memoize-one": "^3.1.1",
     "react": "^16.3.2",
     "react-bootstrap": "^0.32.1",
