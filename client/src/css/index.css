@@ -314,6 +314,7 @@ textarea {
 .tags_text_div {
   display: inline-block;
   width: 60%;
+  vertical-align: top;
 }
 
 .tag_brand {
@@ -809,6 +810,10 @@ textarea {
   cursor: pointer;
 }
 
+#form_submit:disabled {
+  background-color: #f1f1f1;
+}
+
 #outfit_finder_type_selector {
   display: inline-block;
   width: 96%;
@@ -866,6 +871,14 @@ textarea {
   width: 100%;
   max-height: 500px;
   overflow-y: scroll;
+  list-style: none;
+  padding: 0 0;
+  margin: 0 0;
+  cursor: pointer;
+}
+
+#upload_tags_div li:hover {
+  background-color: #f1f1f1;
 }
 
 #tag_original_input {
@@ -1359,22 +1372,43 @@ textarea {
   display: block;
 }
 
+.tag_modifier_button_image {
+  width: 15px;
+}
+
 #outer_circle {
   display: inline-block;
   border: 1px solid #337ab7;
   border-radius: 50%;
   width: 12px;
   height: 12px;
-  margin: 0 10px;
+  margin: 10px 10px;
+  margin-right: 15px;
   cursor: pointer;
 }
 
 #inner_circle {
   border-radius: 50%;
+  width: 4px;
+  height: 4px;
+  background-color: #337ab7;
+  margin: 3px auto;
+}
+
+#tag_location {
+  position: absolute;
+  border-radius: 50%;
   width: 6px;
   height: 6px;
   background-color: #337ab7;
-  margin: 3px auto;
+}
+
+#click_tag_location {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid #337ab7;
+  width: 12px;
+  height: 12px;
 }
 
 @media only screen and (max-width: 1300px) {

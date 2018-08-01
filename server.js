@@ -125,8 +125,8 @@ conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER PRIMARY KEY AUTOINC
 conn.query('CREATE TABLE IF NOT EXISTS following (userId INTEGER, followingId INTEGER' +
 ', dateTime DATETIME, UNIQUE(userId, followingId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS tags (tagId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
-'itemType TEXT, itemName TEXT, itemBrand TEXT, original BOOLEAN)');
+conn.query('CREATE TABLE IF NOT EXISTS tags (tagId INTEGER PRIMARY KEY AUTOINCREMENT, mediaId INTEGER, ' +
+'itemType TEXT, itemName TEXT, itemBrand TEXT, original BOOLEAN, x INTEGER, y INTEGER)');
 
 conn.query('CREATE TABLE IF NOT EXISTS postTags (mediaId INTEGER, tagId INTEGER)');
 
@@ -782,6 +782,32 @@ function getTagDetails(mediaIds, question_query) {
   })
 }
 
+function getTagDetailsRevised(mediaIds, question_query) {
+  return new Promise(function(resolve, reject) {
+    conn.query('SELECT * FROM tags WHERE mediaId IN (' + question_query + ')', mediaIds, function(err, result) {
+      if (err) {
+        return reject(err)
+      } else {
+        console.log("getTagDetailsRevised result is", result);
+        var postTags = {}
+        for (var i = 0; i < result.rows.length; i++) {
+          var row = result.rows[i]
+          var mediaId = row.mediaId
+          if (postTags[mediaId]) {
+            postTags[mediaId].push({itemType: row.itemType, itemBrand: row.itemBrand,
+              itemName: row.itemName, original: row.original, x: row.x, y: row.y})
+          } else {
+            postTags[mediaId] = [];
+            postTags[mediaId].push({itemType: row.itemType, itemBrand: row.itemBrand,
+              itemName: row.itemName, original: row.original, x: row.x, y: row.y})
+          }
+        }
+        return resolve(postTags);
+      }
+    })
+  });
+}
+
 function getPlaylistsComments(playlistIds, question_query) {
   return getComments(playlistIds, question_query, 'playlistsComments', 'playlistId')
 }
@@ -836,7 +862,7 @@ function getPlaylistsPosts(playlistIds, question_query) {
         question_query += '?,'
       }
       question_query = question_query.slice(0, -1);
-      Promise.all([getTagDetails(mediaIds, question_query), getPostsComments(mediaIds, question_query)])
+      Promise.all([getTagDetailsRevised(mediaIds, question_query), getPostsComments(mediaIds, question_query)])
       .then(function(allData) {
         var playlistsPosts = {}
         for (var i = 0; i < result.rows.length; i++) {
@@ -869,11 +895,11 @@ function postTagsFromUpload(mediaId, inputTags) {
     var question_query = '';
     var insertQuery = [];
     for (var i = 0; i < inputTags.length; i++) {
-      insertQuery.push(inputTags[i].itemType, inputTags[i].itemName, inputTags[i].itemBrand, inputTags[i].original);
+      insertQuery.push(inputTags[i].itemType, inputTags[i].itemName, inputTags[i].itemBrand, inputTags[i].original, inputTags[i].x, inputTags[i].y);
       question_query += '(?, ?, ?, ?),';
     }
     question_query = question_query.slice(0, -1);
-    conn.query('INSERT INTO tags (itemType, itemName, itemBrand, original) VALUES ' + question_query, insertQuery, function(err, result) {
+    conn.query('INSERT INTO tags (itemType, itemName, itemBrand, original, x, y) VALUES ' + question_query, insertQuery, function(err, result) {
       if (err) {
         console.log("insert tag error");
         return reject(err)
@@ -898,6 +924,25 @@ function postTagsFromUpload(mediaId, inputTags) {
       }
     })
   })
+}
+
+function postTagsFromUploadRevised(mediaId, inputTags) {
+  return new Promise(function(resolve, reject) {
+    var question_query = ''
+    var insertQuery = [];
+    for (var i = 0; i < inputTags.length; i++) {
+      insertQuery.push(mediaId, inputTags[i].itemType, inputTags[i].itemName, inputTags[i].itemBrand, inputTags[i].original, inputTags[i].x, inputTags[i].y);
+      question_query += '(?, ?, ?, ?, ?, ?, ?),';
+    }
+    question_query = question_query.slice(0, -1);
+    conn.query('INSERT INTO tags (mediaId, itemType, itemName, itemBrand, original, x, y) VALUES ' + question_query, insertQuery, function(err, reuslt) {
+      if (err) {
+        return reject(err);
+      } else {
+        return resolve({message: 'success'})
+      }
+    })
+  });
 }
 
 function getStream(userId, cookieUser) {
@@ -942,7 +987,7 @@ function getStream(userId, cookieUser) {
           media_question_query += '?,'
         }
         media_question_query = media_question_query.slice(0, -1);
-        Promise.all([getTagDetails(mediaIds, media_question_query), getPostsComments(mediaIds, media_question_query),
+        Promise.all([getTagDetailsRevised(mediaIds, media_question_query), getPostsComments(mediaIds, media_question_query),
           getPlaylistsPosts(playlistIds, media_question_query), getPlaylistsComments(playlistIds, media_question_query)])
         .then(function(allData) {
           var stream = []
@@ -1073,7 +1118,7 @@ function removeFromCollection(req, table, idType) {
 function rotateImage(imageBuffer, filename) {
   return new Promise(function(resolve, reject) {
     jo.rotate(imageBuffer, {}, function(error, buffer) {
-      if (error) {
+      if (error && error.code !== jo.errors.no_orientation) {
         return reject('An error occurred when rotating the file: ' + error.message)
       }
       fs.writeFile("public" + filename, buffer, function(err) {
@@ -1098,7 +1143,7 @@ function uploadImageMetadata(req, filename) {
         return reject(err);
       } else {
         if (JSON.parse(req.body.inputTags).length > 0) {
-          Promise.all([postTagsFromUpload(result.lastInsertId, JSON.parse(req.body.inputTags))])
+          Promise.all([postTagsFromUploadRevised(result.lastInsertId, JSON.parse(req.body.inputTags))])
           .then(function(allData) {
             return resolve({message: 'success'})
           }).catch(e => {

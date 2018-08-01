@@ -10,70 +10,28 @@ export default class InputTag extends React.Component {
       itemType: 'shirt',
       itemBrand: '',
       itemName: '',
-      original: 0,
-    };
+      original: '',
+      index: -1
+    }
 
-    this.changeDisplay = this.changeDisplay.bind(this);
-    this.showInputBox = this.showInputBox.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.saveTag = this.saveTag.bind(this);
     this.cancelTag = this.cancelTag.bind(this);
-    this.editTag = this.editTag.bind(this);
-    this.deleteTag = this.deleteTag.bind(this);
   }
 
-  componentDidMount() {
-    console.log(this.state.display);
-  }
-
-  changeDisplay = memoize((display) => {
-      this.setState({display: display})
-  })
-
-  showInputBox() {
+  componentWillReceiveProps(nextProps) {
     this.setState({
-      show_tag_input_box: true,
+      itemType: nextProps.tag.itemType,
+      itemBrand: nextProps.tag.itemBrand,
+      itemName: nextProps.tag.itemName,
+      original: nextProps.tag.original,
+      index: nextProps.tag.index,
     });
-  }
-
-  saveTag() {
-    var temp_input_tags = this.state.input_tags;
-    temp_input_tags.push({
-      itemType: this.state.itemType,
-      itemBrand: this.state.itemBrand,
-      itemName: this.state.itemName,
-      original: this.state.original
-    });
-
-    this.props.getTags(temp_input_tags);
-
-    this.setState({
-      input_tags: temp_input_tags,
-      itemType: '',
-      itemBrand: '',
-      itemName: '',
-      original: false,
-      show_tag_input_box: false
-    });
-
   }
 
   cancelTag(e) {
     this.props.handleTagCancel();
-    this.setState({itemType: '', itemBrand: '', itemName: '', original: false});
-  }
-
-  editTag(e) {
-    // var temp_input_tags = this.state.input_tags;
-    // var edit_tag = temp_input_tags[e.target.id];
-  }
-
-  deleteTag(e) {
-    var temp_input_tags = this.state.input_tags;
-    temp_input_tags.splice(e.target.id,1);
-    this.setState({
-      input_tags: temp_input_tags
-    })
+    this.setState({itemType: 'shirt', itemBrand: '', itemName: '', original: false});
   }
 
   handleChange(e) {
@@ -86,7 +44,7 @@ export default class InputTag extends React.Component {
 
   saveTag(e) {
     this.props.handleTagSave(this.state.itemType, this.state.itemBrand, this.state.itemName, this.state.original);
-    this.setState({itemType: '', itemBrand: '', itemName: '', original: false});
+    this.setState({itemType: 'shirt', itemBrand: '', itemName: '', original: false, index: -1});
   }
 
   render() {
@@ -101,6 +59,8 @@ export default class InputTag extends React.Component {
               <option value="shorts">shorts</option>
               <option value="shoes">shoes</option>
               <option value="jacket">jacket</option>
+              <option value="jacket">sweater</option>
+              <option value="jacket">pants</option>
             </select>
             <p className="form_tags_input_text" id="tag_brand_input">Clothing Brand:</p>
             <input className="input_box" type="text" name="itemBrand"

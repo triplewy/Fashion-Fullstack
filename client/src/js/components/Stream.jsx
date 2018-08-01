@@ -45,6 +45,8 @@ export default class Stream extends React.Component {
     .catch((error) => {
       console.error(error);
     });
+    
+    window.scrollTo(0, 0)
   }
 
   getRequest() {

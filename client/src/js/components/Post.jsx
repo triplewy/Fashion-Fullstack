@@ -68,7 +68,7 @@ export default class Post extends React.Component {
           <p id="title_text">{this.props.title}</p>
         </div>
         <hr id="tag_title_hr"></hr>
-        <Tags tags={this.props.tags}/>
+        <Tags tags={this.props.tags} modify={false}/>
         <div id="description_wrapper">
           <p id="description">{this.props.description}</p>
         </div>

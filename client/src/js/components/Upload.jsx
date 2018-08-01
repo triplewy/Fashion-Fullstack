@@ -1,6 +1,7 @@
 import React from 'react';
 import Navbar from './Navbar.jsx'
 import InputTag from './InputTag.jsx';
+import Tags from './Tags.jsx'
 import {Dropdown} from 'react-bootstrap'
 import shirt from 'images/shirt-icon.png'
 import jacket from 'images/jacket-icon.png'
@@ -29,6 +30,8 @@ export default class Upload extends React.Component {
       currentTagRelativeX: 0,
       currentTagRelativeY: 0,
       displayTagInput: 'none',
+      editTagIndex: -1,
+      editTag: {itemType:'shirt', itemBrand: '', itemName: '', original: 0},
       imageUploaded: false,
       inputTags: [],
       userId: Cookies.get('user')
@@ -40,7 +43,8 @@ export default class Upload extends React.Component {
     this.handleClick = this.handleClick.bind(this)
     this.handleTagSave = this.handleTagSave.bind(this)
     this.handleTagCancel = this.handleTagCancel.bind(this)
-    this.renderClothingIcon = this.renderClothingIcon.bind(this);
+    this.handleTagDelete = this.handleTagDelete.bind(this)
+    this.handleTagEdit = this.handleTagEdit.bind(this)
   }
 
   componentDidMount() {
@@ -87,6 +91,9 @@ export default class Upload extends React.Component {
     .then(response => response.json())
     .then(data => {
       console.log(data.message);
+      if (data.message == 'success') {
+        
+      }
     })
   }
 
@@ -94,7 +101,7 @@ export default class Upload extends React.Component {
     e.preventDefault();
     var file = e.target.files[0];
 
-    const loadImageOptions = { maxWidth: 850 }
+    const loadImageOptions = { canvas: true, maxWidth: 850 }
     loadImage.parseMetaData(file, (data) => {
       if (data.exif) {
         loadImageOptions.orientation = data.exif.get('Orientation')
@@ -139,122 +146,113 @@ export default class Upload extends React.Component {
   }
 
   handleTagSave(itemType, itemBrand, itemName, original) {
-    var tempInputTags = this.state.inputTags;
-    tempInputTags.push({itemType: itemType, itemBrand: itemBrand, itemName: itemName,
-      original: original, x: this.state.currentTagRelativeX, y: this.state.currentTagRelativeY})
-    this.setState({inputTags: tempInputTags, displayTagInput: 'none'})
+    var tempInputTags = this.state.inputTags
+    var saveTag = {itemType: itemType, itemBrand: itemBrand, itemName: itemName,
+      original: original, x: this.state.currentTagRelativeX, y: this.state.currentTagRelativeY,
+      pageX: this.state.currentTagScreenX, pageY: this.state.currentTagScreenY}
+    if (this.state.editTagIndex >= 0) {
+      tempInputTags[this.state.editTagIndex] = saveTag
+    } else {
+      tempInputTags.push(saveTag)
+    }
+    this.setState({inputTags: tempInputTags,
+      displayTagInput: 'none',
+      editTag: {itemType:'shirt', itemBrand: '', itemName: '', original: 0},
+      editTagIndex: -1
+    })
   }
 
   handleTagCancel(e) {
-    this.setState({displayTagInput: 'none'})
+    this.setState({
+      displayTagInput: 'none',
+      editTag: {itemType:'shirt', itemBrand: '', itemName: '', original: 0},
+      editTagIndex: -1
+    })
   }
 
-  renderClothingIcon(itemType) {
-    switch(itemType) {
-      case 'shirt':
-        return shirt;
-      case 'jacket':
-        return jacket;
-      case 'shorts':
-        return shorts;
-      case 'shoes':
-        return shoes;
-      default:
-        return null;
-      }
-    }
+  handleTagDelete(index) {
+    var tempArray = this.state.inputTags
+    tempArray.splice(index, 1)
+    this.setState({inputTags: tempArray})
+  }
+
+  handleTagEdit(index) {
+    var tag = this.state.inputTags[index]
+    this.setState({
+      currentTagScreenX: tag.pageX,
+      currentTagScreenY: tag.pageY,
+      currentTagRelativeX: tag.x,
+      currentTagRelativeY: tag.y,
+      displayTagInput: 'block',
+      editTagIndex: index,
+      editTag: tag
+    })
+  }
 
   render() {
-
-    var renderedTags = [];
-    if (this.state.inputTags != null) {
-      renderedTags = this.state.inputTags.map((item, index) => {
-          return (
-            <div key={index} className="clothing_tag" id={item.itemType + "_tag"}>
-              <div id="outer_circle">
-                <div id="inner_circle">
-                </div>
-              </div>
-              <img className="tag_image" alt="clothing item" src={this.renderClothingIcon(item.itemType)}></img>
-                <div className="tags_text_div">
-                  <p className="tag_brand">{item.itemBrand}</p>
-                  <p className="tag_name">{item.itemName}</p>
-                  {item.original ? <div className="og_tag">
-                    <img className="og_icon" alt="original icon" src="../images/og-icon.png"></img>
-                  </div> : ''}
-                </div>
-                <div id="tag_modifiers_div">
-                  <button className="tag_modifier_button" id="edit_tag_button" type="button" onClick={this.editTag}>Edit</button>
-                  <button className="tag_modifier_button" id="delete_tag_button" type="button" onClick={this.deleteTag}>Delete</button>
-                </div>
-            </div>
-          )
-      });
-    }
-
-      return (
+    return (
+      <div>
+      <Navbar />
+      <InputTag left={this.state.currentTagScreenX} top={this.state.currentTagScreenY}
+        display={this.state.displayTagInput} handleTagSave={this.handleTagSave} handleTagCancel={this.handleTagCancel}
+        index={this.state.editTagIndex} tag={this.state.editTag}/>
+      <div id="white_background_wrapper">
+        {this.state.imageUploaded ?
         <div>
-        <Navbar />
-        <InputTag left={this.state.currentTagScreenX} top={this.state.currentTagScreenY}
-          display={this.state.displayTagInput} handleTagSave={this.handleTagSave} handleTagCancel={this.handleTagCancel}/>
-        <div id="white_background_wrapper">
-          {this.state.imageUploaded ?
-          <div>
-            <div id="single_post_polaroid_div">
-              <div id="tag_click_div_wrapper">
-                <div id="tag_click_div" onClick={this.handleClick}>
-                  <div id="single_post_image_wrapper">
-                        <img id="single_post_image" alt="" src={this.state.imagePreviewUrl}></img>
-                  </div>
+          <div id="single_post_polaroid_div">
+            <div id="tag_click_div_wrapper">
+              <div id="tag_click_div" onClick={this.handleClick}>
+                <div id="single_post_image_wrapper">
+                      <img id="single_post_image" alt="" src={this.state.imagePreviewUrl}></img>
                 </div>
               </div>
-
-              </div>
-              <div id="input_div">
-                <form id="input_form">
-                  <p className="form_input_text" id="title_input">Title:</p>
-                  <input className="input_box" type="text" name="title"
-                    onChange={this.handleChange} placeholder="Title of your post"
-                    value={this.state.title}></input>
-                  <p className="form_input_text" id="genre_input">Genre:</p>
-                  <input className="input_box" type="text" name="genre"
-                    onChange={this.handleChange} placeholder="Genre of your post"
-                    value={this.state.genre}></input>
-                  <p className="form_input_text" id="description_input">Description:</p>
-                  <textarea className="input_box" id="description_input_box" name="description"
-                    onChange={this.handleChange} placeholder="Description of your post" cols="10"
-                    value={this.state.description}></textarea>
-                  <p className="form_input_text" id="tags_input"><span>Tags</span></p>
-                  <div id="input_tag_header_div">
-                    <button id="add_tag_button" type="button" onClick={this.showInputBox}>Add Tag</button>
-                  </div>
-                  <div id="upload_tags_div">
-                    {renderedTags}
-                  </div>
-                  <hr id="input_hr"></hr>
-                  <label htmlFor="input_image_button" id="image_upload_label">
-                    Change image
-                  </label>
-                  <input id="input_image_button" type="file" name="post_pic" accept="image/*"
-                    onChange={this.readImageFile}></input>
-                  <input id="form_submit" type="button" onClick={this.handleSubmit} value="Submit"></input>
-                </form>
-              </div>
-          </div>
-           :
-          <div id="input_box">
-            <p id="input_box_title">Upload to this website</p>
-            <div id="image_upload_wrapper">
-              <label htmlFor="input_image_button" id="image_upload_label">
-                Upload an image
-              </label>
-              <input id="input_image_button" type="file" name="post_pic" accept="image/*"
-                onChange={this.readImageFile}></input>
             </div>
-          </div>
-        }
+
+            </div>
+            <div id="input_div">
+              <form id="input_form">
+                <p className="form_input_text" id="title_input">Title:</p>
+                <input className="input_box" type="text" name="title"
+                  onChange={this.handleChange} placeholder="Title of your post"
+                  value={this.state.title}></input>
+                <p className="form_input_text" id="genre_input">Genre:</p>
+                <input className="input_box" type="text" name="genre"
+                  onChange={this.handleChange} placeholder="Genre of your post"
+                  value={this.state.genre}></input>
+                <p className="form_input_text" id="description_input">Description:</p>
+                <textarea className="input_box" id="description_input_box" name="description"
+                  onChange={this.handleChange} placeholder="Description of your post" cols="10"
+                  value={this.state.description}></textarea>
+                <p className="form_input_text" id="tags_input"><span>Tags</span></p>
+                <div id="input_tag_header_div">
+                  <button id="add_tag_button" type="button" onClick={this.showInputBox}>Add Tag</button>
+                </div>
+                <Tags tags={this.state.inputTags} modify={true} handleTagDelete={this.handleTagDelete}
+                  handleTagEdit={this.handleTagEdit}/>
+                <hr id="input_hr"></hr>
+                <label htmlFor="input_image_button" id="image_upload_label">
+                  Change image
+                </label>
+                <input id="input_image_button" type="file" name="post_pic" accept="image/*"
+                  onChange={this.readImageFile}></input>
+                <input id="form_submit" type="button" onClick={this.handleSubmit} value="Submit" disabled={!this.state.title}></input>
+              </form>
+            </div>
         </div>
+         :
+        <div id="input_box">
+          <p id="input_box_title">Upload to this website</p>
+          <div id="image_upload_wrapper">
+            <label htmlFor="input_image_button" id="image_upload_label">
+              Upload an image
+            </label>
+            <input id="input_image_button" type="file" name="post_pic" accept="image/*"
+              onChange={this.readImageFile}></input>
+          </div>
+        </div>
+      }
       </div>
-  );
+    </div>
+    );
   }
 }
