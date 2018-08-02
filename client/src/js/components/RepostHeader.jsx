@@ -1,5 +1,5 @@
-// Create a new React component here!import React from 'react';
 import React from 'react';
+import DropdownProfile from './DropdownProfile.jsx'
 import { Link } from 'react-router-dom';
 
 const _MS_PER_MINUTE = 1000 * 60;
@@ -28,18 +28,22 @@ export default class RepostHeader extends React.Component {
   render() {
     return (
       <div id="post_header">
-        <Link to={"/" + this.props.username}>
+        <Link to={"/" + this.props.username} className="post_profile_link">
           <div id="profile_image_div">
             <img id="profile_image" alt="" src={this.props.profile_image_src}></img>
           </div>
           <strong id="user_name">{this.props.profileName}</strong>
+          <DropdownProfile username={this.props.username} location={this.props.location}
+            userFollowers={this.props.userFollowers} isFollowing={this.props.isFollowing} />
         </Link>
         <p id="post_status">{this.dateDiffInDays(new Date(this.props.repostDate))}</p>
-        <Link to={"/" + this.props.repost_username}>
+        <Link to={"/" + this.props.repost_username} className="post_profile_link">
           <div id="profile_image_div">
             <img id="profile_image" alt="" src={this.props.repost_profile_image_src}></img>
           </div>
           <strong id="user_name">{this.props.repost_profileName}</strong>
+          <DropdownProfile username={this.props.repost_username} location={this.props.repost_location}
+            userFollowers={this.props.repost_userFollowers} isFollowing={this.props.repost_isFollowing} />
         </Link>
         <button id="genre_button">{this.props.genre}</button>
       </div>

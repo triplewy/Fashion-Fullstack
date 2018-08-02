@@ -1,5 +1,6 @@
 import React from 'react';
 import PlaylistModalView from './PlaylistModalView.jsx'
+import LoginModal from './LoginModal.jsx'
 import view_icon_revised from 'images/view-icon-revised.png'
 import like_icon from 'images/heart-icon.png'
 import like_icon_liked from 'images/heart-icon-liked.png'
@@ -104,6 +105,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleUnrepost(e) {
+    console.log("unrepost");
     fetch('/api/unrepost', {
       method: 'POST',
       headers: {

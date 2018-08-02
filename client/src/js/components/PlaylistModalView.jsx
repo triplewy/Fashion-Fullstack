@@ -26,7 +26,6 @@ export default class PlaylistModalView extends React.Component {
   }
 
   componentDidMount() {
-    console.log("PlaylistModalView mediaId is", this.props.mediaId);
     fetch('/api/getPlaylists', {
       credentials: 'include'
     })

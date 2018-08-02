@@ -7,6 +7,9 @@ import shoes from 'images/shoes-icon.png'
 import trash_icon from 'images/trash-icon.png'
 import edit_icon from 'images/edit-icon.svg'
 
+// {this.props.modify && <div id="outer_circle">
+//   <div id="inner_circle"></div>
+// </div>}
 
 export default class Tags extends React.Component {
   constructor(props) {
@@ -66,9 +69,6 @@ export default class Tags extends React.Component {
             <li key={index} className="clothing_tag" id={item.itemType + "_tag"} onMouseEnter={this.showTagLocation.bind(this, index)}
               onMouseLeave={this.showTagLocation.bind(this, -1)} onClick={this.showClickTagLocation.bind(this, index)}
               style={{'backgroundColor': this.state.displayClickTagLocation === index ? '#f1f1f1' : null}}>
-              {this.props.modify && <div id="outer_circle">
-                <div id="inner_circle"></div>
-              </div>}
               <div id="tag_location" style={{'left': item.x, 'top': item.y,
                 'display': this.state.displayTagLocation === index ? 'block' : 'none'}}>
               </div>
@@ -80,9 +80,6 @@ export default class Tags extends React.Component {
                 <div className="tags_text_div">
                   <p className="tag_brand">{item.itemBrand}</p>
                   <p className="tag_name">{item.itemName}</p>
-                  {item.original ? <div className="og_tag">
-                    <img className="og_icon" alt="original icon" src="../images/og-icon.png"></img>
-                  </div> : ''}
                 </div>
                 {this.props.modify && <div id="tag_modifiers_div">
                   <button className="tag_modifier_button" id="edit_tag_button" type="button" onClick={this.props.handleTagEdit.bind(this, index)}>
@@ -92,6 +89,9 @@ export default class Tags extends React.Component {
                     <img className="tag_modifier_button_image" src={trash_icon}></img>
                   </button>
                 </div>}
+                <div id="og_tag">
+                  {item.original != 0 && <span>✔</span>}
+                </div>
             </li>
           )
       });

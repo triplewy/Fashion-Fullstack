@@ -301,19 +301,14 @@ app.get('/api/navbar', (req, res) => {
   }
 })
 
-app.get('/api/home', (req, res) => {
+app.get('/api/home', loggedIn, (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/home');
-  var userId = req.user;
-  if (userId == null) {
-    res.redirect('/home')
-  } else {
-    Promise.all([getStream(userId, userId)])
-    .then(function(allData) {
-      res.send(allData[0])
-    }).catch(err => {
-      console.log(err);
-    })
-  }
+  Promise.all([getStream(req.user, req.user)])
+  .then(function(allData) {
+    res.send(allData[0])
+  }).catch(err => {
+    console.log(err);
+  })
 })
 
 app.get('/api/getPlaylists', (req, res) => {
@@ -364,7 +359,7 @@ app.post('/api/newPlaylist', (req, res) => {
   })
 })
 
-app.post('/api/like', function(req, res) {
+app.post('/api/like', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/like');
   Promise.all([addToCollection(req, 'likes', 'mediaId')])
   .then(function(allData) {
@@ -375,7 +370,7 @@ app.post('/api/like', function(req, res) {
   })
 })
 
-app.post('/api/unlike', function(req, res) {
+app.post('/api/unlike', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/unlike');
   Promise.all([removeFromCollection(req, 'likes', 'mediaId')])
   .then(function(allData) {
@@ -386,7 +381,7 @@ app.post('/api/unlike', function(req, res) {
   })
 })
 
-app.post('/api/repost', function(req, res) {
+app.post('/api/repost', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/repost');
   Promise.all([addToCollection(req, 'reposts', 'mediaId')])
   .then(function(allData) {
@@ -397,7 +392,18 @@ app.post('/api/repost', function(req, res) {
   })
 })
 
-app.post('/api/playlistLike', function(req, res) {
+app.post('/api/unrepost', loggedIn, function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/repost');
+  Promise.all([removeFromCollection(req, 'reposts', 'mediaId')])
+  .then(function(allData) {
+    res.send(allData[0])
+  }).catch(err => {
+    console.log(err);
+    res.send({message: 'failed'})
+  })
+})
+
+app.post('/api/playlistLike', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/playlistLike');
   Promise.all([addToCollection(req, 'playlistsLikes', 'playlistId')])
   .then(function(allData) {
@@ -408,7 +414,7 @@ app.post('/api/playlistLike', function(req, res) {
   })
 })
 
-app.post('/api/playlistUnlike', function(req, res) {
+app.post('/api/playlistUnlike', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/playlistUnlike');
   Promise.all([removeFromCollection(req, 'playlistsLikes', 'playlistId')])
   .then(function(allData) {
@@ -419,7 +425,7 @@ app.post('/api/playlistUnlike', function(req, res) {
   })
 })
 
-app.post('/api/playlistRepost', function(req, res) {
+app.post('/api/playlistRepost', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/playlistRepost');
   Promise.all([addToCollection(req, 'playlistsReposts', 'playlistId')])
   .then(function(allData) {
@@ -430,7 +436,7 @@ app.post('/api/playlistRepost', function(req, res) {
   })
 })
 
-app.post('/api/playlistUnrepost', function(req, res) {
+app.post('/api/playlistUnrepost', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/playlistRepost');
   Promise.all([removeFromCollection(req, 'playlistsReposts', 'playlistId')])
   .then(function(allData) {
@@ -441,7 +447,7 @@ app.post('/api/playlistUnrepost', function(req, res) {
   })
 })
 
-app.post('/api/playlistFollow', function(req, res) {
+app.post('/api/playlistFollow', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/playlistFollow');
   var userId = req.user
   var playlistId = req.body.playlistId
@@ -462,7 +468,7 @@ app.post('/api/playlistFollow', function(req, res) {
   })
 })
 
-app.post('/api/playlistUnfollow', function(req, res) {
+app.post('/api/playlistUnfollow', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/playlistUnfollow');
   var userId = req.user
   var playlistId = req.body.playlistId
@@ -483,7 +489,7 @@ app.post('/api/playlistUnfollow', function(req, res) {
   })
 })
 
-app.post('/api/comment', function(req, res) {
+app.post('/api/comment', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/comment');
   var userId = req.user;
   var mediaId = req.body.mediaId;
@@ -696,7 +702,7 @@ app.get('/api/:profile/playlist/:playlistId', function(request, response) {
   })
 })
 
-app.post('/api/upload', function(req, res) {
+app.post('/api/upload', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/upload');
   upload(req, res, function(err) {
     if (err) {
@@ -704,17 +710,46 @@ app.post('/api/upload', function(req, res) {
       res.send({message: err.message})
     } else {
       var filename = "/images/" + req.file.fieldname + '-' + Date.now() +'.jpg'
-      Promise.all([rotateImage(req.file.buffer, filename), uploadImageMetadata(req, filename)])
-      .then(function(allData) {
-        if (allData[0].message == 'success' && allData[1].message == 'success') {
-          console.log("Records added successfully");
-          res.send({message: 'Post Uploaded Successfully!'})
-        } else {
-          res.send({message: 'Failed'})
-        }
-      }).catch(err => {
-        console.log(err);
-      })
+      if (req.file.mimetype == 'image/png') {
+        fs.writeFile("public" + filename, req.file.buffer, function(err) {
+          if (err) {
+            console.log(err)
+            res.send({message: 'fail'})
+          } else {
+            Promise.all([uploadImageMetadata(req, filename)])
+            .then(function(allData) {
+              console.log("Records added successfully");
+              res.send({message: 'success'})
+            }).catch(e => {
+              console.log(e);
+              res.send({message: 'fail'})
+            })
+          }
+        })
+      } else {
+        jo.rotate(req.file.buffer, {}, function(error, buffer) {
+          if (error && error.code !== jo.errors.no_orientation && error.code !== jo.errors.correct_orientation) {
+            console.log('An error occurred when rotating the file: ' + error.message)
+            res.send({message: 'fail'})
+          } else {
+            fs.writeFile("public" + filename, buffer, function(err) {
+              if (err) {
+                console.log(err)
+                res.send({message: 'fail'})
+              } else {
+                Promise.all([uploadImageMetadata(req, filename)])
+                .then(function(allData) {
+                  console.log("Records added successfully");
+                  res.send({message: 'success'})
+                }).catch(e => {
+                  console.log(e);
+                  res.send({message: 'fail'})
+                })
+              }
+            })
+          }
+        })
+      }
     }
   })
 });
@@ -750,6 +785,11 @@ app.post('/api/signin', passport.authenticate('local'), function(req, res) {
   res.redirect('/');
 });
 
+app.post('/api/logout', function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/logout');
+  req.logout()
+  res.redirect('/')
+})
 
 app.listen(8081, function(){
     console.log('- Server listening on port 8081');
@@ -949,29 +989,29 @@ function getStream(userId, cookieUser) {
   return new Promise(function(resolve, reject) {
     conn.query(
     'SELECT null as mediaId, a.playlistId, a.title, a.genre, a.public, null as original, null as imageUrl, ' +
-    'null AS views, a.likes, a.reposts, a.comments, a.followers, a.description, a.dateTime AS uploadDate, playlistsReposts.dateTime as orderTime, ' +
-    'b.username AS repost_username, b.profileName AS repost_profileName, b.profile_image_src AS repost_profile_image_src, ' +
-    'c.username AS username, c.profileName AS profileName, c.profile_image_src AS profile_image_src, ' +
+    'null AS views, a.likes, a.reposts, a.comments, a.followers AS playlistFollowers, a.description, a.dateTime AS uploadDate, playlistsReposts.dateTime as orderTime, ' +
+    'b.username AS repost_username, b.profileName AS repost_profileName, b.profile_image_src AS repost_profile_image_src, b.location AS repost_location, b.followers AS repost_userFollowers, ' +
+    'c.username AS username, c.profileName AS profileName, c.profile_image_src AS profile_image_src, c.location AS location, c.followers AS userFollowers, ' +
     '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=$1 AND playlistId = a.playlistId) > 0) AS reposted, ((SELECT COUNT(*) FROM playlistsLikes WHERE userId=$1 AND playlistId = a.playlistId) > 0) AS liked, ((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=$1 AND playlistId = a.playlistId) > 0) AS followed ' +
     'FROM playlistsReposts INNER JOIN playlists AS a ON a.playlistId = playlistsReposts.playlistId INNER JOIN users AS c ON c.userId = a.userId INNER JOIN users AS b ON b.userId = playlistsReposts.userId ' +
     'WHERE playlistsReposts.userId IN (SELECT followingId FROM following WHERE userId=$1) OR playlistsReposts.userId=$1 UNION ALL ' +
     'SELECT null as mediaId, playlistId, title, genre, public, null as original, null as imageUrl, ' +
-    'null AS views, likes, reposts, comments, playlists.followers, playlists.description, dateTime AS uploadDate, dateTime as orderTime, ' +
-    'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, ' +
-    'username AS username, profileName AS profileName, profile_image_src AS profile_image_src, ' +
+    'null AS views, likes, reposts, comments, playlists.followers AS playlistFollowers, playlists.description, dateTime AS uploadDate, dateTime as orderTime, ' +
+    'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, null AS repost_location, null AS repost_userFollowers, ' +
+    'username AS username, profileName AS profileName, profile_image_src AS profile_image_src, location AS location, users.followers AS userFollowers, ' +
     '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=$1 AND playlistId = playlists.playlistId) > 0) AS reposted, ((SELECT COUNT(*) FROM playlistsLikes WHERE userId=$1 AND playlistId = playlists.playlistId) > 0) AS liked, ((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=$1 AND playlistId = playlists.playlistId) > 0) AS followed ' +
     'FROM playlists INNER JOIN users ON users.userId = playlists.userId WHERE playlists.userId IN (SELECT followingId FROM following WHERE userId=$1) OR playlists.userId=$1 UNION ALL ' +
     'SELECT a.mediaId, null as playlistId, a.title, a.genre, a.public, a.original, a.imageUrl, a.views, ' +
-    'a.likes, a.reposts, a.comments, null as followers, a.description, a.dateTime AS uploadDate, reposts.dateTime as orderTime, ' +
-    'b.username as repost_username, b.profileName as repost_profileName, b.profile_image_src AS repost_profile_image_src, ' +
-    'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src, ' +
+    'a.likes, a.reposts, a.comments, null as playlistFollowers, a.description, a.dateTime AS uploadDate, reposts.dateTime as orderTime, ' +
+    'b.username as repost_username, b.profileName as repost_profileName, b.profile_image_src AS repost_profile_image_src, b.location AS repost_location, b.followers AS repost_userFollowers, ' +
+    'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src, c.location AS location, c.followers AS userFollowers, ' +
     '((SELECT COUNT(*) FROM reposts WHERE userId=$1 AND mediaId = a.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=$1 AND mediaId = a.mediaId) > 0) AS liked, null AS followed ' +
     'FROM reposts INNER JOIN posts AS a ON a.mediaId = reposts.mediaId INNER JOIN users AS c ON c.userId = a.userId INNER JOIN users AS b ON b.userId = reposts.userId ' +
     'WHERE reposts.userId IN (SELECT followingId FROM following WHERE userId=$1) OR reposts.userId=$1 UNION ALL ' +
     'SELECT mediaId, null as playlistId, title, genre, public, original, imageUrl, views, likes, reposts, ' +
-    'comments, null as followers, posts.description, dateTime AS uploadDate, dateTime as orderTime, ' +
-    'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, ' +
-    'username AS username, profileName AS profileName, profile_image_src AS profile_image_src, ' +
+    'comments, null as playlistFollowers, posts.description, dateTime AS uploadDate, dateTime as orderTime, ' +
+    'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, null AS repost_location, null AS repost_userFollowers, ' +
+    'username AS username, profileName AS profileName, profile_image_src AS profile_image_src, location AS location, followers AS userFollowers, ' +
     '((SELECT COUNT(*) FROM reposts WHERE userId=$1 AND mediaId = posts.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=$1 AND mediaId = posts.mediaId) > 0) AS liked, null AS followed ' +
     'FROM posts INNER JOIN users ON users.userId = posts.userId WHERE posts.userId IN (SELECT followingId FROM following WHERE userId=$1) OR posts.userId=$1 ORDER BY orderTime DESC LIMIT 20',
     userId, function(err, result) {
@@ -1001,18 +1041,22 @@ function getStream(userId, cookieUser) {
                 title:row.title, genre:row.genre, description:row.description,
                 date:row.dateTime, original: row.original, username: row.username,
                 profileName: row.profileName, profile_image_src: row.profile_image_src,
+                location: row.location, userFollowers: row.userFollowers,
                 tags:allData[0][row.mediaId], comments:allData[1][row.mediaId], uploadDate: row.uploadDate,
                 repost_username: row.repost_username, repost_profileName: row.repost_profileName,
                 repost_profile_image_src: row.repost_profile_image_src, repostDate: row.orderTime,
+                repost_location: row.repost_location, repost_userFollowers: row.repost_userFollowers,
                 reposted: row.reposted, liked: row.liked}
               stream.push(post)
             } else if (playlistId) {
               var playlist = {playlistId:row.playlistId, likes:row.likes, reposts:row.reposts,
-                genre: row.genre, comments:row.comments, followers: row.followers, title:row.title,
+                genre: row.genre, comments:row.comments, followers: row.playlistFollowers, title:row.title,
                 description:row.description, uploadDate:row.uploadDate, public: row.public,
                 repost_username: row.repost_username, repost_profileName: row.repost_profileName,
+                repost_location: row.repost_location, repost_userFollowers: row.repost_userFollowers,
                 repost_profile_image_src: row.repost_profile_image_src, repostDate: row.orderTime,
                 username: row.username, profileName: row.profileName, profile_image_src: row.profile_image_src,
+                location: row.location, userFollowers: row.userFollowers,
                 comments:allData[3][row.playlistId], posts: allData[2][row.playlistId], reposted: row.reposted, liked: row.liked, followed: row.followed}
               stream.push(playlist)
             } else {
@@ -1115,22 +1159,6 @@ function removeFromCollection(req, table, idType) {
   })
 }
 
-function rotateImage(imageBuffer, filename) {
-  return new Promise(function(resolve, reject) {
-    jo.rotate(imageBuffer, {}, function(error, buffer) {
-      if (error && error.code !== jo.errors.no_orientation) {
-        return reject('An error occurred when rotating the file: ' + error.message)
-      }
-      fs.writeFile("public" + filename, buffer, function(err) {
-        if (err) {
-          return reject(err)
-        }
-          return resolve({message: 'success'});
-      });
-    })
-  });
-}
-
 function uploadImageMetadata(req, filename) {
   return new Promise(function(resolve, reject) {
     var insertQuery = [req.user, req.body.title, req.body.genre, filename,
@@ -1155,4 +1183,12 @@ function uploadImageMetadata(req, filename) {
       }
     })
   });
+}
+
+function loggedIn(req, res, next) {
+  if (req.user) {
+    next()
+  } else {
+    res.send({message: 'not logged in'})
+  }
 }

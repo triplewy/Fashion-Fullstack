@@ -2,11 +2,6 @@ import React from 'react';
 import Navbar from './Navbar.jsx'
 import InputTag from './InputTag.jsx';
 import Tags from './Tags.jsx'
-import {Dropdown} from 'react-bootstrap'
-import shirt from 'images/shirt-icon.png'
-import jacket from 'images/jacket-icon.png'
-import shorts from 'images/shorts-icon.png'
-import shoes from 'images/shoes-icon.png'
 import * as loadImage from 'blueimp-load-image'
 import Cookies from 'js-cookie';
 
@@ -24,17 +19,15 @@ export default class Upload extends React.Component {
       orientation: null,
       dateTime: '',
       inputTags: [],
-      original: 0,
+      original: false,
       currentTagScreenX: 0,
       currentTagScreenY: 0,
       currentTagRelativeX: 0,
       currentTagRelativeY: 0,
       displayTagInput: 'none',
       editTagIndex: -1,
-      editTag: {itemType:'shirt', itemBrand: '', itemName: '', original: 0},
-      imageUploaded: false,
-      inputTags: [],
-      userId: Cookies.get('user')
+      editTag: {itemType:'shirt', itemBrand: '', itemName: '', original: false},
+      imageUploaded: false
     };
 
     this.readImageFile = this.readImageFile.bind(this);
@@ -70,17 +63,12 @@ export default class Upload extends React.Component {
   }
 
   handleSubmit(e) {
-    console.log("submit inputTags are", this.state.inputTags);
-    console.log("cookie userId is", this.state.userId);
-    console.log("orientation is", this.state.orientation);
-
     var formData = new FormData();
     formData.append('image', this.state.file);
     formData.append('title', this.state.title);
     formData.append('genre', this.state.genre);
     formData.append('description', this.state.description);
     formData.append('original', this.state.original);
-    formData.append('userId', 1);
     formData.append('inputTags', JSON.stringify(this.state.inputTags));
 
     fetch('/api/upload', {
@@ -88,11 +76,18 @@ export default class Upload extends React.Component {
       credentials: 'include',
       body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+      console.log(response);
+      if (response.status == 400) {
+        console.log("not logged in");
+      } else {
+        return response.json()
+      }
+    })
     .then(data => {
       console.log(data.message);
       if (data.message == 'success') {
-        
+
       }
     })
   }
@@ -157,7 +152,7 @@ export default class Upload extends React.Component {
     }
     this.setState({inputTags: tempInputTags,
       displayTagInput: 'none',
-      editTag: {itemType:'shirt', itemBrand: '', itemName: '', original: 0},
+      editTag: {itemType:'shirt', itemBrand: '', itemName: '', original: false},
       editTagIndex: -1
     })
   }
@@ -165,7 +160,7 @@ export default class Upload extends React.Component {
   handleTagCancel(e) {
     this.setState({
       displayTagInput: 'none',
-      editTag: {itemType:'shirt', itemBrand: '', itemName: '', original: 0},
+      editTag: {itemType:'shirt', itemBrand: '', itemName: '', original: false},
       editTagIndex: -1
     })
   }

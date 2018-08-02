@@ -10,7 +10,7 @@ export default class InputTag extends React.Component {
       itemType: 'shirt',
       itemBrand: '',
       itemName: '',
-      original: '',
+      original: false,
       index: -1
     }
 

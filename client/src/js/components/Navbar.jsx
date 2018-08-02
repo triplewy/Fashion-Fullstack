@@ -1,5 +1,6 @@
 import React from 'react';
 import StatsColumn from './StatsColumn.jsx'
+import LoginModal from './LoginModal.jsx'
 import { Link, Redirect} from 'react-router-dom';
 import notification_icon from 'images/notification-icon.png'
 
@@ -15,37 +16,24 @@ export default class Navbar extends React.Component {
       profileName: '',
       showStats: false,
       showNavbar: true,
-      lastScrollY: 0
+      lastScrollY: 0,
+      loggedIn: false,
+      showLoginModal: false,
+      redirect: false
     };
     this.onChange = this.onChange.bind(this);
     this.searchSubmit = this.searchSubmit.bind(this);
     this.showStats = this.showStats.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
+    this.showLoginModal = this.showLoginModal.bind(this)
+    this.fetchNavbar = this.fetchNavbar.bind(this)
+    this.handleLogout = this.handleLogout.bind(this)
+    this.login = this.login.bind(this)
   }
 
   componentDidMount() {
     window.addEventListener('scroll', this.handleScroll, { passive: true })
-
-    fetch('/api/navbar', {
-      credentials: 'include'
-    })
-    .then(res => {
-      if (res.redirected) {
-        return
-      }
-      else {
-        return res.json()
-      }
-    })
-    .then(data => {
-      if (data) {
-        this.setState({
-          username: data.username,
-          profile_image_src: data.profile_image_src,
-          profileName: data.profileName
-        });
-      }
-    })
+    this.fetchNavbar()
   }
 
   componentWillUnmount() {
@@ -84,10 +72,64 @@ export default class Navbar extends React.Component {
     }
   }
 
+  showLoginModal(e) {
+    this.setState({showLoginModal: true})
+  }
+
+  fetchNavbar() {
+    fetch('/api/navbar', {
+      credentials: 'include'
+    })
+    .then(res => {
+      if (res.redirected) {
+        this.setState({loggedIn: false})
+      }
+      else {
+        return res.json()
+      }
+    })
+    .then(data => {
+      if (data) {
+        this.setState({
+          username: data.username,
+          profile_image_src: data.profile_image_src,
+          profileName: data.profileName,
+          loggedIn: true
+        });
+      }
+    })
+  }
+
+  login(status) {
+    if (status == 'success') {
+      this.fetchNavbar()
+    }
+  }
+
+  handleLogout(e) {
+    fetch('/api/logout', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    })
+    .then(res => {
+      if (res.redirected) {
+        this.setState({redirect: true})
+      }
+    }).catch(function(err) {
+        console.log(err);
+    });
+  }
+
   render() {
       return (
         <div id={this.state.showNavbar ? 'banner' : 'banner_hide'}>
-			    <Link to="/">
+          {this.state.redirect && <Redirect to={'/home'}/>}
+          <div id="banner_wrapper">
+  			  <Link to="/">
             <h1 id="banner_title">Fashion</h1>
           </Link>
           <div id="search_bar_div">
@@ -96,59 +138,73 @@ export default class Navbar extends React.Component {
                 onChange={this.onChange} value={this.state.search_value}></input>
               <button id="search_bar_button" type="submit" disabled={!this.state.search_value}>Go</button>
             </form>
-            {this.state.search_redirect && (<Redirect to={'/search'}/>)}
+            {this.state.search_redirect && <Redirect to={'/search'}/>}
           </div>
           <Link to="/finder">
             <button id="outfit_finder_button" className="banner_button">Explore</button>
           </Link>
-          <Link to="/upload">
-            <button id="upload_button" className="banner_button">Upload</button>
-          </Link>
-          <div className="btn-group">
-            <button className="dropdown-toggle" type="button" data-toggle="dropdown">
-              <div id="profile_image_div">
-                <img id="profile_image" alt="" src={this.state.profile_image_src}></img>
-              </div>
-              <p id="user_name">{this.state.profileName}</p>
-              <span className="caret"></span>
-            </button>
-            <ul className="dropdown-menu">
-              <li>
-                <Link to={"/" + this.state.username}>Profile</Link>
-              </li>
-              <li>
-                <Link to={"/you/collections"}>Collections</Link>
-              </li>
-              <li>
-                <StatsColumn show_profile={false}/>
-              </li>
-              <li>
-                <p>Logout</p>
-              </li>
-            </ul>
+          {this.state.loggedIn ?
+            <div id="banner_user_div">
+            <Link to="/upload">
+              <button id="upload_button" className="banner_button">Upload</button>
+            </Link>
+            <div className="btn-group">
+              <button className="dropdown-toggle" type="button" data-toggle="dropdown">
+                <div id="profile_image_div">
+                  <img id="profile_image" alt="" src={this.state.profile_image_src}></img>
+                </div>
+                <p id="user_name">{this.state.profileName}</p>
+                <span className="caret"></span>
+              </button>
+              <ul className="dropdown-menu">
+                <li>
+                  <Link to={"/" + this.state.username}>Profile</Link>
+                </li>
+                <li>
+                  <Link to={"/you/collections"}>Collections</Link>
+                </li>
+                <li>
+                  <StatsColumn show_profile={false}/>
+                </li>
+                <li>
+                  <button onClick={this.handleLogout}>Logout</button>
+                </li>
+              </ul>
+            </div>
+            <div className="btn-group">
+              <button className="dropdown-toggle" type="button" data-toggle="dropdown">
+                <img id="notifications_icon" alt="notifications icon" className="banner_button" src={notification_icon}></img>
+                <span className="caret"></span>
+              </button>
+              <ul className="dropdown-menu">
+                <li className="form-group">
+                  Yo
+                </li>
+              </ul>
+            </div>
+            <div className="btn-group">
+              <button className="dropdown-toggle" type="button" data-toggle="dropdown">
+                Messages<span className="caret"></span>
+              </button>
+              <ul className="dropdown-menu">
+                <li className="form-group">
+                  Yo
+                </li>
+              </ul>
+            </div>
           </div>
-          <div className="btn-group">
-            <button className="dropdown-toggle" type="button" data-toggle="dropdown">
-              <img id="notifications_icon" alt="notifications icon" className="banner_button" src={notification_icon}></img>
-              <span className="caret"></span>
-            </button>
-            <ul className="dropdown-menu">
-              <li className="form-group">
-                Yo
-              </li>
-            </ul>
+
+          :
+          <div id="banner_user_div">
+            <button id="banner_login_button" onClick={this.showLoginModal}>Login</button>
+            <LoginModal show={this.state.showLoginModal} login={this.login}/>
+            <Link to={"/home"}>
+              <button id="signup_button" className="banner_button">Sign Up</button>
+            </Link>
           </div>
-          <div className="btn-group">
-            <button className="dropdown-toggle" type="button" data-toggle="dropdown">
-              Messages<span className="caret"></span>
-            </button>
-            <ul className="dropdown-menu">
-              <li className="form-group">
-                Yo
-              </li>
-            </ul>
-          </div>
-		    </div>
+        }
+        </div>
+		   </div>
     );
   }
 }

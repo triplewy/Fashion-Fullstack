@@ -10,7 +10,6 @@ export default class Stream extends React.Component {
 
     this.state = {
       redirect: false,
-      redirectURL: '',
       response: '',
       json_data: [],
       streamData: [],
@@ -28,15 +27,11 @@ export default class Stream extends React.Component {
     fetch('/api/home', {
       credentials: 'include'
     })
-    .then(res => {
-      console.log(res);
-      if (res.redirected) {
-        this.setState({redirect: true, redirectURL: res.url});
-      } else {
-        return res.json()
-      }
-    })
+    .then(res => res.json())
     .then(data => {
+      if (data.message == 'not logged in') {
+        this.setState({redirect: true});
+      }
       console.log("api home data is", data);
       var streamData = data.stream
       console.log("streamData is", streamData);
@@ -45,7 +40,7 @@ export default class Stream extends React.Component {
     .catch((error) => {
       console.error(error);
     });
-    
+
     window.scrollTo(0, 0)
   }
 

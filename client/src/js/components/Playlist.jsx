@@ -4,6 +4,7 @@ import RepostHeader from './RepostHeader.jsx'
 import StatsHeader from './StatsHeader.jsx'
 import Comments from './Comments.jsx'
 import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
+import DropdownProfile from './DropdownProfile.jsx'
 import { Link } from 'react-router-dom';
 
 const _MS_PER_MINUTE = 1000 * 60;
@@ -129,15 +130,19 @@ export default class Playlist extends React.Component {
         <div id="post_wrapper">
           <div id="polaroid_div">
             {this.props.repost_username ? <RepostHeader username={this.props.username} profileName={this.props.profileName}
+              location={this.props.location} userFollowers={this.props.userFollowers} isFollowing={this.props.isFollowing}
               profile_image_src={this.props.profile_image_src} repost_username={this.props.repost_username}
               repost_profileName={this.props.repost_profileName} repost_profile_image_src={this.props.repost_profile_image_src}
-              genre={this.props.genre} repostDate={this.props.repostDate}/> :
+              repost_location={this.props.repost_location} repost_userFollowers={this.props.repost_userFollowers}
+              repost_isFollowing={this.props.repost_isFollowing} genre={this.props.genre} repostDate={this.props.repostDate}/> :
               <div id="post_header">
-                <Link to={"/" + this.props.username}>
+                <Link to={"/" + this.props.username} className="post_profile_link">
                   <div id="profile_image_div">
                     <img id="profile_image" alt="" src={this.props.profile_image_src}></img>
                   </div>
                   <strong id="user_name">{this.props.profileName}</strong>
+                  <DropdownProfile username={this.props.username} location={this.props.location}
+                    userFollowers={this.props.userFollowers} isFollowing={this.props.isFollowing} />
                 </Link>
                 <p id="post_status">{this.dateDiffInDays(new Date(this.props.uploadDate))}</p>
                 <button id="genre_button">{this.props.genre}</button>

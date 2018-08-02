@@ -47,7 +47,7 @@ textarea {
   height: 70px;
   color: black;
   z-index: 2;
-  padding: 0 8%;
+  padding: 0 auto;
   border-bottom: 1px solid #f1f1f1;
 }
 
@@ -59,8 +59,15 @@ textarea {
   width: 100%;
   height: 0;
   color: black;
-  padding: 0 8%;
+  padding: 0 auto;
   border-bottom: 1px solid #f1f1f1;
+}
+
+#banner_wrapper {
+  display: block;
+  height: 100%;
+  width: 1075px;
+  margin: 0 auto;
 }
 
 #banner_title {
@@ -92,6 +99,10 @@ textarea {
   border: 0;
 }
 
+#banner_user_div {
+  display: inline-block;
+}
+
 .banner_button {
   display: inline-block;
   cursor: pointer;
@@ -103,6 +114,19 @@ textarea {
 .banner_button:hover {
   color: gray;
   line-height: 70px;
+}
+
+#banner_login_button {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background-color: #337ab7;
+  color: white;
+}
+
+#banner_login_button:hover {
+  border: 1px solid #337ab7;
+  background-color: transparent;
+  color: #337ab7;
 }
 
 .dropdown {
@@ -131,7 +155,8 @@ textarea {
 #white_background_wrapper {
   position: relative;
   overflow: hidden;
-  width: 1250px;
+  /* width: 1250px; */
+  width: 1100px;
   min-height: 706px;
   margin: 0 auto;
   margin-top: 70px;
@@ -208,6 +233,7 @@ textarea {
   margin-left: 5px;
   font-size: 12px;
   font-weight: 400;
+  padding: 16px 0;
 }
 
 #post_status {
@@ -261,7 +287,8 @@ textarea {
 
 #post_image {
   /* max-width: 100%; */
-  max-width: 750px;
+  /* max-width: 750px; */
+  max-width: 700px;
   image-orientation: from-image;
   /* max-height: 776px; */
 }
@@ -271,6 +298,7 @@ textarea {
   display: inline-block;
   vertical-align: top;
   width: 350px;
+  /* max-width: 30%; */
 }
 
 #title {
@@ -282,7 +310,7 @@ textarea {
 
 #title_text {
   display: inline-block;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   margin-bottom: 0;
 }
@@ -324,9 +352,12 @@ textarea {
 .tag_name {
 }
 
-.og_tag {
+#og_tag {
   display: inline-block;
-  width: 20px
+  width: 30px;
+  padding: 10px 10px;
+  color: red;
+  text-align: center;
 }
 
 .og_icon {
@@ -652,7 +683,7 @@ textarea {
 
 #single_post_image {
   /* max-width: 850px; */
-  max-width: 800px;
+  max-width: 720px;
   image-orientation: from-image;
 }
 
@@ -1225,11 +1256,13 @@ textarea {
 
 .playlist_selector:hover {
   background-color: #f1f1f1;
+  cursor: pointer;
 }
 
 #create_new_playlist {
   font-weight: 500;
   font-size: 16px;
+  cursor: pointer;
 }
 
 #playlists_list {
@@ -1332,6 +1365,7 @@ textarea {
   z-index: 3;
   background-color: rgba(255,255,255,0.4);
   border-radius: 8px;
+  cursor: grab;
 }
 
 #input_box {
@@ -1409,6 +1443,43 @@ textarea {
   border: 1px solid #337ab7;
   width: 12px;
   height: 12px;
+}
+
+.modal-backdrop.in {
+  z-index: auto;
+}
+
+#login_modal_body {
+  padding: 10px 10px;
+}
+
+.post_profile_link div.dropdown {
+  display: none;
+  position: absolute;
+  left: 0;
+  padding: 10px 10px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.post_profile_link:hover div.dropdown {
+  display: block;
+}
+
+#dropdown_follow {
+  display: block;
+  margin: 0 auto;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 2px 5px;
+  margin-top: 2px;
+  color: black;
+}
+
+.dropdown_text {
+  padding: 2px 0;
+  color: black;
 }
 
 @media only screen and (max-width: 1300px) {
