@@ -4,7 +4,7 @@ export default class DropdownProfile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isFollowing: this.props.isFollowing
+      userFollowed: this.props.userFollowed
     };
 
     this.handleFollow = this.handleFollow.bind(this);
@@ -19,7 +19,7 @@ export default class DropdownProfile extends React.Component {
     .then(res => res.json())
     .then(data => {
       if (data.message == 'success') {
-        this.setState({isFollowing: true})
+        this.setState({userFollowed: true})
       }
     })
   }
@@ -32,7 +32,7 @@ export default class DropdownProfile extends React.Component {
     .then(res => res.json())
     .then(data => {
       if (data.message == 'success') {
-        this.setState({isFollowing: false})
+        this.setState({userFollowed: false})
       }
     })
   }
@@ -42,8 +42,9 @@ export default class DropdownProfile extends React.Component {
       <div className="dropdown">
         <p className="dropdown_text">{this.props.location}</p>
         <p className="dropdown_text">{'Followers: ' + this.props.userFollowers}</p>
-        <button id="dropdown_follow" onClick={this.state.isFollowing ? this.handleUnfollow : this.handleFollow}>
-          {this.state.isFollowing ? 'Following' : 'Follow'}
+        <button id="dropdown_follow" onClick={this.state.userFollowed ? this.handleUnfollow : this.handleFollow}
+          style={{color: this.state.userFollowed ? 'red' : 'black'}}>
+          {this.state.userFollowed ? 'Following' : 'Follow'}
         </button>
       </div>
     );

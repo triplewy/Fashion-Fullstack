@@ -42,13 +42,33 @@ export default class Upload extends React.Component {
 
   componentDidMount() {
     if (this.state.file) {
-      var reader = new FileReader();
+      // var reader = new FileReader();
       var file = this.state.file[0];
 
-      reader.onloadend = () => {
-        this.setState({imagePreviewUrl: reader.result, imageUploaded: true});
-      }
-      reader.readAsDataURL(file);
+      const loadImageOptions = { canvas: true, maxWidth: 850 }
+      loadImage.parseMetaData(file, (data) => {
+        if (data.exif) {
+          loadImageOptions.orientation = data.exif.get('Orientation')
+          console.log("loadImageOptions are", loadImageOptions);
+        }
+        loadImage(file, (canvas) => {
+          console.log("file is", file);
+          file.preview = canvas.toDataURL(file.type)
+          this.setState({
+            file: file,
+            imagePreviewUrl: file.preview,
+            orientation: loadImageOptions.orientation,
+            imageUploaded: true
+          })
+        }, loadImageOptions)
+      })
+
+
+      // 
+      // reader.onloadend = () => {
+      //   this.setState({imagePreviewUrl: reader.result, imageUploaded: true});
+      // }
+      // reader.readAsDataURL(file);
     } else {
       this.setState({imageUploaded: false})
     }

@@ -15,8 +15,6 @@ var bcrypt = require('bcrypt');
 var jo = require('jpeg-autorotate')
 var fs = require('fs')
 
-
-
 var app = express();
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -206,27 +204,6 @@ insertSQL = 'INSERT INTO posts (userId, title, genre, imageUrl, original, views,
   'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
 conn.query(insertSQL, insertQuery, function(err, result) {
-    if (err) {
-      /*TODO: Handle Error*/
-      console.log(err);
-    } else {
-      console.log("Records successfully added");
-    }
-  });
-
-insertQuery = ["shoes", "Nike x Comme des Garcons", "Black Vapormaxes", 1];
-insertSQL = 'INSERT INTO tags (itemType, itemBrand, itemName, original)' +
-  'VALUES (?, ?, ?, ?)';
-  conn.query(insertSQL, insertQuery, function(err, result) {
-      if (err) {
-        /*TODO: Handle Error*/
-        console.log(err);
-      } else {
-        console.log("Records successfully added");
-      }
-    });
-
-conn.query('INSERT INTO postTags (tagId, mediaId) VALUES (?, ?)', [1, 1], function(err, result) {
     if (err) {
       /*TODO: Handle Error*/
       console.log(err);
@@ -796,31 +773,31 @@ app.listen(8081, function(){
 });
 
 
-function getTagDetails(mediaIds, question_query) {
-  return new Promise(function(resolve, reject) {
-    conn.query('SELECT a.*, b.mediaId as mediaId FROM tags AS a, postTags AS b ' +
-    'WHERE a.tagId=b.tagId AND b.mediaId IN (' + question_query + ')', mediaIds, function(err, result) {
-      if (err) {
-        return reject(err)
-      } else {
-        var postTags = {};
-        for(var i = 0; i < result.rows.length; i++) {
-          var row = result.rows[i]
-          var mediaId = row.mediaId
-          if (postTags[mediaId]) {
-            postTags[mediaId].push({itemType: row.itemType, itemBrand: row.itemBrand,
-              itemName: row.itemName, original: row.original})
-          } else {
-            postTags[mediaId] = [];
-            postTags[mediaId].push({itemType: row.itemType, itemBrand: row.itemBrand,
-              itemName: row.itemName, original: row.original})
-          }
-        }
-        return resolve(postTags)
-      }
-    })
-  })
-}
+// function getTagDetails(mediaIds, question_query) {
+//   return new Promise(function(resolve, reject) {
+//     conn.query('SELECT a.*, b.mediaId as mediaId FROM tags AS a, postTags AS b ' +
+//     'WHERE a.tagId=b.tagId AND b.mediaId IN (' + question_query + ')', mediaIds, function(err, result) {
+//       if (err) {
+//         return reject(err)
+//       } else {
+//         var postTags = {};
+//         for(var i = 0; i < result.rows.length; i++) {
+//           var row = result.rows[i]
+//           var mediaId = row.mediaId
+//           if (postTags[mediaId]) {
+//             postTags[mediaId].push({itemType: row.itemType, itemBrand: row.itemBrand,
+//               itemName: row.itemName, original: row.original})
+//           } else {
+//             postTags[mediaId] = [];
+//             postTags[mediaId].push({itemType: row.itemType, itemBrand: row.itemBrand,
+//               itemName: row.itemName, original: row.original})
+//           }
+//         }
+//         return resolve(postTags)
+//       }
+//     })
+//   })
+// }
 
 function getTagDetailsRevised(mediaIds, question_query) {
   return new Promise(function(resolve, reject) {
@@ -828,7 +805,6 @@ function getTagDetailsRevised(mediaIds, question_query) {
       if (err) {
         return reject(err)
       } else {
-        console.log("getTagDetailsRevised result is", result);
         var postTags = {}
         for (var i = 0; i < result.rows.length; i++) {
           var row = result.rows[i]
@@ -890,7 +866,8 @@ function getComments(ids, question_query, commentsTable, idType) {
 
 function getPlaylistsPosts(playlistIds, question_query) {
   return new Promise(function(resolve, reject) {
-    conn.query('SELECT a.*, playlistId, b.username AS username , b.profileName AS profileName, b.profile_image_src AS profile_image_src, ' +
+    conn.query('SELECT a.*, playlistId, b.username AS username , b.profileName AS profileName, b.profile_image_src AS profile_image_src, b.location AS location, b.followers AS userFollowers, ' +
+    '((SELECT COUNT(*) FROM following WHERE userId=1 AND followingId = b.userId) > 0) AS userFollowed, ' +
     '((SELECT COUNT(*) FROM reposts WHERE userId=1 AND mediaId = a.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=1 AND mediaId = a.mediaId) > 0) AS liked ' +
     'FROM playlistsPosts INNER JOIN posts AS a ON a.mediaId = playlistsPosts.mediaId INNER JOIN users AS b ON b.userId = a.userId ' +
     'WHERE playlistsPosts.playlistId IN (' + question_query + ') ORDER BY dateTime DESC',
@@ -910,10 +887,11 @@ function getPlaylistsPosts(playlistIds, question_query) {
           var playlistId = row.playlistId
           var post = {mediaId:row.mediaId, playlistId: playlistId, views:row.views, likes:row.likes,
             reposts:row.reposts, comments:row.comments, post_image_src:row.imageUrl,
-            title:row.title, genre:row.genre, description:row.description,
-            original: row.original, username: row.username, profileName: row.profileName, profile_image_src: row.profile_image_src,
+            title:row.title, genre:row.genre, description:row.description, location: row.location,
+            original: row.original, username: row.username, profileName: row.profileName,
+            profile_image_src: row.profile_image_src, userFollowers: row.userFollowers,
             tags:allData[0][row.mediaId], comments: allData[1][row.mediaId], uploadDate: row.dateTime,
-            liked: row.liked, reposted: row.reposted}
+            liked: row.liked, reposted: row.reposted, userFollowed: row.userFollowed}
           if (playlistsPosts[playlistId]) {
             playlistsPosts[playlistId].push(post)
           } else {
@@ -929,42 +907,42 @@ function getPlaylistsPosts(playlistIds, question_query) {
   })
 }
 
-function postTagsFromUpload(mediaId, inputTags) {
-  return new Promise(function(resolve, reject) {
-    console.log("inputTags are", inputTags);
-    var question_query = '';
-    var insertQuery = [];
-    for (var i = 0; i < inputTags.length; i++) {
-      insertQuery.push(inputTags[i].itemType, inputTags[i].itemName, inputTags[i].itemBrand, inputTags[i].original, inputTags[i].x, inputTags[i].y);
-      question_query += '(?, ?, ?, ?),';
-    }
-    question_query = question_query.slice(0, -1);
-    conn.query('INSERT INTO tags (itemType, itemName, itemBrand, original, x, y) VALUES ' + question_query, insertQuery, function(err, result) {
-      if (err) {
-        console.log("insert tag error");
-        return reject(err)
-      } else {
-        console.log("first inserted tagId is", result.lastInsertId);
-        var tagId = result.lastInsertId - inputTags.length + 1;
-        question_query = '';
-        insertQuery = [];
-        for (var i = 0; i < inputTags.length; i++) {
-          insertQuery.push(mediaId, tagId + i)
-          question_query += '(?,?),'
-        }
-        console.log("insertQuery is", insertQuery);
-        question_query = question_query.slice(0, -1);
-        conn.query('INSERT INTO postTags (mediaId, tagId) VALUES ' + question_query, insertQuery, function(err, result) {
-          if (err) {
-            return reject(err)
-          } else {
-            return resolve({message: 'success'});
-          }
-        })
-      }
-    })
-  })
-}
+// function postTagsFromUpload(mediaId, inputTags) {
+//   return new Promise(function(resolve, reject) {
+//     console.log("inputTags are", inputTags);
+//     var question_query = '';
+//     var insertQuery = [];
+//     for (var i = 0; i < inputTags.length; i++) {
+//       insertQuery.push(inputTags[i].itemType, inputTags[i].itemName, inputTags[i].itemBrand, inputTags[i].original, inputTags[i].x, inputTags[i].y);
+//       question_query += '(?, ?, ?, ?),';
+//     }
+//     question_query = question_query.slice(0, -1);
+//     conn.query('INSERT INTO tags (itemType, itemName, itemBrand, original, x, y) VALUES ' + question_query, insertQuery, function(err, result) {
+//       if (err) {
+//         console.log("insert tag error");
+//         return reject(err)
+//       } else {
+//         console.log("first inserted tagId is", result.lastInsertId);
+//         var tagId = result.lastInsertId - inputTags.length + 1;
+//         question_query = '';
+//         insertQuery = [];
+//         for (var i = 0; i < inputTags.length; i++) {
+//           insertQuery.push(mediaId, tagId + i)
+//           question_query += '(?,?),'
+//         }
+//         console.log("insertQuery is", insertQuery);
+//         question_query = question_query.slice(0, -1);
+//         conn.query('INSERT INTO postTags (mediaId, tagId) VALUES ' + question_query, insertQuery, function(err, result) {
+//           if (err) {
+//             return reject(err)
+//           } else {
+//             return resolve({message: 'success'});
+//           }
+//         })
+//       }
+//     })
+//   })
+// }
 
 function postTagsFromUploadRevised(mediaId, inputTags) {
   return new Promise(function(resolve, reject) {
@@ -992,6 +970,7 @@ function getStream(userId, cookieUser) {
     'null AS views, a.likes, a.reposts, a.comments, a.followers AS playlistFollowers, a.description, a.dateTime AS uploadDate, playlistsReposts.dateTime as orderTime, ' +
     'b.username AS repost_username, b.profileName AS repost_profileName, b.profile_image_src AS repost_profile_image_src, b.location AS repost_location, b.followers AS repost_userFollowers, ' +
     'c.username AS username, c.profileName AS profileName, c.profile_image_src AS profile_image_src, c.location AS location, c.followers AS userFollowers, ' +
+    '((SELECT COUNT(*) FROM following WHERE userId=$1 AND followingId = a.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE userId=$1 AND followingId = b.userId) > 0) AS repost_userFollowed, ' +
     '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=$1 AND playlistId = a.playlistId) > 0) AS reposted, ((SELECT COUNT(*) FROM playlistsLikes WHERE userId=$1 AND playlistId = a.playlistId) > 0) AS liked, ((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=$1 AND playlistId = a.playlistId) > 0) AS followed ' +
     'FROM playlistsReposts INNER JOIN playlists AS a ON a.playlistId = playlistsReposts.playlistId INNER JOIN users AS c ON c.userId = a.userId INNER JOIN users AS b ON b.userId = playlistsReposts.userId ' +
     'WHERE playlistsReposts.userId IN (SELECT followingId FROM following WHERE userId=$1) OR playlistsReposts.userId=$1 UNION ALL ' +
@@ -999,12 +978,14 @@ function getStream(userId, cookieUser) {
     'null AS views, likes, reposts, comments, playlists.followers AS playlistFollowers, playlists.description, dateTime AS uploadDate, dateTime as orderTime, ' +
     'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, null AS repost_location, null AS repost_userFollowers, ' +
     'username AS username, profileName AS profileName, profile_image_src AS profile_image_src, location AS location, users.followers AS userFollowers, ' +
+    '((SELECT COUNT(*) FROM following WHERE userId=$1 AND followingId = playlists.userId) > 0) AS userFollowed, null AS repost_userFollowed, ' +
     '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=$1 AND playlistId = playlists.playlistId) > 0) AS reposted, ((SELECT COUNT(*) FROM playlistsLikes WHERE userId=$1 AND playlistId = playlists.playlistId) > 0) AS liked, ((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=$1 AND playlistId = playlists.playlistId) > 0) AS followed ' +
     'FROM playlists INNER JOIN users ON users.userId = playlists.userId WHERE playlists.userId IN (SELECT followingId FROM following WHERE userId=$1) OR playlists.userId=$1 UNION ALL ' +
     'SELECT a.mediaId, null as playlistId, a.title, a.genre, a.public, a.original, a.imageUrl, a.views, ' +
     'a.likes, a.reposts, a.comments, null as playlistFollowers, a.description, a.dateTime AS uploadDate, reposts.dateTime as orderTime, ' +
     'b.username as repost_username, b.profileName as repost_profileName, b.profile_image_src AS repost_profile_image_src, b.location AS repost_location, b.followers AS repost_userFollowers, ' +
     'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src, c.location AS location, c.followers AS userFollowers, ' +
+    '((SELECT COUNT(*) FROM following WHERE userId=$1 AND followingId = a.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE userId=$1 AND followingId = b.userId) > 0) AS repost_userFollowed, ' +
     '((SELECT COUNT(*) FROM reposts WHERE userId=$1 AND mediaId = a.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=$1 AND mediaId = a.mediaId) > 0) AS liked, null AS followed ' +
     'FROM reposts INNER JOIN posts AS a ON a.mediaId = reposts.mediaId INNER JOIN users AS c ON c.userId = a.userId INNER JOIN users AS b ON b.userId = reposts.userId ' +
     'WHERE reposts.userId IN (SELECT followingId FROM following WHERE userId=$1) OR reposts.userId=$1 UNION ALL ' +
@@ -1012,6 +993,7 @@ function getStream(userId, cookieUser) {
     'comments, null as playlistFollowers, posts.description, dateTime AS uploadDate, dateTime as orderTime, ' +
     'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, null AS repost_location, null AS repost_userFollowers, ' +
     'username AS username, profileName AS profileName, profile_image_src AS profile_image_src, location AS location, followers AS userFollowers, ' +
+    '((SELECT COUNT(*) FROM following WHERE userId=$1 AND followingId = posts.userId) > 0) AS userFollowed, null AS repost_userFollowed, ' +
     '((SELECT COUNT(*) FROM reposts WHERE userId=$1 AND mediaId = posts.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=$1 AND mediaId = posts.mediaId) > 0) AS liked, null AS followed ' +
     'FROM posts INNER JOIN users ON users.userId = posts.userId WHERE posts.userId IN (SELECT followingId FROM following WHERE userId=$1) OR posts.userId=$1 ORDER BY orderTime DESC LIMIT 20',
     userId, function(err, result) {
@@ -1046,7 +1028,8 @@ function getStream(userId, cookieUser) {
                 repost_username: row.repost_username, repost_profileName: row.repost_profileName,
                 repost_profile_image_src: row.repost_profile_image_src, repostDate: row.orderTime,
                 repost_location: row.repost_location, repost_userFollowers: row.repost_userFollowers,
-                reposted: row.reposted, liked: row.liked}
+                reposted: row.reposted, liked: row.liked, userFollowed: row.userFollowed,
+                repost_userFollowed: row.repost_userFollowed}
               stream.push(post)
             } else if (playlistId) {
               var playlist = {playlistId:row.playlistId, likes:row.likes, reposts:row.reposts,
@@ -1057,7 +1040,9 @@ function getStream(userId, cookieUser) {
                 repost_profile_image_src: row.repost_profile_image_src, repostDate: row.orderTime,
                 username: row.username, profileName: row.profileName, profile_image_src: row.profile_image_src,
                 location: row.location, userFollowers: row.userFollowers,
-                comments:allData[3][row.playlistId], posts: allData[2][row.playlistId], reposted: row.reposted, liked: row.liked, followed: row.followed}
+                comments:allData[3][row.playlistId], posts: allData[2][row.playlistId], reposted: row.reposted,
+                liked: row.liked, followed: row.followed, userFollowed: row.userFollowed,
+                repost_userFollowed: row.repost_userFollowed}
               stream.push(playlist)
             } else {
               return reject("ERROR - Neither post or playlist");

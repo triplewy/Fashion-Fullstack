@@ -7,10 +7,6 @@ import shoes from 'images/shoes-icon.png'
 import trash_icon from 'images/trash-icon.png'
 import edit_icon from 'images/edit-icon.svg'
 
-// {this.props.modify && <div id="outer_circle">
-//   <div id="inner_circle"></div>
-// </div>}
-
 export default class Tags extends React.Component {
   constructor(props) {
     super(props);
@@ -25,7 +21,12 @@ export default class Tags extends React.Component {
     this.showClickTagLocation = this.showClickTagLocation.bind(this)
     this.handleTagDelete = this.handleTagDelete.bind(this)
 
-}
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState({tags: nextProps.tags})
+  }
+
   renderClothingIcon(itemType) {
     switch(itemType) {
       case 'shirt':

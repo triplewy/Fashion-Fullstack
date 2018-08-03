@@ -1149,14 +1149,8 @@ textarea {
 }
 
 #playlist_posts_list li {
-  padding: 0 0;
   list-style: none;
   border-bottom: 1px solid #ccc;
-}
-
-#playlist_posts_list li:hover {
-  background-color: #f1f1f1;
-  cursor: pointer;
 }
 
 #playlist_post_user {
@@ -1166,6 +1160,7 @@ textarea {
 
 #playlist_post_title {
   display: inline-block;
+  font-size: 14px;
 }
 
 .playlist_post_stat {
@@ -1175,6 +1170,15 @@ textarea {
 
 .playlist_post_stat_button {
   width: 20px;
+}
+
+.playlist_post {
+  padding: 10px 0;
+}
+
+.playlist_post:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
 }
 
 .playlist_post_selected {
@@ -1453,11 +1457,15 @@ textarea {
   padding: 10px 10px;
 }
 
+.post_profile_link {
+  display: inline-block;
+}
+
 .post_profile_link div.dropdown {
   display: none;
   position: absolute;
-  left: 0;
-  padding: 10px 10px;
+  top: 10;
+  padding: 10px 15px;
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -1472,9 +1480,13 @@ textarea {
   margin: 0 auto;
   border: 1px solid #ccc;
   border-radius: 4px;
-  padding: 2px 5px;
+  padding: 4px 8px;
   margin-top: 2px;
   color: black;
+}
+
+#dropdown_follow:hover {
+  background-color: #f1f1f1;
 }
 
 .dropdown_text {

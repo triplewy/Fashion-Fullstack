@@ -1,5 +1,6 @@
 import React from 'react';
 import PlaylistModalView from './PlaylistModalView.jsx'
+import PlaylistModal from './PlaylistModal.jsx'
 import LoginModal from './LoginModal.jsx'
 import view_icon_revised from 'images/view-icon-revised.png'
 import like_icon from 'images/heart-icon.png'
@@ -8,6 +9,8 @@ import repost_icon from 'images/repost-icon.png'
 import repost_icon_reposted from 'images/repost-icon-reposted.png'
 import plus_icon from 'images/plus-icon.png'
 import more_icon from 'images/more-icon.png'
+
+// <PlaylistModalView mediaId={this.props.mediaId} />
 
 export default class StatsHeader extends React.Component {
   constructor(props) {
@@ -18,14 +21,15 @@ export default class StatsHeader extends React.Component {
       reposts: this.props.reposts,
       liked: this.props.liked,
       reposted: this.props.reposted,
-      playlists: []
+      playlists: [],
+      showModal: false
     };
 
     this.handleLike = this.handleLike.bind(this);
     this.handleUnlike = this.handleUnlike.bind(this);
     this.handleRepost = this.handleRepost.bind(this);
     this.handleUnrepost = this.handleUnrepost.bind(this);
-    this.addToPlaylist = this.addToPlaylist.bind(this);
+    this.showModal = this.showModal.bind(this)
   }
 
   handleLike(e) {
@@ -130,31 +134,8 @@ export default class StatsHeader extends React.Component {
     });
   }
 
-  addToPlaylist(playlistId) {
-    console.log(this.props.media);
-    fetch('/api/addToPlaylist', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        playlistId: playlistId,
-        mediaId: this.props.mediaId
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.message === "success") {
-        console.log("Added to playlist successfully");
-      } else {
-        console.log(data.message);
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+  showModal(e) {
+    this.setState({showModal: true})
   }
 
   render() {
@@ -163,20 +144,6 @@ export default class StatsHeader extends React.Component {
     if (this.props.is_collection) {
       stats_icon_style = "collection_stats_icon";
       stats_button_style="collection_stats_button";
-    }
-
-    var renderedPlaylists = []
-    if (this.state.playlists.length > 0) {
-      renderedPlaylists = this.state.playlists.map((item, index) => {
-        return (
-          <li className="playlist_selector" key={index} onClick={this.addToPlaylist.bind(this, item.playlistId)}>
-            <p id="playlist_title">{item.title}</p>
-            <p className="playlist_icon">Followers: {item.followers}</p>
-            <p className="playlist_icon">Posts: {item.numPosts}</p>
-            {item.public ? <p id="public_indicator">Public</p> : <p id="public_indicator">Private</p>}
-          </li>
-        )
-      })
     }
 
     return (
@@ -195,10 +162,10 @@ export default class StatsHeader extends React.Component {
         </button>
         <div id="non_stat_div">
           <div id="add_playlist_wrapper">
-            <button id="add_to_playlist" type="button" className={stats_button_style} data-toggle="modal" data-target={"#playlistModal" + this.props.mediaId}>
+            <button id="add_to_playlist" className={stats_button_style} onClick={this.showModal}>
               <img id="add_to_playlist_icon" alt="add icon" className="stats_icon" src={plus_icon}></img>
             </button>
-            <PlaylistModalView mediaId={this.props.mediaId} />
+            <PlaylistModal mediaId={this.props.mediaId} showModal={this.state.showModal} />
           </div>
           <div className="btn-group">
             <button id="more" className="dropdown-toggle" type="button" data-toggle="dropdown">
