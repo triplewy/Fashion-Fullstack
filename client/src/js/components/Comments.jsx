@@ -1,4 +1,5 @@
 import React from 'react';
+import DropdownProfile from './DropdownProfile.jsx'
 import { Link } from 'react-router-dom';
 
 
@@ -76,9 +77,13 @@ export default class Comments extends React.Component {
       renderedComments = this.state.comments.map((item, index) => {
         return (
           <li key={index}>
-            <Link to={"/" + item.username}>
-              <p id="comment_user">{item.profileName}</p>
-            </Link>
+            <div className="post_profile_link">
+              <Link to={"/" + item.username}>
+                <p id="comment_user">{item.profileName}</p>
+              </Link>
+              <DropdownProfile username={item.username} location={item.location}
+                userFollowers={item.userFollowers} userFollowed={item.userFollowed} />
+            </div>
             <p id="comment">{item.comment}</p>
             <p id="comment_time">1 hour ago</p>
           </li>

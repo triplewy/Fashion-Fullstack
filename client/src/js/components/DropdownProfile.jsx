@@ -38,13 +38,23 @@ export default class DropdownProfile extends React.Component {
   }
 
   render() {
+    var buttonText = ''
+    if (this.state.userFollowed) {
+      buttonText = 'Followed'
+    } else {
+      if (this.props.followsYou) {
+        buttonText = 'Follow Back'
+      } else {
+        buttonText = 'Follow'
+      }
+    }
     return (
       <div className="dropdown">
         <p className="dropdown_text">{this.props.location}</p>
         <p className="dropdown_text">{'Followers: ' + this.props.userFollowers}</p>
         <button id="dropdown_follow" onClick={this.state.userFollowed ? this.handleUnfollow : this.handleFollow}
           style={{color: this.state.userFollowed ? 'red' : 'black'}}>
-          {this.state.userFollowed ? 'Following' : 'Follow'}
+          {buttonText}
         </button>
       </div>
     );
