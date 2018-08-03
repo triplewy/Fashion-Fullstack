@@ -163,6 +163,16 @@ textarea {
   background-color: white;
 }
 
+#single_white_background_wrapper {
+  position: relative;
+  overflow: hidden;
+  width: 1250px;
+  min-height: 706px;
+  margin: 0 auto;
+  margin-top: 70px;
+  background-color: white;
+}
+
 #content_wrapper {
   margin: 0;
   float: left;
@@ -204,9 +214,14 @@ textarea {
   color: gray;
 }
 
+#profile_section {
+  float: right;
+}
+
 #post_wrapper {
   display: inline-block;
   position: relative;
+  width: 100%;
   list-style-type: none;
   list-style-position: inside;
   background-color: white;
@@ -305,7 +320,7 @@ textarea {
   padding-top: 30px;
   display: inline-block;
   height: 60px;
-  width: 100%;
+  width: 90%;
 }
 
 #title_text {
@@ -585,30 +600,41 @@ textarea {
 #profile_info {
   display: inline-block;
   height: 100%;
-  padding: 20px 10px;
+  padding: 20px 20px;
+  padding-left: 50px;
 }
 
 #profile_info_image {
   display: inline-block;
   object-fit: cover;
-  width: 100px;
-  height: 100px;
+  width: 170px;
+  height: 170px;
   border-radius: 50%;
-  margin: 55px 0;
+  margin: 20px 0;
 }
 
 #profile_info_text_div {
   display: inline-block;
-  padding: 0 10px;
+  padding: 0 20px;
   vertical-align: middle;
 }
 
 .profile_info_text {
-  font-size: 14px;
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 400;
+  padding: 0 3px;
+  vertical-align: middle;
+}
+
+.profile_info_icon {
+  width: 35px;
+  margin-left: 30px;
 }
 
 #profile_info_username {
   font-weight: 500;
+  font-size: 18px;
 }
 
 .profile_column_title {
@@ -674,16 +700,21 @@ textarea {
 #single_post_polaroid_div {
   display: inline-block;
   border: 1px solid #f1f1f1;
+  max-width: 850px;
 }
 
 #single_post_image_wrapper {
   display: inline-block;
-  max-width: 850px;
+}
+
+#upload_post_image {
+  max-width: 720px;
+  image-orientation: from-image;
 }
 
 #single_post_image {
-  /* max-width: 850px; */
-  max-width: 720px;
+  max-width: 850px;
+  /* max-width: 720px; */
   image-orientation: from-image;
 }
 
@@ -1185,16 +1216,59 @@ textarea {
 }
 
 #follow_button {
-  float: right;
-  border: 1px solid red;
-  background-color: white;
-  color: red;
-  border-radius: 8px;
-  padding: 10px 10px;
+  border: 1px solid black;
+  font-size: 14px;
+  color: black;
+  border-radius: 4px;
+  margin-top: 5px;
+  padding: 5px 10px;
 }
 
-#profile_description {
+#follow_button:hover {
+  border: 1px solid #ff5656;
+  color: #ff5656;
+}
+
+#following_button {
+  border: 1px solid #ff5656;
+  font-size: 14px;
+  color: #ff5656;
+  border-radius: 4px;
+  margin-top: 5px;
+  padding: 5px 10px;
+}
+
+#following_button:hover {
+  border: 1px solid black;
+  color: black;
+}
+
+#profile_links {
   float: right;
+  float: top;
+  background-color: black;
+  opacity: 0.6;
+  color: white;
+  font-size: 12px;
+  padding: 1px 0;
+  width: 200px;
+  border-radius: 2px;
+  text-align: center;
+}
+
+#profile_links div.profile_links_dropdown {
+  display: none;
+  background-color: black;
+  color: white;
+  width: 200px;
+  text-align: center;
+}
+
+#profile_links:hover div.profile_links_dropdown {
+  display: block;
+  position: absolute;
+  top: 0px;
+
 }
 
 #comments_input_bar {
@@ -1493,6 +1567,57 @@ textarea {
   padding: 2px 0;
   color: black;
 }
+
+#edit_profile_button {
+  border: 1px solid black;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 14px;
+  margin-left: 20px;
+}
+
+#edit_profile_button:hover {
+  border: 1px solid #ccc;
+}
+
+#edit_profile_modal_body {
+  padding: 20px 20px;
+}
+
+#edit_profile_image_div {
+  display: inline-block;
+  vertical-align: top;
+}
+
+#edit_profile_image {
+  display: inline-block;
+  object-fit: cover;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+}
+
+#edit_profile_image_button {
+  position: absolute;
+  bottom: 120px;
+  left: 75px;
+  background-color: white;
+  border: 1px solid #ccc;
+  color: #ccc;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+#edit_profile_image_button:hover {
+  color: black;
+}
+
+#edit_profile_text_div {
+  display: inline-block;
+  padding: 0 20px;
+}
+
+
 
 @media only screen and (max-width: 1300px) {
   #search_bar {

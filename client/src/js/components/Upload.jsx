@@ -19,7 +19,6 @@ export default class Upload extends React.Component {
       orientation: null,
       dateTime: '',
       inputTags: [],
-      original: false,
       currentTagScreenX: 0,
       currentTagScreenY: 0,
       currentTagRelativeX: 0,
@@ -64,7 +63,7 @@ export default class Upload extends React.Component {
       })
 
 
-      // 
+      //
       // reader.onloadend = () => {
       //   this.setState({imagePreviewUrl: reader.result, imageUploaded: true});
       // }
@@ -83,12 +82,20 @@ export default class Upload extends React.Component {
   }
 
   handleSubmit(e) {
+    var original = 0
+    for (var i = 0; i < this.state.inputTags.length; i++) {
+      if (this.state.inputTags[i].original) {
+        original = 1
+        break;
+      }
+    }
+
     var formData = new FormData();
     formData.append('image', this.state.file);
     formData.append('title', this.state.title);
     formData.append('genre', this.state.genre);
     formData.append('description', this.state.description);
-    formData.append('original', this.state.original);
+    formData.append('original', original);
     formData.append('inputTags', JSON.stringify(this.state.inputTags));
 
     fetch('/api/upload', {
@@ -218,7 +225,7 @@ export default class Upload extends React.Component {
             <div id="tag_click_div_wrapper">
               <div id="tag_click_div" onClick={this.handleClick}>
                 <div id="single_post_image_wrapper">
-                      <img id="single_post_image" alt="" src={this.state.imagePreviewUrl}></img>
+                      <img id="upload_post_image" alt="" src={this.state.imagePreviewUrl}></img>
                 </div>
               </div>
             </div>

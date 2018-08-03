@@ -20,8 +20,7 @@ export default class SinglePostPage extends React.Component {
       return (
         <div>
         <Navbar />
-        <div id="white_background_wrapper">
-          <div id="single_post_polaroid_div">
+        <div id="single_white_background_wrapper">
             <div id="single_post_image_wrapper">
                 <img id="single_post_image" alt="" src={this.state.post.post_image_src}></img>
             </div>
@@ -62,7 +61,6 @@ export default class SinglePostPage extends React.Component {
                 </ul>
               </div>
             </div>
-          </div>
         </div>
   );
   }

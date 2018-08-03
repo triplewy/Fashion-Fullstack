@@ -12,6 +12,7 @@ export default class DropdownProfile extends React.Component {
   }
 
   handleFollow(e) {
+    e.stopPropagation()
     fetch('/api/' + this.props.username + '/follow', {
       method: 'POST',
       credentials: 'include',
@@ -25,6 +26,7 @@ export default class DropdownProfile extends React.Component {
   }
 
   handleUnfollow(e) {
+    e.stopPropagation()
     fetch('/api/' + this.props.username + '/unfollow', {
       method: 'POST',
       credentials: 'include',

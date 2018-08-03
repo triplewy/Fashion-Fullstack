@@ -1,4 +1,8 @@
 import React from 'react';
+import profile_followers_icon from 'images/profile-followers-icon.png'
+import profile_following_icon from 'images/profile-following-icon.png'
+
+import posts_icon from 'images/posts-icon.png'
 
 export default class TypeSelector extends React.Component {
   constructor(props) {
@@ -23,6 +27,19 @@ export default class TypeSelector extends React.Component {
       return (
           <div id="type_selector">
             {rendered_types}
+            {this.props.profileInfo &&
+              <div id="profile_section">
+                <img className="profile_info_icon" alt="followers icon" src={profile_followers_icon}></img>
+                <p className="profile_info_text" id="profile_info_followers">{this.props.profileInfo.followers}</p>
+                <img className="profile_info_icon" alt="followers icon" src={profile_following_icon}></img>
+                <p className="profile_info_text" id="profile_info_following">{this.props.profileInfo.following}</p>
+                <img className="profile_info_icon" alt="posts icon" src={posts_icon}></img>
+                <p className="profile_info_text" id="profile_info_posts">{this.props.profileInfo.numPosts}</p>
+                {this.props.profileInfo.editable &&
+                  <button className="profile_info_text" id="edit_profile_button" onClick={this.props.editProfile.bind(this)}>Edit</button>
+                }
+              </div>
+            }
           </div>
     );
   }

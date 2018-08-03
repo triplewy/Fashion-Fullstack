@@ -18,7 +18,7 @@ export default class RenderedPosts extends React.Component {
           return (
             <Post key={index} mediaId={item.mediaId} genre={item.genre} username={item.username}
                   profileName={item.profileName} profile_image_src={item.profile_image_src}
-                  location={item.location} userFollowers={item.userFollowers}
+                  location={item.location} userFollowers={item.userFollowers} original={item.original}
                   post_image_src={item.post_image_src} views={item.views} likes={item.likes}
                   reposts={item.reposts} comments={item.comments} title={item.title}
                   description={item.description} uploadDate={item.uploadDate} tags={item.tags}

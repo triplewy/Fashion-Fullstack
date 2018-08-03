@@ -36,6 +36,7 @@ export default class Post extends React.Component {
   }
 
   render() {
+    console.log(this.props.original);
     return (
       <div id="post_wrapper">
         <div id="polaroid_div">
@@ -74,6 +75,9 @@ export default class Post extends React.Component {
       <div id="tags_div_wrapper">
         <div id="title">
           <p id="title_text">{this.props.title}</p>
+        </div>
+        <div id="og_tag">
+          {this.props.original !== 0 && <span>✔</span>}
         </div>
         <hr id="tag_title_hr"></hr>
         <Tags tags={this.props.tags} modify={false}/>
