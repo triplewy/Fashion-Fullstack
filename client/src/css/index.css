@@ -1584,9 +1584,54 @@ textarea {
   padding: 20px 20px;
 }
 
+#edit_profile_text_div {
+  display: inline-block;
+  padding: 0 20px;
+}
+
+#profile_info_image_div {
+  display: inline-block;
+}
+
+#profile_info_image_div label#update_profile_image_label {
+  display: none;
+  position: absolute;
+  top: 160px;
+  left: 103px;
+  background-color: white;
+  border: 1px solid #ccc;
+  color: #ccc;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#profile_info_image_div:hover label#update_profile_image_label {
+  display: block;
+  color: black;
+}
+
 #edit_profile_image_div {
   display: inline-block;
   vertical-align: top;
+}
+
+#edit_profile_image_div label#update_profile_image_label {
+  display: none;
+  position: absolute;
+  bottom: 120px;
+  left: 75px;
+  background-color: white;
+  border: 1px solid #ccc;
+  color: #ccc;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#edit_profile_image_div:hover label#update_profile_image_label {
+  display: block;
+  color: black;
 }
 
 #edit_profile_image {
@@ -1596,28 +1641,6 @@ textarea {
   height: 170px;
   border-radius: 50%;
 }
-
-#edit_profile_image_button {
-  position: absolute;
-  bottom: 120px;
-  left: 75px;
-  background-color: white;
-  border: 1px solid #ccc;
-  color: #ccc;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-#edit_profile_image_button:hover {
-  color: black;
-}
-
-#edit_profile_text_div {
-  display: inline-block;
-  padding: 0 20px;
-}
-
-
 
 @media only screen and (max-width: 1300px) {
   #search_bar {

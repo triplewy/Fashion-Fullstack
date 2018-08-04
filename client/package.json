@@ -5,11 +5,13 @@
   "proxy": "http://localhost:8081/",
   "dependencies": {
     "blueimp-load-image": "^2.19.0",
+    "cookie-parser": "^1.4.3",
     "file-loader": "^1.1.11",
     "js-cookie": "^2.2.0",
     "memoize-one": "^3.1.1",
     "react": "^16.3.2",
     "react-bootstrap": "^0.32.1",
+    "react-cookie": "^2.2.0",
     "react-dom": "^16.3.2",
     "react-dropzone": "^4.2.13",
     "react-router-dom": "^4.2.2",

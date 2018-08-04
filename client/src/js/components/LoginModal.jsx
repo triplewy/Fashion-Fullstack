@@ -7,7 +7,7 @@ export default class LoginModal extends React.Component {
     this.state = {
       username: '',
       password: '',
-      showModal: this.props.show
+      showModal: this.props.showModal
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -17,7 +17,7 @@ export default class LoginModal extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.setState({showModal: nextProps.show});
+    this.setState({showModal: nextProps.showModal});
   }
 
   handleChange(e) {
@@ -33,26 +33,8 @@ export default class LoginModal extends React.Component {
   }
 
   handleLogin(e) {
-    fetch('/api/signin', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        username: this.state.username,
-        password: this.state.password,
-      })
-    })
-    .then(res => {
-      if (res.redirected) {
-        this.props.login('success')
-        this.setState({showModal: false});
-      }
-    }).catch(function(err) {
-        console.log(err);
-    });
+    this.props.handleLogin(this.state.username, this.state.password)
+    this.setState({showModal: false});
   }
 
   close(e){
@@ -78,7 +60,10 @@ export default class LoginModal extends React.Component {
               placeholder="Password" name="password" onChange={this.handleChange}
               onKeyPress={this.handleKeyPress} value={this.state.password}></input>
           </div>
-          <button type="submit" className="btn btn-default" onClick={this.handleLogin}>Submit</button>
+          <button type="submit" className="btn btn-default"
+            onClick={this.handleLogin}>
+            Submit
+          </button>
         </Modal.Body>
       </Modal>
     );

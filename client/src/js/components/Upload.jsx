@@ -16,7 +16,6 @@ export default class Upload extends React.Component {
       title: '',
       genre: '',
       description: '',
-      orientation: null,
       dateTime: '',
       inputTags: [],
       currentTagScreenX: 0,
@@ -56,7 +55,6 @@ export default class Upload extends React.Component {
           this.setState({
             file: file,
             imagePreviewUrl: file.preview,
-            orientation: loadImageOptions.orientation,
             imageUploaded: true
           })
         }, loadImageOptions)
@@ -135,7 +133,6 @@ export default class Upload extends React.Component {
         this.setState({
           file: file,
           imagePreviewUrl: file.preview,
-          orientation: loadImageOptions.orientation,
           imageUploaded: true
         })
       }, loadImageOptions)

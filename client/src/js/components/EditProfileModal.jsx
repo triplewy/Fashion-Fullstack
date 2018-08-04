@@ -9,7 +9,7 @@ export default class EditProfileModal extends React.Component {
       location: this.props.profileInfo.location,
       description: this.props.profileInfo.description,
       username: this.props.profileInfo.username,
-      profile_image_src: this.props.profileInfo.profile_image_src,
+      profile_image_src: this.props.profile_image_src,
       changed_profile_image: false,
       showModal: this.props.showModal
     };
@@ -27,7 +27,7 @@ export default class EditProfileModal extends React.Component {
       location: nextProps.profileInfo.location,
       description: nextProps.profileInfo.description,
       username: nextProps.profileInfo.username,
-      profile_image_src: nextProps.profileInfo.profile_image_src
+      profile_image_src: nextProps.profile_image_src
     });
   }
 
@@ -41,25 +41,6 @@ export default class EditProfileModal extends React.Component {
   }
 
   handleSave(e) {
-    var body = {}
-    if (this.state.changed_profile_image) {
-      body = {
-        profileName: this.state.profileName,
-        location: this.state.location,
-        description: this.state.description,
-        username: this.state.username,
-        profile_image_src: this.state.profile_image_src
-      }
-    } else {
-      body = {
-        profileName: this.state.profileName,
-        location: this.state.location,
-        description: this.state.description,
-        username: this.state.username
-      }
-    }
-
-    console.log(body);
     fetch('/api/' + this.state.username + '/edit', {
       method: 'POST',
       headers: {
@@ -67,11 +48,17 @@ export default class EditProfileModal extends React.Component {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify(body)
+      body: JSON.stringify({
+        profileName: this.state.profileName,
+        location: this.state.location,
+        description: this.state.description,
+        username: this.state.username
+      })
     })
     .then(res => res.json())
     .then(data => {
       if (data.message == 'success') {
+        this.props.getUserDetails()
         this.close()
       }
     })
@@ -92,7 +79,11 @@ export default class EditProfileModal extends React.Component {
         <Modal.Body id="edit_profile_modal_body">
           <div id="edit_profile_image_div">
             <img id="edit_profile_image" alt="" src={this.state.profile_image_src}></img>
-            <button id="edit_profile_image_button">Update</button>
+            <label htmlFor="input_image_button" id="update_profile_image_label">
+              Update
+            </label>
+            <input id="input_image_button" type="file" name="post_pic" accept="image/*"
+              onChange={this.props.readImageFile}></input>
           </div>
           <div id="edit_profile_text_div">
             <div className="form-group">

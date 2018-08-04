@@ -1,5 +1,4 @@
 import React from 'react';
-import Navbar from './Navbar.jsx'
 import RenderedPosts from './RenderedPosts.jsx'
 import TypeSelector from './TypeSelector.jsx'
 import {Redirect} from 'react-router-dom';
@@ -92,17 +91,14 @@ export default class Stream extends React.Component {
       return <Redirect to={'/home'}/>
     }
       return (
-        <div>
-          <Navbar />
-          <div id="white_background_wrapper">
-            <TypeSelector toggle_type={this.toggle_type} types={["All", "Original"]}
-            type_selector_value={this.state.type_selector_value}/>
-            <div id="content_wrapper">
+        <div id="white_background_wrapper">
+          <TypeSelector toggle_type={this.toggle_type} types={["All", "Original"]}
+          type_selector_value={this.state.type_selector_value}/>
+          <div id="content_wrapper">
 
-              <RenderedPosts streamData={this.state.streamData} />
-            </div>
+            <RenderedPosts streamData={this.state.streamData} />
           </div>
-      </div>
+        </div>
     );
   }
 }

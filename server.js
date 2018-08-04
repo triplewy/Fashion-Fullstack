@@ -23,7 +23,12 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(session({
   secret: 'secret',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  cookie: {
+    httpOnly: false,
+    secure: false,
+    maxAge: 180*60*1000
+  }
 }));
 app.use(passport.initialize())
 app.use(passport.session())
@@ -88,83 +93,88 @@ var upload = multer({
 // app.use(express.static('dist'));
 var conn = anyDB.createConnection('sqlite3://fashion.db');
 
-conn.query('DROP TABLE IF EXISTS posts');
-conn.query('DROP TABLE IF EXISTS logins');
-conn.query('DROP TABLE IF EXISTS users');
-conn.query('DROP TABLE IF EXISTS following');
-conn.query('DROP TABLE IF EXISTS tags');
-conn.query('DROP TABLE IF EXISTS postTags');
+conn.query('PRAGMA foreign_keys = ON');
+
 conn.query('DROP TABLE IF EXISTS reposts');
 conn.query('DROP TABLE IF EXISTS likes');
 conn.query('DROP TABLE IF EXISTS views');
 conn.query('DROP TABLE IF EXISTS comments');
-conn.query('DROP TABLE IF EXISTS playlists');
+conn.query('DROP TABLE IF EXISTS following');
+conn.query('DROP TABLE IF EXISTS tags');
+conn.query('DROP TABLE IF EXISTS postTags');
 conn.query('DROP TABLE IF EXISTS playlistsPosts');
 conn.query('DROP TABLE IF EXISTS playlistsFollowers');
 conn.query('DROP TABLE IF EXISTS playlistsReposts');
 conn.query('DROP TABLE IF EXISTS playlistsLikes');
 conn.query('DROP TABLE IF EXISTS playlistsComments');
+conn.query('DROP TABLE IF EXISTS posts');
+conn.query('DROP TABLE IF EXISTS playlists');
+conn.query('DROP TABLE IF EXISTS logins');
+conn.query('DROP TABLE IF EXISTS users');
 
 
-conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
-'userId INTEGER, title TEXT NOT NULL, public BOOLEAN, genre TEXT, ' +
-'imageUrl TEXT NOT NULL UNIQUE, original BOOLEAN, views INTEGER, likes INTEGER, reposts INTEGER, ' +
-'comments INTEGER, description TEXT, dateTime DATETIME)');
+
+
+conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER PRIMARY KEY AUTOINCREMENT, userId INTEGER, ' +
+'title TEXT NOT NULL, public BOOLEAN, genre TEXT, imageUrl TEXT NOT NULL UNIQUE, original BOOLEAN, ' +
+'views INTEGER, likes INTEGER, reposts INTEGER, comments INTEGER, description TEXT, dateTime DATETIME, ' +
+'FOREIGN KEY(userId) REFERENCES users(userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
 'username TEXT NOT NULL UNIQUE, email TEXT NOT NULL UNIQUE, passwordText TEXT, passwordSalt TEXT, ' +
-'passwordHash CHAR(60), passwordHashAlgorithm TEXT, relatedUserId INTEGER UNIQUE)');
+'passwordHash CHAR(60), passwordHashAlgorithm TEXT, relatedUserId INTEGER, ' +
+'FOREIGN KEY(relatedUserId) REFERENCES users(userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
 'username TEXT NOT NULL UNIQUE, profileName TEXT NOT NULL, profile_image_src TEXT, ' +
 'location TEXT, followers INTEGER, following INTEGER, description TEXT)');
 
 
-conn.query('CREATE TABLE IF NOT EXISTS following (userId INTEGER, followingId INTEGER' +
-', dateTime DATETIME, UNIQUE(userId, followingId))');
+conn.query('CREATE TABLE IF NOT EXISTS following (userId INTEGER, followingId INTEGER, ' +
+'dateTime DATETIME, FOREIGN KEY(followingId) REFERENCES users(userId), FOREIGN KEY(userId) REFERENCES users(userId), ' +
+'UNIQUE(userId, followingId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS tags (tagId INTEGER PRIMARY KEY AUTOINCREMENT, mediaId INTEGER, ' +
-'itemType TEXT, itemName TEXT, itemBrand TEXT, original BOOLEAN, x INTEGER, y INTEGER)');
+'itemType TEXT, itemName TEXT, itemBrand TEXT, original BOOLEAN, x INTEGER, y INTEGER, ' +
+'FOREIGN KEY(mediaId) REFERENCES posts(mediaId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS postTags (mediaId INTEGER, tagId INTEGER)');
 
-conn.query('CREATE TABLE IF NOT EXISTS reposts (mediaId INTEGER, userId INTEGER, dateTime DATETIME, UNIQUE(mediaId, userId))');
+conn.query('CREATE TABLE IF NOT EXISTS reposts (mediaId INTEGER, userId INTEGER, dateTime DATETIME, ' +
+'FOREIGN KEY(mediaId) REFERENCES posts(mediaId), FOREIGN KEY(userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS likes (mediaId INTEGER, userId INTEGER, dateTime DATETIME, UNIQUE(mediaId, userId))');
+conn.query('CREATE TABLE IF NOT EXISTS likes (mediaId INTEGER, userId INTEGER, dateTime DATETIME, ' +
+'FOREIGN KEY(mediaId) REFERENCES posts(mediaId), FOREIGN KEY(userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS views (mediaId INTEGER, userId INTEGER, IP_Address TEXT, viewCount INTEGER, dateTime DATETIME)');
 
-conn.query('CREATE TABLE IF NOT EXISTS comments (commentId INTEGER PRIMARY KEY AUTOINCREMENT, mediaId INTEGER, userId INTEGER, comment TEXT, dateTime DATETIME)');
+conn.query('CREATE TABLE IF NOT EXISTS comments (commentId INTEGER PRIMARY KEY AUTOINCREMENT, mediaId INTEGER, userId INTEGER, comment TEXT, dateTime DATETIME, ' +
+'FOREIGN KEY(mediaId) REFERENCES posts(mediaId), FOREIGN KEY(userId) REFERENCES users(userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS playlists (playlistId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
 'userId INTEGER, title TEXT, genre TEXT, public BOOLEAN, likes INTEGER, reposts INTEGER, comments INTEGER, ' +
-'followers INTEGER, description TEXT, dateTime DATETIME, UNIQUE(title, userId))');
+'followers INTEGER, description TEXT, dateTime DATETIME, FOREIGN KEY(userId) REFERENCES users(userId), UNIQUE(title, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsPosts (playlistId INTEGER, mediaId INTEGER, dateTime DATETIME, UNIQUE(playlistId, mediaId))');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsPosts (playlistId INTEGER, mediaId INTEGER, dateTime DATETIME, ' +
+'FOREIGN KEY(playlistId) REFERENCES playlists(playlistId), FOREIGN KEY(mediaId) REFERENCES posts(mediaId), ' +
+'UNIQUE(playlistId, mediaId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsFollowers (playlistId INTEGER, userId INTEGER, dateTime DATETIME, UNIQUE(playlistId, userId))');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsFollowers (playlistId INTEGER, userId INTEGER, dateTime DATETIME, ' +
+'FOREIGN KEY(playlistId) REFERENCES playlists(playlistId), FOREIGN KEY(userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsReposts (playlistId INTEGER, userId INTEGER, dateTime DATETIME, UNIQUE(playlistId, userId))');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsReposts (playlistId INTEGER, userId INTEGER, dateTime DATETIME, ' +
+'FOREIGN KEY(playlistId) REFERENCES playlists(playlistId), FOREIGN KEY(userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsLikes (playlistId INTEGER, userId INTEGER, dateTime DATETIME, UNIQUE(playlistId, userId))');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsLikes (playlistId INTEGER, userId INTEGER, dateTime DATETIME, ' +
+'FOREIGN KEY(playlistId) REFERENCES playlists(playlistId), FOREIGN KEY(userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsComments (commentId INTEGER PRIMARY KEY AUTOINCREMENT, playlistId INTEGER, userId INTEGER, comment TEXT, dateTime DATETIME)');
-
-bcrypt.hash('password', 10, function(err, hash) {
-  conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, relatedUserId) VALUES (?,?,?,?,?)',
-    ['jbin', 'jbin', 'password', hash, 1], function(err, result) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("Records successfully added");
-    }
-  })
-});
+conn.query('CREATE TABLE IF NOT EXISTS playlistsComments (commentId INTEGER PRIMARY KEY AUTOINCREMENT, playlistId INTEGER, userId INTEGER, comment TEXT, dateTime DATETIME, ' +
+'FOREIGN KEY(playlistId) REFERENCES playlists(playlistId), FOREIGN KEY(userId) REFERENCES users(userId))');
 
 
-var insertQuery = ["jbin", "Jennifer Bin", "Shanghai, China", 1450, 288, "yuh", '/profile_images/jbin-2.jpg'];
-var insertSQL = 'INSERT INTO users (username, profileName, location, followers, following, description, profile_image_src)' +
-  'VALUES (?, ?, ?, ?, ?, ?, ?)';
+var insertQuery = ["jbin", "Jennifer Bin", "Shanghai, China", 1450, 288, "yuh"];
+var insertSQL = 'INSERT INTO users (username, profileName, location, followers, following, description)' +
+  'VALUES (?, ?, ?, ?, ?, ?)';
 conn.query(insertSQL, insertQuery, function(err, result) {
     if (err) {
       /*TODO: Handle Error*/
@@ -174,7 +184,18 @@ conn.query(insertSQL, insertQuery, function(err, result) {
     }
   });
 
-insertQuery = ["tkd", "The Killa Detail", "Perth, Australia", 954, 80, "filler description", '/profile_images/tkd-pfp.jpg'];
+  bcrypt.hash('password', 10, function(err, hash) {
+    conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, relatedUserId) VALUES (?,?,?,?,?)',
+      ['jbin', 'jbin', 'password', hash, 1], function(err, result) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Records successfully added");
+      }
+    })
+  });
+
+insertQuery = ["tkd", "The Killa Detail", "Perth, Australia", 954, 80, "filler description", '/profileImages/tkd-pfp.jpg'];
 insertSQL = 'INSERT INTO users (username, profileName, location, followers, following, description, profile_image_src)' +
   'VALUES (?, ?, ?, ?, ?, ?, ?)';
 conn.query(insertSQL, insertQuery, function(err, result) {
@@ -228,6 +249,15 @@ conn.query('INSERT INTO comments (mediaId, userId, comment, dateTime) VALUES (?,
       }
   });
 
+  conn.query('INSERT INTO playlists (userId, title, public, likes, reposts, comments, followers, description, dateTime) VALUES ' +
+  '(?,?,?,?,?,?,?,?,?)', [1, "Test Playlist", 1, 0, 0, 0, 0, "Test playlist description", Date.now()], function(err, result) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Records successfully added");
+      }
+  });
+
 conn.query('INSERT INTO playlistsComments (playlistId, userId, comment, dateTime) VALUES (?, ?, ?, ?)', [1, 1, "h", Date.now()], function(err, result) {
       if (err) {
         console.log(err);
@@ -236,14 +266,6 @@ conn.query('INSERT INTO playlistsComments (playlistId, userId, comment, dateTime
       }
   });
 
-conn.query('INSERT INTO playlists (userId, title, public, likes, reposts, comments, followers, description, dateTime) VALUES ' +
-'(?,?,?,?,?,?,?,?,?)', [1, "Test Playlist", 1, 0, 0, 0, 0, "Test playlist description", Date.now()], function(err, result) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("Records successfully added");
-    }
-});
 
 conn.query('INSERT INTO playlistsPosts (playlistId, mediaId, dateTime) VALUES (?,?,?),(?,?,?)', [1,1,Date.now(),1,2,Date.now()], function(err, result) {
   if (err) {
@@ -584,8 +606,7 @@ app.get('/api/:profile', (req, res) => {
       console.log(err);
     } else {
       var row = result.rows[0];
-      var userDetails = {userId: row.userId, username: username,
-        profileName: row.profileName, profile_image_src: row.profile_image_src,
+      var userDetails = {username: username, profileName: row.profileName, profile_image_src: row.profile_image_src,
         followers: row.followers, following: row.following, location: row.location,
         numPosts: row.numPosts, description: row.description, isFollowing: row.isFollowing,
         editable: row.userId == userId};
@@ -604,6 +625,24 @@ app.get('/api/:profile', (req, res) => {
   })
 })
 
+app.get('/api/:profile/userDetails', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/userDetails');
+  var username = req.params.profile;
+  var userId = req.user;
+
+  conn.query('SELECT *, (SELECT COUNT(*) FROM posts WHERE userId=(SELECT userId FROM users WHERE username=?1)) AS numPosts ' +
+  'FROM users WHERE username=?1', username, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      var row = result.rows[0];
+      res.send({userDetails: {username: username, profileName: row.profileName, profile_image_src: row.profile_image_src,
+        followers: row.followers, following: row.following, location: row.location,
+        numPosts: row.numPosts, description: row.description, isFollowing: row.isFollowing,
+        editable: row.userId == userId}});
+    }
+  })
+})
 
 app.get('/api/:profile/stream', loggedIn, (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/stream');
@@ -711,29 +750,54 @@ app.post('/api/:profile/edit', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/edit');
   var username = req.params.profile;
   var userId = req.user;
-  if (req.body.profile_image_src) {
-    conn.query('UPDATE users (profileName, location, description, profile_image_src) VALUES (?2, ?3, ?4, ?5) WHERE userId=?1)',
-    [userId, req.body.profileName, req.body.location, req.body.description, req.body.profile_image_src], function(err, result) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log("user edited successfully");
-        res.send({message: 'success'})
-      }
-    })
-  } else {
-    console.log(req.body);
-    conn.query('UPDATE users SET profileName = ?2, location = ?3, description = ?4 WHERE userId=?1',
-    [userId, req.body.profileName, req.body.location, req.body.description], function(err, result) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log("user edited successfully");
-        res.send({message: 'success'})
-      }
-    })
-  }
+  conn.query('UPDATE users SET profileName = ?2, location = ?3, description = ?4 WHERE userId=?1',
+  [userId, req.body.profileName, req.body.location, req.body.description], function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("user edited successfully");
+      res.send({message: 'success'})
+    }
+  })
 
+})
+
+app.post('/api/:profile/updateProfileImage', function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/updateProfileImage');
+  var username = req.params.profile;
+  var userId = req.user;
+  upload(req, res, function(err) {
+    if (err) {
+      console.log(err);
+      res.send({message: err.message})
+    } else {
+      var filename = "/profileImages/" + req.file.fieldname + '-' + Date.now() +'.jpg'
+      if (req.file.mimetype == 'image/png') {
+        Promise.all([updateProfileImage(filename, req.file.buffer, userId)])
+        .then(function(allData) {
+          console.log("updated profile image successfully");
+          res.send(allData[0])
+        }).catch(e => {
+          console.log(e);
+        })
+      } else {
+        jo.rotate(req.file.buffer, {}, function(error, buffer) {
+          if (error && error.code !== jo.errors.no_orientation && error.code !== jo.errors.correct_orientation) {
+            console.log('An error occurred when rotating the file: ' + error.message)
+            res.send({message: 'fail'})
+          } else {
+            Promise.all([updateProfileImage(filename, buffer, userId)])
+            .then(function(allData) {
+              console.log("updated profile image successfully");
+              res.send(allData[0])
+            }).catch(e => {
+              console.log(e);
+            })
+          }
+        })
+      }
+    }
+  })
 })
 
 app.post('/api/:profile/follow', function(req, res) {
@@ -899,19 +963,28 @@ app.post('/api/signup', (req, res) => {
 
 app.post('/api/signin', passport.authenticate('local'), function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/signin');
-  res.redirect('/');
+  res.cookie('cookie', 'loggedIn')
+  res.send({message: 'success'});
 });
 
 app.post('/api/logout', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/logout');
   req.logout()
-  res.redirect('/')
+  res.clearCookie('cookie');
+  res.send({message: 'success'})
 })
 
 app.listen(8081, function(){
     console.log('- Server listening on port 8081');
 });
 
+function loggedIn(req, res, next) {
+  if (req.user) {
+    next()
+  } else {
+    res.send({message: 'not logged in'})
+  }
+}
 
 // function getTagDetails(mediaIds, question_query) {
 //   return new Promise(function(resolve, reject) {
@@ -1371,10 +1444,37 @@ function uploadImageMetadata(req, filename) {
   });
 }
 
-function loggedIn(req, res, next) {
-  if (req.user) {
-    next()
-  } else {
-    res.send({message: 'not logged in'})
-  }
+function updateProfileImage(filename, buffer, userId) {
+  return new Promise(function(resolve, reject) {
+    fs.writeFile("public" + filename, buffer, function(err) {
+      if (err) {
+        return reject(err)
+      } else {
+        conn.query('SELECT profile_image_src FROM users WHERE userId=?1', userId, function(err, result) {
+          if (err) {
+            return reject(err);
+          } else {
+            var oldFilename = result.rows[0].profile_image_src
+            conn.query('UPDATE users SET profile_image_src = ?1 WHERE userId=?2', [filename, userId], function(err, result) {
+              if (err) {
+                return reject(err)
+              } else {
+                if (oldFilename) {
+                  fs.unlink("public" + oldFilename, function(err) {
+                    if (err) {
+                      return reject(err)
+                    } else {
+                      return resolve({message: 'success'})
+                    }
+                  })
+                } else {
+                  return resolve({message: 'success'})
+                }
+              }
+            })
+          }
+        })
+      }
+    })
+  })
 }

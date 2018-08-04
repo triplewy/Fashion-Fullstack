@@ -14,21 +14,17 @@ export default class Navbar extends React.Component {
       profileUrl: '',
       profile_image_src: '',
       profileName: '',
-      showStats: false,
       showNavbar: true,
       lastScrollY: 0,
-      loggedIn: false,
+      loggedIn: this.props.loggedIn,
       showLoginModal: false,
       redirect: false
     };
     this.onChange = this.onChange.bind(this);
     this.searchSubmit = this.searchSubmit.bind(this);
-    this.showStats = this.showStats.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
     this.showLoginModal = this.showLoginModal.bind(this)
     this.fetchNavbar = this.fetchNavbar.bind(this)
-    this.handleLogout = this.handleLogout.bind(this)
-    this.login = this.login.bind(this)
   }
 
   componentDidMount() {
@@ -38,6 +34,10 @@ export default class Navbar extends React.Component {
 
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handleScroll)
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.fetchNavbar()
   }
 
   searchSubmit(e) {
@@ -52,10 +52,6 @@ export default class Navbar extends React.Component {
     this.setState({
       search_value: e.target.value,
     });
-  }
-
-  showStats(e) {
-    this.setState({showStats: true})
   }
 
   handleScroll(e) {
@@ -98,30 +94,6 @@ export default class Navbar extends React.Component {
         });
       }
     })
-  }
-
-  login(status) {
-    if (status == 'success') {
-      this.fetchNavbar()
-    }
-  }
-
-  handleLogout(e) {
-    fetch('/api/logout', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-    })
-    .then(res => {
-      if (res.redirected) {
-        this.setState({redirect: true})
-      }
-    }).catch(function(err) {
-        console.log(err);
-    });
   }
 
   render() {
@@ -167,7 +139,7 @@ export default class Navbar extends React.Component {
                   <StatsColumn show_profile={false}/>
                 </li>
                 <li>
-                  <button onClick={this.handleLogout}>Logout</button>
+                  <button onClick={this.props.handleLogout}>Logout</button>
                 </li>
               </ul>
             </div>
@@ -197,7 +169,7 @@ export default class Navbar extends React.Component {
           :
           <div id="banner_user_div">
             <button id="banner_login_button" onClick={this.showLoginModal}>Login</button>
-            <LoginModal show={this.state.showLoginModal} login={this.login}/>
+            <LoginModal showModal={this.state.showLoginModal} handleLogin={this.props.handleLogin}/>
             <Link to={"/home"}>
               <button id="signup_button" className="banner_button">Sign Up</button>
             </Link>
