@@ -111,7 +111,7 @@ export default class Playlist extends React.Component {
       rendered_playlist_posts = this.state.playlistPosts.map((item, index) => {
         return (
           <li key={index} value={index} className={(this.state.playlistIndex === index) ? 'playlist_post_selected' : 'playlist_post'}
-                disabled={(this.state.playlistIndex == index)}>
+                disabled={(this.state.playlistIndex === index)}>
             <div id="playlist_post_user_title_div" onClick={this.setPlaylistIndex.bind(this, index)}>
               <div className="post_profile_link">
                 <Link to={"/" + item.username}>

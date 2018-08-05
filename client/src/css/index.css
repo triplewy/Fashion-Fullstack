@@ -40,6 +40,7 @@ textarea {
 }
 
 #banner {
+  display: flex;
   position: fixed;
   top: 0;
   background-color: white;
@@ -47,7 +48,7 @@ textarea {
   height: 70px;
   color: black;
   z-index: 2;
-  padding: 0 auto;
+  padding: 0 10%;
   border-bottom: 1px solid #f1f1f1;
 }
 
@@ -63,50 +64,81 @@ textarea {
   border-bottom: 1px solid #f1f1f1;
 }
 
-#banner_wrapper {
-  display: block;
+.banner_section {
   height: 100%;
-  width: 1075px;
-  margin: 0 auto;
+}
+
+#banner_left {
+
+}
+
+#banner_center {
+  -webkit-flex: auto;
+  flex: auto;
+}
+
+#banner_right {
+
 }
 
 #banner_title {
   display: inline-block;
+}
+
+#banner_title h1 {
+  line-height: 70px;
   font-weight: bold;
   font-size: 24px;
-  margin-top: 0;
-  margin-bottom: 0;
+  margin: 0 0;
+}
+
+#banner_title:hover {
+  text-decoration: none;
 }
 
 #search_bar_div {
-  display:inline-block;
+  display: flex;
+  justify-content: space-between;
   border:1px solid #ccc;
   border-radius: 4px;
-  margin: 0 3%;
+  height: 30px;
+  margin: 20px 20%;
 }
 
 #search_bar {
-  width: 400px;
-  height: 20px;
-  padding: 5px 7px;
+  -webkit-flex: auto;
+  flex: auto;
+  height: 100%;
+  padding: 5px 10px;
   background-color: transparent;
   border: 0;
 }
 
 #search_bar_button {
-  padding: 5px 7px;
-  background-color: transparent;
+  display: inline-block;
+  float: right;
+  height: 100%;
+  padding: 0 8px;
   border: 0;
+  background-color: transparent;
+  color: #337ab7;
+  cursor: pointer;
+}
+
+#outfit_finder_button {
+  padding: 0 0;
 }
 
 #banner_user_div {
   display: inline-block;
+  height: 100%;
 }
 
 .banner_button {
   display: inline-block;
   cursor: pointer;
-  padding: 0 15px;
+  padding: 0 0;
+  padding-left: 40px;
   height: 100%;
   font-size: 14px;
 }
@@ -120,6 +152,8 @@ textarea {
   padding: 8px 12px;
   border-radius: 6px;
   background-color: #337ab7;
+  border: 1px solid white;
+  margin-left: 40px;
   color: white;
 }
 
@@ -136,9 +170,9 @@ textarea {
 .dropdown-toggle {
   display: inline-block;
   cursor: pointer;
-  padding: 0 15px;
   height: 100%;
   font-size: 14px;
+  padding-left: 40px;
 }
 
 #notifications_icon {
@@ -1161,7 +1195,16 @@ textarea {
   padding: 10px 10px;
 }
 
+.form-group {
+  display: block;
+}
+
+.form-group label {
+  display: block;
+}
+
 .form-control {
+  display: inline-block;
   width: 250px;
 }
 
@@ -1293,16 +1336,16 @@ textarea {
   padding: 5px 0;
 }
 
-#comment_user {
+.comment_user {
   display: inline-block;
 }
 
-#comment {
+.comment {
   display: inline-block;
   padding: 0 5px;
 }
 
-#comment_time {
+.comment_time {
   float: right;
 }
 
@@ -1640,6 +1683,25 @@ textarea {
   width: 170px;
   height: 170px;
   border-radius: 50%;
+}
+
+.signup_div {
+  display: inline-block;
+  width: 50%;
+  vertical-align: top;
+  margin: 50px 0;
+}
+
+.signup_form_div {
+  display: block;
+  width: 300px;
+  margin: 0 auto;
+}
+
+.signup_validator {
+  display: inline-block;
+  font-size: 18px;
+  padding: 0 10px;
 }
 
 @media only screen and (max-width: 1300px) {

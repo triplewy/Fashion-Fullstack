@@ -150,9 +150,9 @@ export default class Home extends React.Component {
             <p id="title">Fashion App</p>
             <div id="search_bar_div">
               <form>
-                <input id="search_bar" type="text" placeholder="Search"
+                <input id="home_search_bar" type="text" placeholder="Search"
                   onChange={this.onChange} value={this.state.search_value}></input>
-                <button id="search_bar_button" type="submit" disabled={!this.state.search_value}>Go</button>
+                <button id="home_search_bar_button" type="submit" disabled={!this.state.search_value}>Go</button>
               </form>
             </div>
             <div id="trending_div">

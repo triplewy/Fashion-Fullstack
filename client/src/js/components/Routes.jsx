@@ -8,11 +8,9 @@ import {
 import Dropzone from 'react-dropzone'
 import {Modal} from 'react-bootstrap';
 import Cookie from 'js-cookie'
-import CookieParser from 'cookie-parser'
-import {CookiesProvider, withCookies, Cookies} from 'react-cookie'
-
 
 import Home from './Home.jsx';
+import Signup from './Signup.jsx'
 import Navbar from './Navbar.jsx'
 import Stream from './Stream.jsx';
 import Profile from './Profile.jsx';
@@ -32,8 +30,7 @@ export default class Routes extends React.Component {
       files: [],
       dropzoneActive: false,
       redirect: false,
-      userId: null,
-      loggedIn: false
+      loggedIn: Cookie.get('userId') ? true : false
     }
 
     this.onDragEnter = this.onDragEnter.bind(this);
@@ -44,10 +41,6 @@ export default class Routes extends React.Component {
   }
 
   componentWillMount() {
-    console.log(Cookie.get('connect.sid'));
-    var sessionId = CookieParser.signedCookie(Cookie.get('connect.sid'), 'secret');
-    console.log("sessionId is", sessionId);
-
   }
 
 
@@ -114,7 +107,11 @@ export default class Routes extends React.Component {
   }
 
   render() {
-    const { files, dropzoneActive } = this.state;
+    // const { files, dropzoneActive } = this.state;
+    const PrivateRoute = ({component: Component}) => (
+      <Route render={(props) => (this.state.loggedIn ? <Component /> : <Redirect to='/signup' />)} />
+    )
+    console.log("is loggedIn", this.state.loggedIn);
 
     return (
       <BrowserRouter>
@@ -139,11 +136,12 @@ export default class Routes extends React.Component {
             <Navbar loggedIn={this.state.loggedIn} handleLogin={this.handleLogin} handleLogout={this.handleLogout}/>
             <Switch>
               <Route exact path='/' component={this.state.loggedIn ? Stream : Home}/>
-              <Route exact path='/upload' component={Upload}/>
+              <PrivateRoute exact path='/upload' component={Upload}/>
               <Route exact path='/finder' component={Outfit_Finder}/>
               <Route exact path='/search' component={Search}/>
-              <Route exact path='/you/collections' component={Collections} />
-              <Route exact path='/you/stats' component={Stats} />
+              <Route exact path='/signup' render={(props) => <Signup handleLogin={this.handleLogin} />} />
+              <PrivateRoute exact path='/you/collections' component={Collections} />
+              <PrivateRoute exact path='/you/stats' component={Stats} />
               <Route exact path='/:profile' render={({match}) => <Profile loggedIn={this.state.loggedIn} profile={match.params.profile} />} />
               <Route exact path='/:profile/:mediaId' component={SinglePostPage}/>
               <Route exact path='/:profile/playlist/:playlistId' component={SinglePlaylistPage}/>

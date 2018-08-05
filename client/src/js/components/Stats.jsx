@@ -1,5 +1,4 @@
 import React from 'react';
-import Navbar from './Navbar.jsx'
 import TypeSelector from './TypeSelector.jsx'
 import ViewsGraph from './ViewsGraph.jsx';
 
@@ -37,8 +36,6 @@ export default class Stats extends React.Component {
         )
     });
       return (
-        <div>
-        <Navbar />
         <div id="white_background_wrapper">
             <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["Overall", "Posts"]}
                   type_selector_value={this.state.type_selector_value}/>
@@ -52,7 +49,6 @@ export default class Stats extends React.Component {
             </div>
             <ViewsGraph />
           </div>
-        </div>
   );
   }
 }

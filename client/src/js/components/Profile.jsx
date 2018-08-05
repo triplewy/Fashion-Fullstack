@@ -76,6 +76,9 @@ export default class Profile extends React.Component {
         console.log("not logged in");
       }
     })
+    .catch((error) => {
+      console.error(error);
+    });
   }
 
   handleUnfollow(e) {

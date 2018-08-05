@@ -1,6 +1,4 @@
 import React from 'react';
-import memoize from 'memoize-one'
-
 
 export default class InputTag extends React.Component {
   constructor(props) {

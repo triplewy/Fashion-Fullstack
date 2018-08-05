@@ -28,6 +28,7 @@
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "passport-reddit": "^0.2.4",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "validator": "^10.5.0"
   }
 }

@@ -79,13 +79,13 @@ export default class Comments extends React.Component {
           <li key={index}>
             <div className="post_profile_link">
               <Link to={"/" + item.username}>
-                <p id="comment_user">{item.profileName}</p>
+                <p className="comment_user">{item.profileName}</p>
               </Link>
               <DropdownProfile username={item.username} location={item.location}
                 userFollowers={item.userFollowers} userFollowed={item.userFollowed} />
             </div>
-            <p id="comment">{item.comment}</p>
-            <p id="comment_time">1 hour ago</p>
+            <p className="comment">{item.comment}</p>
+            <p className="comment_time">1 hour ago</p>
           </li>
         )
       })

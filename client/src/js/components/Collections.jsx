@@ -1,5 +1,4 @@
 import React from 'react';
-import Navbar from './Navbar.jsx'
 import { Link } from 'react-router-dom';
 import StatsHeader from './StatsHeader.jsx'
 import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
@@ -99,15 +98,12 @@ export default class Collections extends React.Component {
       });
     }
       return (
-        <div>
-        <Navbar />
         <div id="white_background_wrapper">
           <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["Likes", "Playlists"]}
           type_selector_value={this.state.type_selector_value}/>
           <ul id="collections_list">
             {rendered_posts}
           </ul>
-        </div>
       </div>
   );
   }

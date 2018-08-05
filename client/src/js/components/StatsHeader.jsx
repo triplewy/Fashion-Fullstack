@@ -1,7 +1,5 @@
 import React from 'react';
-import PlaylistModalView from './PlaylistModalView.jsx'
 import PlaylistModal from './PlaylistModal.jsx'
-import LoginModal from './LoginModal.jsx'
 import view_icon_revised from 'images/view-icon-revised.png'
 import like_icon from 'images/heart-icon.png'
 import like_icon_liked from 'images/heart-icon-liked.png'
@@ -9,8 +7,6 @@ import repost_icon from 'images/repost-icon.png'
 import repost_icon_reposted from 'images/repost-icon-reposted.png'
 import plus_icon from 'images/plus-icon.png'
 import more_icon from 'images/more-icon.png'
-
-// <PlaylistModalView mediaId={this.props.mediaId} />
 
 export default class StatsHeader extends React.Component {
   constructor(props) {

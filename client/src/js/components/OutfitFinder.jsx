@@ -1,5 +1,4 @@
 import React from 'react';
-import Navbar from './Navbar.jsx'
 import InputTag from './InputTag.jsx'
 import Charts from './Charts.jsx'
 // import posts from '../json/posts.json';
@@ -27,8 +26,6 @@ export default class OutfitFinder extends React.Component {
 
   render() {
       return (
-        <div>
-        <Navbar />
         <div id="white_background_wrapper">
         <div id="outfit_finder_type_selector">
           <button className={(this.state.type_selector_value === 0)?
@@ -65,7 +62,6 @@ export default class OutfitFinder extends React.Component {
         </div>
 
         </div>
-      </div>
   );
   }
 }

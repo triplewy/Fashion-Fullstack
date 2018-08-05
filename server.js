@@ -14,6 +14,8 @@ var session = require('express-session');
 var bcrypt = require('bcrypt');
 var jo = require('jpeg-autorotate')
 var fs = require('fs')
+var validator = require('validator');
+
 
 var app = express();
 
@@ -121,8 +123,8 @@ conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER PRIMARY KEY AUTOIN
 'FOREIGN KEY(userId) REFERENCES users(userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
-'username TEXT NOT NULL UNIQUE, email TEXT NOT NULL UNIQUE, passwordText TEXT, passwordSalt TEXT, ' +
-'passwordHash CHAR(60), passwordHashAlgorithm TEXT, relatedUserId INTEGER, ' +
+'username TEXT NOT NULL UNIQUE, email TEXT NOT NULL UNIQUE, passwordText TEXT NOT NULL, passwordSalt TEXT, ' +
+'passwordHash CHAR(60), passwordHashAlgorithm TEXT, active BOOLEAN, relatedUserId INTEGER, ' +
 'FOREIGN KEY(relatedUserId) REFERENCES users(userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
@@ -291,21 +293,16 @@ conn.query('INSERT INTO following (userId, followingId, dateTime) VALUES (?,?,?)
   }
 })
 
-app.get('/api/navbar', (req, res) => {
+app.get('/api/navbar', loggedIn, (req, res) => {
   var userId = req.user;
-  if (userId == null) {
-    res.redirect('/home')
-  }
-  else {
-    conn.query('SELECT username, profileName, profile_image_src FROM users WHERE userId=?1', userId, function(err, result) {
-      if (err) {
-        console.log(err);
-      } else {
-        res.send({username: result.rows[0].username, profileName: result.rows[0].profileName,
-          profile_image_src: result.rows[0].profile_image_src});
-      }
-    })
-  }
+  conn.query('SELECT username, profileName, profile_image_src FROM users WHERE userId=?1', userId, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send({username: result.rows[0].username, profileName: result.rows[0].profileName,
+        profile_image_src: result.rows[0].profile_image_src});
+    }
+  })
 })
 
 app.get('/api/home', loggedIn, (req, res) => {
@@ -935,11 +932,66 @@ app.post('/api/upload', loggedIn, function(req, res) {
   })
 });
 
+app.post('/api/checkEmail', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/checkEmail');
+  var email = req.body.email
+  if (validator.isEmail(email)) {
+    conn.query('SELECT 1 FROM logins WHERE email=?1', email, function(err, result) {
+      if (err) {
+        console.log(err);
+      } else {
+        if (result.rows.length > 0) {
+          res.send({message: 'exists'})
+        } else {
+          res.send({message: 'unique'})
+        }
+      }
+    })
+  } else {
+    res.send({message: 'fail'})
+  }
+
+})
+
+
+app.post('/api/checkUsername', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/checkUsername');
+  var username = req.body.username
+  conn.query('SELECT 1 FROM logins WHERE username=?1', username, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      if (result.rows.length > 0) {
+        res.send({message: 'exists'})
+      } else {
+        res.send({message: 'unique'})
+      }
+    }
+  })
+})
+
 app.post('/api/signup', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/signup');
   var username = req.body.username;
   var password = req.body.password;
   var email = req.body.email;
+
+  bcrypt.hash(password, 10, function(err, hash) {
+    conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, active) VALUES (?1,?2,?3,?4,?5)',
+      [username, email, password, hash, false], function(err, result) {
+      if (err) {
+        console.log(err);
+      } else {
+        conn.query('INSERT INTO users (username) VALUES (?1)', [username], function(err, result) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("Records successfully added");
+          }
+        })
+      }
+    })
+  });
 
   conn.query('INSERT INTO users (username, profileName) VALUES (?,?)', [username, username], function(err, result) {
     if (err) {
@@ -963,14 +1015,15 @@ app.post('/api/signup', (req, res) => {
 
 app.post('/api/signin', passport.authenticate('local'), function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/signin');
-  res.cookie('cookie', 'loggedIn')
+  res.cookie('userId', req.user)
   res.send({message: 'success'});
 });
 
 app.post('/api/logout', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/logout');
   req.logout()
-  res.clearCookie('cookie');
+  res.clearCookie('userId');
+  req.session.destroy();
   res.send({message: 'success'})
 })
 
@@ -1249,19 +1302,14 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
 
     var queryString = ''
     if (original) {
-      console.log("og");
       queryString = userReposts + ' UNION ALL ' + userPosts + orderBy
     } else if (posts) {
-      console.log("posts");
       queryString = userPosts + orderBy
     }else if (playlists) {
-      console.log("playlists");
       queryString = userPlaylistPosts + orderBy
     } else if (reposts) {
-      console.log("reposts");
       queryString = userPlaylistReposts + ' UNION ALL ' + userReposts + orderBy
     } else {
-      console.log("usfdksfjks");
       queryString = userPlaylistReposts + ' UNION ALL ' + userPlaylistPosts + ' UNION ALL ' + userReposts + ' UNION ALL ' + userPosts + orderBy
     }
 

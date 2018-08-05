@@ -1,5 +1,4 @@
 import React from 'react';
-import Navbar from './Navbar.jsx'
 import Tags from './Tags.jsx'
 import { Link } from 'react-router-dom';
 import view_icon from 'images/view-icon.png'
@@ -28,8 +27,6 @@ export default class SinglePlaylistPage extends React.Component {
   render() {
     console.log(this.state.post);
       return (
-        <div>
-        <Navbar />
         <div id="white_background_wrapper">
           <div id="single_post_polaroid_div">
             <div id="single_post_image_wrapper">
@@ -110,7 +107,6 @@ export default class SinglePlaylistPage extends React.Component {
               </div>
             </div>
           </div>
-        </div>
   );
   }
 }

@@ -1,10 +1,7 @@
 import React from 'react';
-import Navbar from './Navbar.jsx'
 import InputTag from './InputTag.jsx';
 import Tags from './Tags.jsx'
 import * as loadImage from 'blueimp-load-image'
-import Cookies from 'js-cookie';
-
 
 export default class Upload extends React.Component {
   constructor(props) {
@@ -211,7 +208,6 @@ export default class Upload extends React.Component {
   render() {
     return (
       <div>
-      <Navbar />
       <InputTag left={this.state.currentTagScreenX} top={this.state.currentTagScreenY}
         display={this.state.displayTagInput} handleTagSave={this.handleTagSave} handleTagCancel={this.handleTagCancel}
         index={this.state.editTagIndex} tag={this.state.editTag}/>
