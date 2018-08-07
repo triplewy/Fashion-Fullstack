@@ -11,6 +11,7 @@ import Cookie from 'js-cookie'
 
 import Home from './Home.jsx';
 import Signup from './Signup.jsx'
+import Verify from './Verify.jsx'
 import Navbar from './Navbar.jsx'
 import Stream from './Stream.jsx';
 import Profile from './Profile.jsx';
@@ -24,19 +25,23 @@ import Playlist from './Playlist.jsx'
 import Stats from './Stats.jsx'
 
 export default class Routes extends React.Component {
-  constructor() {
-    super()
+  constructor(props) {
+    super(props)
     this.state = {
       files: [],
       dropzoneActive: false,
       redirect: false,
+      redirectFromSignup: false,
+      redirectUrlFromSignup: '',
       loggedIn: Cookie.get('userId') ? true : false
     }
 
     this.onDragEnter = this.onDragEnter.bind(this);
     this.onDragLeave = this.onDragLeave.bind(this);
     this.onDrop = this.onDrop.bind(this);
+    this.handleSignup = this.handleSignup.bind(this)
     this.handleLogin = this.handleLogin.bind(this);
+    this.handleLoginRedirect = this.handleLoginRedirect.bind(this)
     this.handleLogout = this.handleLogout.bind(this)
   }
 
@@ -61,6 +66,30 @@ export default class Routes extends React.Component {
     }
   }
 
+  handleSignup(email, username, password) {
+    fetch('/api/signup', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        email: email,
+        username: username,
+        password: password,
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === 'success') {
+        this.setState({loggedIn: true})
+      }
+    }).catch(function(err) {
+        console.log(err);
+    });
+  }
+
   handleLogin(username, password) {
     fetch('/api/signin', {
       method: 'POST',
@@ -78,11 +107,45 @@ export default class Routes extends React.Component {
     .then(data => {
       if (data.message == 'success') {
         this.setState({loggedIn: true});
+      } else {
+        this.setState({loggedIn: false})
       }
     })
     .catch(function(err) {
         console.log(err);
     });
+  }
+
+  handleLoginRedirect(username, password, url) {
+    console.log("url is", url);
+    fetch('/api/signin', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message == 'success') {
+        if (url) {
+          this.setState({loggedIn: true, redirectFromSignup: true, redirectUrlFromSignup: url});
+        } else {
+          this.setState({loggedIn: true, redirectFromSignup: true, redirectUrlFromSignup: '/'});
+        }
+      } else {
+        this.setState({loggedIn: false})
+      }
+    })
+    .catch(function(err) {
+        console.log(err);
+    });
+
   }
 
   handleLogout() {
@@ -109,7 +172,7 @@ export default class Routes extends React.Component {
   render() {
     // const { files, dropzoneActive } = this.state;
     const PrivateRoute = ({component: Component}) => (
-      <Route render={(props) => (this.state.loggedIn ? <Component /> : <Redirect to='/signup' />)} />
+      <Route render={(props) => (this.state.loggedIn ? <Component {...props}/> : <Redirect to={{pathname: '/signup', state: {from: props.location}}} /> )} />
     )
     console.log("is loggedIn", this.state.loggedIn);
 
@@ -133,15 +196,18 @@ export default class Routes extends React.Component {
               </Modal.Body>
             </Modal>
             {this.state.redirect && <Redirect to={{pathname: '/upload', state: {files: this.state.files}}} />}
+            {this.state.redirectFromSignup && <Redirect to={this.state.redirectUrlFromSignup} />}
+
             <Navbar loggedIn={this.state.loggedIn} handleLogin={this.handleLogin} handleLogout={this.handleLogout}/>
             <Switch>
               <Route exact path='/' component={this.state.loggedIn ? Stream : Home}/>
-              <PrivateRoute exact path='/upload' component={Upload}/>
-              <Route exact path='/finder' component={Outfit_Finder}/>
-              <Route exact path='/search' component={Search}/>
-              <Route exact path='/signup' render={(props) => <Signup handleLogin={this.handleLogin} />} />
+              <PrivateRoute exact path='/upload' component={Upload} />}/>
               <PrivateRoute exact path='/you/collections' component={Collections} />
               <PrivateRoute exact path='/you/stats' component={Stats} />
+              <Route path='/verify' component={Verify} />
+              <Route exact path='/finder' component={Outfit_Finder}/>
+              <Route exact path='/search' component={Search}/>
+              <Route exact path='/signup' render={(props) => <Signup handleLogin={this.handleLoginRedirect} handleSignup={this.handleSignup} {...props}/>} />
               <Route exact path='/:profile' render={({match}) => <Profile loggedIn={this.state.loggedIn} profile={match.params.profile} />} />
               <Route exact path='/:profile/:mediaId' component={SinglePostPage}/>
               <Route exact path='/:profile/playlist/:playlistId' component={SinglePlaylistPage}/>

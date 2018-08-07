@@ -10,19 +10,30 @@ var multer = require('multer');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy
 var RedditStrategy = require('passport-reddit').Strategy
+var OAuthStrategy = require('passport-oauth').OAuth2Strategy
+var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 var session = require('express-session');
+var RedisStore = require('connect-redis')(session);
+var Redis = require('redis')
 var bcrypt = require('bcrypt');
 var jo = require('jpeg-autorotate')
 var fs = require('fs')
 var validator = require('validator');
+var nodemailer = require('nodemailer')
+var randomstring = require('randomstring')
 
-
+var client  = Redis.createClient();
 var app = express();
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(session({
+  store: new RedisStore({
+    host: 'localhost',
+    port: 6379,
+    client: client
+  }),
   secret: 'secret',
   resave: false,
   saveUninitialized: true,
@@ -45,8 +56,9 @@ passport.deserializeUser(function(userId, done) {
   done(null, userId);
 })
 
-passport.use(new LocalStrategy(
+passport.use('local-login', new LocalStrategy(
  function(username, password, done) {
+   console.log("herererer");
    conn.query('SELECT * FROM logins WHERE username=?1', username, function(err, result) {
       if (err) {
         return done(err)
@@ -61,11 +73,75 @@ passport.use(new LocalStrategy(
         if (!isValid) {
           return done(null, false)
         }
-        return done(null, result.rows[0].relatedUserId)
+        console.log("successfully logged in");
+        return done(null, result.rows[0].userId)
       })
     })
   }
 ))
+
+passport.use('local-signup', new LocalStrategy({
+  passReqToCallback : true
+},
+  function(req, username, password, done) {
+    var email = ''
+    if (validator.isEmail(req.body.email)) {
+      email = req.body.email
+    } else {
+      console.log("email is invalid");
+      return done(null, false, { message: 'Email is invalid' })
+    }
+    bcrypt.hash(password, 10, function(err, passwordHash) {
+      bcrypt.hash(randomstring.generate(), 10, function(err, verificationHash) {
+        conn.query('INSERT INTO users (username, profileName, followers, following, createdDate) VALUES (?1,?2,?3,?4,?5)',
+        [username, username, 0, 0, Date.now()], function(err, result) {
+          if (err) {
+            console.log(err);
+            return done(err)
+          } else {
+            var userId = result.lastInsertId
+            console.log("userId is", userId);
+            conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, verificationHash, verified, userId) VALUES (?1,?2,?3,?4,?5,?6,?7)',
+              [username, email, password, passwordHash, verificationHash, false, userId], function(err, result) {
+              if (err) {
+                console.log(err);
+                return done(err)
+              } else {
+                var link = "localhost:3000/verify?id=" + verificationHash;
+                var mailOptions={
+                  to : email,
+                  subject : "Please confirm your Email account",
+                  html : "Hello,<br> Please click on the link to verify your email.<br><a href="+ link +">" + link + "</a>"
+                }
+                smtpTransport.sendMail(mailOptions, function(err, response) {
+                  if (err) {
+                    console.log(err);
+                    return done(err)
+                  } else {
+                    console.log("Message sent");
+                    return done(null, userId)
+                  }
+                })
+              }
+            })
+          }
+        })
+      })
+    })
+  }
+))
+
+passport.use(new GoogleStrategy({
+    clientID: '206855693376-62fvp593krr8jv2ih8lot21aapdhc5es.apps.googleusercontent.com',
+    clientSecret: 'Bu7C0Zh8b3cnL68zvrM-EATX',
+    callbackURL: "localhost:3000/auth/google/callback"
+  },
+  function(accessToken, refreshToken, profile, done) {
+       User.findOrCreate({ googleId: profile.id }, function (err, user) {
+         return done(err, user);
+       });
+  }
+));
 
 // var storage = multer.diskStorage({
 //     destination: function(request, file, callback) {
@@ -91,6 +167,13 @@ var upload = multer({
   }
 }).single('image');
 
+var smtpTransport = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    auth: {
+        user: 'yushufstartup',
+        pass: 'fashionsoundcloud'
+    }
+})
 // serve static files
 // app.use(express.static('dist'));
 var conn = anyDB.createConnection('sqlite3://fashion.db');
@@ -114,22 +197,19 @@ conn.query('DROP TABLE IF EXISTS playlists');
 conn.query('DROP TABLE IF EXISTS logins');
 conn.query('DROP TABLE IF EXISTS users');
 
-
-
-
 conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER PRIMARY KEY AUTOINCREMENT, userId INTEGER, ' +
 'title TEXT NOT NULL, public BOOLEAN, genre TEXT, imageUrl TEXT NOT NULL UNIQUE, original BOOLEAN, ' +
 'views INTEGER, likes INTEGER, reposts INTEGER, comments INTEGER, description TEXT, dateTime DATETIME, ' +
 'FOREIGN KEY(userId) REFERENCES users(userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
-'username TEXT NOT NULL UNIQUE, email TEXT NOT NULL UNIQUE, passwordText TEXT NOT NULL, passwordSalt TEXT, ' +
-'passwordHash CHAR(60), passwordHashAlgorithm TEXT, active BOOLEAN, relatedUserId INTEGER, ' +
-'FOREIGN KEY(relatedUserId) REFERENCES users(userId))');
+'network TEXT, networkId TEXT, username TEXT NOT NULL UNIQUE, email TEXT UNIQUE, passwordText TEXT NOT NULL, passwordSalt TEXT, ' +
+'passwordHash CHAR(60), verificationHash CHAR(60), verified BOOLEAN, userId INTEGER, ' +
+'FOREIGN KEY(userId) REFERENCES users(userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
-'username TEXT NOT NULL UNIQUE, profileName TEXT NOT NULL, profile_image_src TEXT, ' +
-'location TEXT, followers INTEGER, following INTEGER, description TEXT)');
+'username TEXT NOT NULL UNIQUE, profileName TEXT, profile_image_src TEXT, ' +
+'location TEXT, followers INTEGER, following INTEGER, description TEXT, createdDate DATETIME)');
 
 
 conn.query('CREATE TABLE IF NOT EXISTS following (userId INTEGER, followingId INTEGER, ' +
@@ -187,7 +267,7 @@ conn.query(insertSQL, insertQuery, function(err, result) {
   });
 
   bcrypt.hash('password', 10, function(err, hash) {
-    conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, relatedUserId) VALUES (?,?,?,?,?)',
+    conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, userId) VALUES (?,?,?,?,?)',
       ['jbin', 'jbin', 'password', hash, 1], function(err, result) {
       if (err) {
         console.log(err);
@@ -293,8 +373,33 @@ conn.query('INSERT INTO following (userId, followingId, dateTime) VALUES (?,?,?)
   }
 })
 
+app.get('/auth/google', passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] }));
+
+app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), function(req, res) {
+    res.redirect('/');
+});
+
+app.get('/api/verify', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/verify');
+  var hash = req.query.id
+  conn.query('UPDATE logins SET verified = 1 WHERE verificationHash=?1', hash, function(err, result) {
+    if (err) {
+      console.log(err);
+      res.send({message: 'error'})
+    } else {
+      if (result.rowCount > 0) {
+        res.send({message: 'verified'})
+      } else {
+        res.send({message: 'failed to verify'})
+      }
+    }
+  })
+})
+
 app.get('/api/navbar', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/navbar');
   var userId = req.user;
+  console.log("userId is", userId);
   conn.query('SELECT username, profileName, profile_image_src FROM users WHERE userId=?1', userId, function(err, result) {
     if (err) {
       console.log(err);
@@ -970,50 +1075,13 @@ app.post('/api/checkUsername', (req, res) => {
   })
 })
 
-app.post('/api/signup', (req, res) => {
+app.post('/api/signup', passport.authenticate('local-signup'), (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/signup');
-  var username = req.body.username;
-  var password = req.body.password;
-  var email = req.body.email;
-
-  bcrypt.hash(password, 10, function(err, hash) {
-    conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, active) VALUES (?1,?2,?3,?4,?5)',
-      [username, email, password, hash, false], function(err, result) {
-      if (err) {
-        console.log(err);
-      } else {
-        conn.query('INSERT INTO users (username) VALUES (?1)', [username], function(err, result) {
-          if (err) {
-            console.log(err);
-          } else {
-            console.log("Records successfully added");
-          }
-        })
-      }
-    })
-  });
-
-  conn.query('INSERT INTO users (username, profileName) VALUES (?,?)', [username, username], function(err, result) {
-    if (err) {
-      console.log(err);
-    } else {
-      var relatedUserId = result.lastInsertId;
-      bcrypt.hash(password, 10, function(err, hash) {
-      conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, relatedUserId) VALUES (?,?,?,?,?)',
-        [username, email, password, hash, relatedUserId], function(err, result) {
-          if (err) {
-            console.log(err);
-          } else {
-            req.session.userId = relatedUserId;
-            res.redirect('/');
-          }
-        })
-      })
-    }
-  })
+  res.cookie('userId', req.user)
+  res.send({message: 'success'});
 })
 
-app.post('/api/signin', passport.authenticate('local'), function(req, res) {
+app.post('/api/signin', passport.authenticate('local-login'), function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/signin');
   res.cookie('userId', req.user)
   res.send({message: 'success'});
@@ -1032,6 +1100,7 @@ app.listen(8081, function(){
 });
 
 function loggedIn(req, res, next) {
+  console.log("loggedIn called");
   if (req.user) {
     next()
   } else {

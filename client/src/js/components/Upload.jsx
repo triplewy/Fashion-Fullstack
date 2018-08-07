@@ -6,7 +6,7 @@ import * as loadImage from 'blueimp-load-image'
 export default class Upload extends React.Component {
   constructor(props) {
     super(props);
-
+    console.log("props are", props);
     this.state = {
       file: this.props.location.state,
       imagePreviewUrl: '',

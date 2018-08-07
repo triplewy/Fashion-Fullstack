@@ -1,11 +1,12 @@
 import React from 'react';
 import validator from 'validator';
 import owasp from 'owasp-password-strength-test'
+import {Redirect} from 'react-router-dom'
 
 export default class Signup extends React.Component {
   constructor(props) {
     super(props);
-
+    console.log(props);
     this.state = {
       loginUsername: '',
       loginPassword: '',
@@ -16,12 +17,14 @@ export default class Signup extends React.Component {
       emailIsValid: false,
       usernameIsValid: false,
       passwordIsValid: false,
-      passwordErrorMessage: ''
+      passwordErrorMessage: '',
+      redirect: false,
+      redirectUrl: props.location.state && props.location.state.from.pathname
     };
 
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.handleChange = this.handleChange.bind(this);
-    this.handleSignup = this.handleSignup.bind(this);
+    this.handleLogin = this.handleLogin.bind(this)
     this.checkEmail = this.checkEmail.bind(this)
     this.checkUsername = this.checkUsername.bind(this)
     this.checkPassword = this.checkPassword.bind(this)
@@ -29,6 +32,10 @@ export default class Signup extends React.Component {
 
   componentDidMount() {
 
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState({redirectUrl: nextProps.location.state && nextProps.location.state.from.pathname})
   }
 
   handleChange(e) {
@@ -47,35 +54,12 @@ export default class Signup extends React.Component {
 
   handleKeyPress(e) {
     if (e.key === 'Enter') {
-      this.props.handleLogin(this.state.loginUsername, this.state.loginPassword)
+      this.handleLogin()
     }
   }
 
-  handleSignup(e) {
-    if (this.state.password === this.state.confirmPassword) {
-      console.log(true);
-    }
-    fetch('/api/signup', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        email: this.state.email,
-        username: this.state.username,
-        password: this.state.password,
-      })
-    })
-    .then(res => {
-      console.log("res.status is", res.status);
-      if (res.status === 200) {
-        this.setState({redirect: true, redirectURL: res.url});
-      }
-    }).catch(function(err) {
-        console.log(err);
-    });
+  handleLogin(e) {
+    this.props.handleLogin(this.state.loginUsername, this.state.loginPassword, this.state.redirectUrl)
   }
 
   checkEmail(e) {
@@ -176,7 +160,7 @@ export default class Signup extends React.Component {
                 onKeyPress={this.handleKeyPress} value={this.state.password}></input>
             </div>
             <button id="reddit_login_label">Reddit Login</button>
-            <button type="submit" className="btn btn-default" onClick={this.props.handleLogin.bind(this.state.loginUsername, this.state.loginPassword)}>
+            <button type="submit" className="btn btn-default" onClick={this.handleLogin}>
               Login
             </button>
           </div>
@@ -217,7 +201,7 @@ export default class Signup extends React.Component {
                 {(this.state.signupPassword === this.state.signupConfirmPassword) && this.state.signupConfirmPassword ? <span className="signup_validator">✔</span> : <span className="signup_validator">x</span>}
 
             </div>
-            <button className="btn btn-default" onClick={this.handleSignup}
+            <button className="btn btn-default" onClick={this.props.handleSignup.bind(this, this.state.signupEmail, this.state.signupUsername, this.state.signupPassword)}
               disabled={!(this.state.emailIsValid && this.state.usernameIsValid && this.state.passwordIsValid && (this.state.signupPassword === this.state.signupConfirmPassword))}>
               Sign Up
             </button>
