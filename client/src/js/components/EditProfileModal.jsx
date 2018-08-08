@@ -5,6 +5,7 @@ export default class EditProfileModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      username: this.props.profileInfo.username,
       profileName: this.props.profileInfo.profileName,
       location: this.props.profileInfo.location,
       description: this.props.profileInfo.description,
@@ -23,6 +24,7 @@ export default class EditProfileModal extends React.Component {
   componentWillReceiveProps(nextProps) {
     this.setState({
       showModal: nextProps.showModal,
+      username: nextProps.profileInfo.username,
       profileName: nextProps.profileInfo.profileName,
       location: nextProps.profileInfo.location,
       description: nextProps.profileInfo.description,
@@ -70,7 +72,6 @@ export default class EditProfileModal extends React.Component {
   }
 
   render() {
-    console.log(this.state.profileName);
     return (
       <Modal show={this.state.showModal} onHide={this.close}>
         <Modal.Header closeButton>
@@ -86,6 +87,12 @@ export default class EditProfileModal extends React.Component {
               onChange={this.props.readImageFile}></input>
           </div>
           <div id="edit_profile_text_div">
+            <div className="form-group">
+                <label className="login_label">Username</label>
+                <input type="text" className="form-control"
+                name="username" onChange={this.handleChange}
+                value={this.state.username}></input>
+            </div>
             <div className="form-group">
                 <label className="login_label">Profile Name</label>
                 <input type="text" className="form-control"

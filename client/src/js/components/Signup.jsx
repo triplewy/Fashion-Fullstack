@@ -1,12 +1,12 @@
 import React from 'react';
 import validator from 'validator';
 import owasp from 'owasp-password-strength-test'
-import {Redirect} from 'react-router-dom'
+import {Link, Redirect} from 'react-router-dom'
 
 export default class Signup extends React.Component {
   constructor(props) {
     super(props);
-    console.log(props);
+    console.log("signup is constructed", props);
     this.state = {
       loginUsername: '',
       loginPassword: '',
@@ -19,12 +19,14 @@ export default class Signup extends React.Component {
       passwordIsValid: false,
       passwordErrorMessage: '',
       redirect: false,
-      redirectUrl: props.location.state && props.location.state.from.pathname
+      redirectUrl: props.location.state ? props.location.state.from.pathname : '/'
     };
 
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.handleSignup = this.handleSignup.bind(this)
     this.handleLogin = this.handleLogin.bind(this)
+    this.handleGoogleOAuth = this.handleGoogleOAuth.bind(this)
     this.checkEmail = this.checkEmail.bind(this)
     this.checkUsername = this.checkUsername.bind(this)
     this.checkPassword = this.checkPassword.bind(this)
@@ -35,7 +37,7 @@ export default class Signup extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.setState({redirectUrl: nextProps.location.state && nextProps.location.state.from.pathname})
+    this.setState({redirectUrl: nextProps.location.state ? nextProps.location.state.from.pathname : '/'})
   }
 
   handleChange(e) {
@@ -59,7 +61,65 @@ export default class Signup extends React.Component {
   }
 
   handleLogin(e) {
-    this.props.handleLogin(this.state.loginUsername, this.state.loginPassword, this.state.redirectUrl)
+    fetch('/api/signin', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        username: this.state.loginUsername,
+        password: this.state.loginPassword,
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === 'success') {
+        this.props.loggedIn()
+        this.setState({redirect: true})
+      }
+    })
+    .catch(function(err) {
+        console.log(err);
+    });
+  }
+
+  handleGoogleOAuth(e) {
+    console.log("ayy");
+    fetch('/api/auth/google', {
+      method: 'GET',
+      credentials: 'include',
+      mode: 'no-cors'
+    })
+    .catch(function(err) {
+        console.log(err);
+    });
+  }
+
+  handleSignup(e) {
+    fetch('/api/signup', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        email: this.state.signupEmail,
+        username: this.state.signupUsername,
+        password: this.state.signupPassword,
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === 'success') {
+        this.props.loggedIn()
+        this.setState({redirect: true})
+      }
+    }).catch(function(err) {
+        console.log(err);
+    });
   }
 
   checkEmail(e) {
@@ -142,8 +202,16 @@ export default class Signup extends React.Component {
   }
 
   render() {
+    if (this.state.redirect) {
+      return (
+        <Redirect to={this.state.redirectUrl} />
+      )
+    }
     return (
       <div id="white_background_wrapper">
+        <div id="oauth_div">
+          <a href='http://localhost:8081/auth/google'>Sign In with Google</a>
+        </div>
         <div className="signup_div" style={{'borderRight': '1px solid black'}}>
           <div className="signup_form_div">
             <p>Login</p>
@@ -201,7 +269,7 @@ export default class Signup extends React.Component {
                 {(this.state.signupPassword === this.state.signupConfirmPassword) && this.state.signupConfirmPassword ? <span className="signup_validator">✔</span> : <span className="signup_validator">x</span>}
 
             </div>
-            <button className="btn btn-default" onClick={this.props.handleSignup.bind(this, this.state.signupEmail, this.state.signupUsername, this.state.signupPassword)}
+            <button className="btn btn-default" onClick={this.handleSignup}
               disabled={!(this.state.emailIsValid && this.state.usernameIsValid && this.state.passwordIsValid && (this.state.signupPassword === this.state.signupConfirmPassword))}>
               Sign Up
             </button>

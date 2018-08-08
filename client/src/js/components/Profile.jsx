@@ -17,7 +17,6 @@ export default class Profile extends React.Component {
       type_selector_value: 0,
       isFollowing: false,
       editProfile: false,
-      loggedIn: this.props.loggedIn,
       profile_image_file: null,
       profile_image_src: ''
     };
@@ -112,8 +111,7 @@ export default class Profile extends React.Component {
         profileInfo: data.userDetails,
         type_selector_value: 0,
         editProfile: false,
-        profile_image_src: data.userDetails.profile_image_src,
-        loggedIn: this.props.loggedIn
+        profile_image_src: data.userDetails.profile_image_src
       })
     })
     .catch((error) => {

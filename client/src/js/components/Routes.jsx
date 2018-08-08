@@ -31,18 +31,15 @@ export default class Routes extends React.Component {
       files: [],
       dropzoneActive: false,
       redirect: false,
-      redirectFromSignup: false,
-      redirectUrlFromSignup: '',
       loggedIn: Cookie.get('userId') ? true : false
     }
 
     this.onDragEnter = this.onDragEnter.bind(this);
     this.onDragLeave = this.onDragLeave.bind(this);
     this.onDrop = this.onDrop.bind(this);
-    this.handleSignup = this.handleSignup.bind(this)
     this.handleLogin = this.handleLogin.bind(this);
-    this.handleLoginRedirect = this.handleLoginRedirect.bind(this)
     this.handleLogout = this.handleLogout.bind(this)
+    this.loggedIn = this.loggedIn.bind(this)
   }
 
   componentWillMount() {
@@ -64,30 +61,6 @@ export default class Routes extends React.Component {
     if (accepted) {
       this.setState({files: accepted, dropzoneActive: false, redirect: true});
     }
-  }
-
-  handleSignup(email, username, password) {
-    fetch('/api/signup', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        email: email,
-        username: username,
-        password: password,
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.message === 'success') {
-        this.setState({loggedIn: true})
-      }
-    }).catch(function(err) {
-        console.log(err);
-    });
   }
 
   handleLogin(username, password) {
@@ -116,38 +89,6 @@ export default class Routes extends React.Component {
     });
   }
 
-  handleLoginRedirect(username, password, url) {
-    console.log("url is", url);
-    fetch('/api/signin', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        username: username,
-        password: password,
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.message == 'success') {
-        if (url) {
-          this.setState({loggedIn: true, redirectFromSignup: true, redirectUrlFromSignup: url});
-        } else {
-          this.setState({loggedIn: true, redirectFromSignup: true, redirectUrlFromSignup: '/'});
-        }
-      } else {
-        this.setState({loggedIn: false})
-      }
-    })
-    .catch(function(err) {
-        console.log(err);
-    });
-
-  }
-
   handleLogout() {
     fetch('/api/logout', {
       method: 'POST',
@@ -167,6 +108,10 @@ export default class Routes extends React.Component {
     }).catch(function(err) {
         console.log(err);
     });
+  }
+
+  loggedIn() {
+    this.setState({loggedIn: true})
   }
 
   render() {
@@ -196,7 +141,6 @@ export default class Routes extends React.Component {
               </Modal.Body>
             </Modal>
             {this.state.redirect && <Redirect to={{pathname: '/upload', state: {files: this.state.files}}} />}
-            {this.state.redirectFromSignup && <Redirect to={this.state.redirectUrlFromSignup} />}
 
             <Navbar loggedIn={this.state.loggedIn} handleLogin={this.handleLogin} handleLogout={this.handleLogout}/>
             <Switch>
@@ -207,8 +151,8 @@ export default class Routes extends React.Component {
               <Route path='/verify' component={Verify} />
               <Route exact path='/finder' component={Outfit_Finder}/>
               <Route exact path='/search' component={Search}/>
-              <Route exact path='/signup' render={(props) => <Signup handleLogin={this.handleLoginRedirect} handleSignup={this.handleSignup} {...props}/>} />
-              <Route exact path='/:profile' render={({match}) => <Profile loggedIn={this.state.loggedIn} profile={match.params.profile} />} />
+              <Route exact path='/signup' render={(props) => <Signup loggedIn={this.loggedIn} {...props}/>} />
+              <Route exact path='/:profile' render={({match}) => <Profile profile={match.params.profile} />} />
               <Route exact path='/:profile/:mediaId' component={SinglePostPage}/>
               <Route exact path='/:profile/playlist/:playlistId' component={SinglePlaylistPage}/>
               <Route exact path='/:profile/playlists/:playlistId' component={Playlist}/>

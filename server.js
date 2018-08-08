@@ -21,10 +21,12 @@ var fs = require('fs')
 var validator = require('validator');
 var nodemailer = require('nodemailer')
 var randomstring = require('randomstring')
+var cors = require('cors')
 
 var client  = Redis.createClient();
 var app = express();
 
+app.use(cors({credentials: true, origin: true}))
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
@@ -58,12 +60,11 @@ passport.deserializeUser(function(userId, done) {
 
 passport.use('local-login', new LocalStrategy(
  function(username, password, done) {
-   console.log("herererer");
    conn.query('SELECT * FROM logins WHERE username=?1', username, function(err, result) {
       if (err) {
         return done(err)
       }
-      if (!result) {
+      if (result.rowCount == 0) {
         return done(null, false)
       }
       bcrypt.compare(password, result.rows[0].passwordHash, (err, isValid) => {
@@ -94,7 +95,7 @@ passport.use('local-signup', new LocalStrategy({
     bcrypt.hash(password, 10, function(err, passwordHash) {
       bcrypt.hash(randomstring.generate(), 10, function(err, verificationHash) {
         conn.query('INSERT INTO users (username, profileName, followers, following, createdDate) VALUES (?1,?2,?3,?4,?5)',
-        [username, username, 0, 0, Date.now()], function(err, result) {
+        [username.toLowerCase(), username, 0, 0, Date.now()], function(err, result) {
           if (err) {
             console.log(err);
             return done(err)
@@ -102,7 +103,7 @@ passport.use('local-signup', new LocalStrategy({
             var userId = result.lastInsertId
             console.log("userId is", userId);
             conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, verificationHash, verified, userId) VALUES (?1,?2,?3,?4,?5,?6,?7)',
-              [username, email, password, passwordHash, verificationHash, false, userId], function(err, result) {
+              [username.toLowerCase(), email, password, passwordHash, verificationHash, false, userId], function(err, result) {
               if (err) {
                 console.log(err);
                 return done(err)
@@ -134,14 +135,38 @@ passport.use('local-signup', new LocalStrategy({
 passport.use(new GoogleStrategy({
     clientID: '206855693376-62fvp593krr8jv2ih8lot21aapdhc5es.apps.googleusercontent.com',
     clientSecret: 'Bu7C0Zh8b3cnL68zvrM-EATX',
-    callbackURL: "localhost:3000/auth/google/callback"
+    callbackURL: "http://localhost:8081/auth/google/callback"
   },
   function(accessToken, refreshToken, profile, done) {
-       User.findOrCreate({ googleId: profile.id }, function (err, user) {
-         return done(err, user);
-       });
-  }
-));
+    conn.query('SELECT * FROM logins WHERE networkId=?1', profile.id, function(err, result) {
+       if (err) {
+         return done(err)
+       }
+       if (result.rowCount > 0) {
+         return done(null, result.rows[0].userId)
+       }
+       var username = profile.displayName.replace(/\s+/g, '');
+       Promise.all([generateUsername(username)])
+       .then(function(allData) {
+         console.log(allData[0]);
+         conn.query('INSERT INTO users (username, profileName, followers, following, createdDate) VALUES (?1,?2,?3,?3,?4)',
+         [allData[0], profile.displayName, 0, Date.now()], function(err, result) {
+           if (err) {
+             return done(err)
+           }
+           var userId = result.lastInsertId
+           conn.query('INSERT INTO logins (networkId, network, accessToken, email, verified, userId) VALUES (?1,?2,?3,?4,?5,?6)',
+           [profile.id, profile.provider, accessToken, profile.emails[0].value, true, userId], function(err, result) {
+             if (err) {
+               return done(err)
+             }
+             return done(null, userId)
+           })
+         })
+       })
+     })
+   }
+))
 
 // var storage = multer.diskStorage({
 //     destination: function(request, file, callback) {
@@ -203,7 +228,7 @@ conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER PRIMARY KEY AUTOIN
 'FOREIGN KEY(userId) REFERENCES users(userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
-'network TEXT, networkId TEXT, username TEXT NOT NULL UNIQUE, email TEXT UNIQUE, passwordText TEXT NOT NULL, passwordSalt TEXT, ' +
+'network TEXT, networkId TEXT, accessToken TEXT, username TEXT UNIQUE, email TEXT UNIQUE, passwordText TEXT, passwordSalt TEXT, ' +
 'passwordHash CHAR(60), verificationHash CHAR(60), verified BOOLEAN, userId INTEGER, ' +
 'FOREIGN KEY(userId) REFERENCES users(userId))');
 
@@ -373,10 +398,11 @@ conn.query('INSERT INTO following (userId, followingId, dateTime) VALUES (?,?,?)
   }
 })
 
-app.get('/auth/google', passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] }));
+app.get('/auth/google', passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email'] }));
 
-app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), function(req, res) {
-    res.redirect('/');
+app.get('/auth/google/callback', passport.authenticate('google'), function(req, res) {
+  res.cookie('userId', req.user)
+  res.redirect('http://localhost:3000/');
 });
 
 app.get('/api/verify', loggedIn, (req, res) => {
@@ -1061,7 +1087,7 @@ app.post('/api/checkEmail', (req, res) => {
 
 app.post('/api/checkUsername', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/checkUsername');
-  var username = req.body.username
+  var username = req.body.username.toLowerCase()
   conn.query('SELECT 1 FROM logins WHERE username=?1', username, function(err, result) {
     if (err) {
       console.log(err);
@@ -1107,32 +1133,6 @@ function loggedIn(req, res, next) {
     res.send({message: 'not logged in'})
   }
 }
-
-// function getTagDetails(mediaIds, question_query) {
-//   return new Promise(function(resolve, reject) {
-//     conn.query('SELECT a.*, b.mediaId as mediaId FROM tags AS a, postTags AS b ' +
-//     'WHERE a.tagId=b.tagId AND b.mediaId IN (' + question_query + ')', mediaIds, function(err, result) {
-//       if (err) {
-//         return reject(err)
-//       } else {
-//         var postTags = {};
-//         for(var i = 0; i < result.rows.length; i++) {
-//           var row = result.rows[i]
-//           var mediaId = row.mediaId
-//           if (postTags[mediaId]) {
-//             postTags[mediaId].push({itemType: row.itemType, itemBrand: row.itemBrand,
-//               itemName: row.itemName, original: row.original})
-//           } else {
-//             postTags[mediaId] = [];
-//             postTags[mediaId].push({itemType: row.itemType, itemBrand: row.itemBrand,
-//               itemName: row.itemName, original: row.original})
-//           }
-//         }
-//         return resolve(postTags)
-//       }
-//     })
-//   })
-// }
 
 function getTagDetailsRevised(mediaIds, question_query) {
   return new Promise(function(resolve, reject) {
@@ -1251,43 +1251,6 @@ function getPlaylistsPosts(playlistIds, question_query) {
     })
   })
 }
-
-// function postTagsFromUpload(mediaId, inputTags) {
-//   return new Promise(function(resolve, reject) {
-//     console.log("inputTags are", inputTags);
-//     var question_query = '';
-//     var insertQuery = [];
-//     for (var i = 0; i < inputTags.length; i++) {
-//       insertQuery.push(inputTags[i].itemType, inputTags[i].itemName, inputTags[i].itemBrand, inputTags[i].original, inputTags[i].x, inputTags[i].y);
-//       question_query += '(?, ?, ?, ?),';
-//     }
-//     question_query = question_query.slice(0, -1);
-//     conn.query('INSERT INTO tags (itemType, itemName, itemBrand, original, x, y) VALUES ' + question_query, insertQuery, function(err, result) {
-//       if (err) {
-//         console.log("insert tag error");
-//         return reject(err)
-//       } else {
-//         console.log("first inserted tagId is", result.lastInsertId);
-//         var tagId = result.lastInsertId - inputTags.length + 1;
-//         question_query = '';
-//         insertQuery = [];
-//         for (var i = 0; i < inputTags.length; i++) {
-//           insertQuery.push(mediaId, tagId + i)
-//           question_query += '(?,?),'
-//         }
-//         console.log("insertQuery is", insertQuery);
-//         question_query = question_query.slice(0, -1);
-//         conn.query('INSERT INTO postTags (mediaId, tagId) VALUES ' + question_query, insertQuery, function(err, result) {
-//           if (err) {
-//             return reject(err)
-//           } else {
-//             return resolve({message: 'success'});
-//           }
-//         })
-//       }
-//     })
-//   })
-// }
 
 function postTagsFromUploadRevised(mediaId, inputTags) {
   return new Promise(function(resolve, reject) {
@@ -1591,6 +1554,25 @@ function updateProfileImage(filename, buffer, userId) {
             })
           }
         })
+      }
+    })
+  })
+}
+
+function generateUsername(username) {
+  return new Promise(function(resolve, reject) {
+    var uniqueUsername = (username + Math.floor(Math.random() * 1000)).toLowerCase()
+    console.log("uniqueUsername is", uniqueUsername);
+    conn.query('SELECT 1 FROM logins WHERE username=?1', uniqueUsername, function(err, result) {
+      if (err) {
+        return reject(err);
+      } else {
+        if (result.rowCount > 0) {
+          resolve(generateUsername(username))
+        } else {
+          console.log("username is unique");
+          return resolve(uniqueUsername)
+        }
       }
     })
   })

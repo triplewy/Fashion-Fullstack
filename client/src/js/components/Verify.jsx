@@ -33,10 +33,14 @@ export default class Verify extends React.Component {
   }
 
   render() {
+    if (this.state.redirect) {
+      return (
+        <Redirect to='/' />
+      )
+    }
     return (
       <div id="white_background_wrapper">
-        {this.state.redirect && <Redirect to='/' />}
-        <p>Yo</p>
+        <p>Redirecting</p>
       </div>
     );
   }
