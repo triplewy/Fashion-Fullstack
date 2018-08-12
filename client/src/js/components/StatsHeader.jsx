@@ -26,6 +26,7 @@ export default class StatsHeader extends React.Component {
     this.handleRepost = this.handleRepost.bind(this);
     this.handleUnrepost = this.handleUnrepost.bind(this);
     this.showModal = this.showModal.bind(this)
+    this.closeModal = this.closeModal.bind(this)
   }
 
   handleLike(e) {
@@ -134,6 +135,10 @@ export default class StatsHeader extends React.Component {
     this.setState({showModal: true})
   }
 
+  closeModal(e) {
+    this.setState({showModal: false})
+  }
+
   render() {
     var stats_icon_style = "stats_icon";
     var stats_button_style="stats_button";
@@ -161,7 +166,7 @@ export default class StatsHeader extends React.Component {
             <button id="add_to_playlist" className={stats_button_style} onClick={this.showModal}>
               <img id="add_to_playlist_icon" alt="add icon" className="stats_icon" src={plus_icon}></img>
             </button>
-            <PlaylistModal mediaId={this.props.mediaId} showModal={this.state.showModal} />
+            <PlaylistModal mediaId={this.props.mediaId} showModal={this.state.showModal} closeModal={this.closeModal}/>
           </div>
           <div className="btn-group">
             <button id="more" className="dropdown-toggle" type="button" data-toggle="dropdown">

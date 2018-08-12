@@ -1,7 +1,7 @@
 {
   "name": "fashion-fullstack",
   "version": "1.0.0",
-  "description": "",
+  "description": "Fashion Social Media Website Startup",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "client": "cd client && npm start",
@@ -9,15 +9,12 @@
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "dev": "concurrently \"yarn server\"\"yarn client\""
   },
-  "author": "",
+  "author": "Alex Yu",
   "license": "ISC",
   "devDependencies": {
     "concurrently": "3.1.0"
   },
   "dependencies": {
-    "any-db": "^2.2.1",
-    "any-db-postgres": "^2.1.5",
-    "any-db-sqlite3": "^2.1.4",
     "bcrypt": "^2.0.1",
     "body-parser": "^1.18.3",
     "colors": "^1.3.0",
@@ -27,15 +24,16 @@
     "express-session": "^1.15.6",
     "jpeg-autorotate": "^4.0.0",
     "multer": "^1.3.0",
+    "mysql": "^2.16.0",
+    "named-placeholders": "^1.1.1",
     "nodemailer": "^4.6.7",
     "passport": "^0.4.0",
     "passport-google-oauth": "^1.0.0",
     "passport-local": "^1.0.0",
-    "passport-oauth": "^1.0.0",
-    "passport-reddit": "^0.2.4",
     "path": "^0.12.7",
     "randomstring": "^1.1.5",
     "redis": "^2.8.0",
+    "socket.io": "^2.1.1",
     "validator": "^10.5.0"
   }
 }

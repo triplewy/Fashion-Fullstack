@@ -90,71 +90,10 @@ export default class Home extends React.Component {
         return <Redirect to={'/'}/>
       }
       return (
-        <div>
-          <div className="btn-group" id="login_dropdown_wrapper">
-            <button type="button" className="btn btn-default dropdown-toggle" id="login_dropdown" data-toggle="dropdown">
-              Sign in<span className="caret"></span></button>
-              <ul className="dropdown-menu" role="menu">
-                <li>
-                  <button id="reddit_login_label">Reddit Login</button>
+        <div id="white_background_wrapper">
 
-                    <div className="form-group">
-                        <label className="login_label">Email address</label>
-                        <input type="email" className="form-control"
-                        placeholder="Enter email" name="username" onChange={this.handleChange}
-                        value={this.state.username}></input>
-                    </div>
-                    <div className="form-group">
-                        <label className="login_label">Password</label>
-                        <input type="password" className="form-control"
-                        placeholder="Password" name="password" onChange={this.handleChange}
-                        onKeyPress={this.handleKeyPress} value={this.state.password}></input>
-                    </div>
-                    <button type="submit" className="btn btn-default" onClick={this.handleLogin}>Submit</button>
-                </li>
-              </ul>
-            </div>
-            <div className="btn-group" id="create_account_modal">
-              <button type="button" className="btn btn-default dropdown-toggle" id="create_account_button" data-toggle="dropdown">
-                Create Account</button>
-                <ul className="dropdown-menu" role="menu">
-                  <li>
-                    <div className="form-group">
-                        <label className="login_label">Username</label>
-                        <input type="text" className="form-control"
-                        placeholder="Enter username" name="username" onChange={this.handleChange}
-                        value={this.state.username}></input>
-                    </div>
-                      <div className="form-group">
-                          <label className="login_label">Email address</label>
-                          <input type="email" className="form-control"
-                          placeholder="Enter email" name="email" onChange={this.handleChange}
-                          value={this.state.email}></input>
-                      </div>
-                      <div className="form-group">
-                          <label className="login_label">Password</label>
-                          <input type="password" className="form-control"
-                          placeholder="Password" name="password" onChange={this.handleChange}
-                          value={this.state.password}></input>
-                      </div>
-                      <div className="form-group">
-                          <label className="login_label">Confirm Password</label>
-                          <input type="password" className="form-control"
-                          placeholder="Password" name="confirmPassword" onChange={this.handleChange}
-                          value={this.state.confirmPassword}></input>
-                      </div>
-                      <button type="submit" className="btn btn-default" onClick={this.handleSignup}>Submit</button>
-                  </li>
-                </ul>
-              </div>
             <p id="title">Fashion App</p>
-            <div id="search_bar_div">
-              <form>
-                <input id="home_search_bar" type="text" placeholder="Search"
-                  onChange={this.onChange} value={this.state.search_value}></input>
-                <button id="home_search_bar_button" type="submit" disabled={!this.state.search_value}>Go</button>
-              </form>
-            </div>
+            
             <div id="trending_div">
 
             </div>

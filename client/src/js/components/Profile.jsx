@@ -273,11 +273,15 @@ export default class Profile extends React.Component {
             <div id="profile_info">
               <div id="profile_info_image_div">
                 <img id="profile_info_image" alt="" src={this.state.profile_image_src}></img>
-                <label htmlFor="input_image_button" id="update_profile_image_label">
-                  Update
-                </label>
-                <input id="input_image_button" type="file" name="post_pic" accept="image/*"
-                  onChange={this.readImageFile}></input>
+                {this.state.profileInfo.editable &&
+                  <div>
+                    <label htmlFor="input_image_button" id="update_profile_image_label">
+                      Update
+                    </label>
+                    <input id="input_image_button" type="file" name="post_pic" accept="image/*"
+                      onChange={this.readImageFile}></input>
+                  </div>
+                }
               </div>
               <div id="profile_info_text_div">
                 <p id="profile_info_username">{this.state.profileInfo.profileName}</p>

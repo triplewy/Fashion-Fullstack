@@ -73,23 +73,23 @@ export default class Comments extends React.Component {
 
   render() {
     var renderedComments = [];
-    if (this.state.comments) {
-      renderedComments = this.state.comments.map((item, index) => {
-        return (
-          <li key={index}>
-            <div className="post_profile_link">
-              <Link to={"/" + item.username}>
-                <p className="comment_user">{item.profileName}</p>
-              </Link>
-              <DropdownProfile username={item.username} location={item.location}
-                userFollowers={item.userFollowers} userFollowed={item.userFollowed} />
-            </div>
-            <p className="comment">{item.comment}</p>
-            <p className="comment_time">1 hour ago</p>
-          </li>
-        )
-      })
-    }
+    // if (this.state.comments) {
+    //   renderedComments = this.state.comments.map((item, index) => {
+    //     return (
+    //       <li key={index}>
+    //         <div className="post_profile_link">
+    //           <Link to={"/" + item.username}>
+    //             <p className="comment_user">{item.profileName}</p>
+    //           </Link>
+    //           <DropdownProfile username={item.username} location={item.location}
+    //             userFollowers={item.userFollowers} userFollowed={item.userFollowed} />
+    //         </div>
+    //         <p className="comment">{item.comment}</p>
+    //         <p className="comment_time">1 hour ago</p>
+    //       </li>
+    //     )
+    //   })
+    // }
 
     return (
       <div id="comments_wrapper">

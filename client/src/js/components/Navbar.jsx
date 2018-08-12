@@ -1,8 +1,10 @@
 import React from 'react';
 import StatsColumn from './StatsColumn.jsx'
 import LoginModal from './LoginModal.jsx'
+import Notifications from './Notifications.jsx'
 import { Link, Redirect} from 'react-router-dom';
 import notification_icon from 'images/notification-icon.png'
+import socketIOClient from 'socket.io-client'
 
 // {this.state.search_redirect && <Redirect to={'/search'}/>}
 
@@ -26,6 +28,7 @@ export default class Navbar extends React.Component {
     this.searchSubmit = this.searchSubmit.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
     this.showLoginModal = this.showLoginModal.bind(this)
+    this.closeLoginModal = this.closeLoginModal.bind(this)
     this.fetchNavbar = this.fetchNavbar.bind(this)
   }
 
@@ -74,6 +77,10 @@ export default class Navbar extends React.Component {
     this.setState({showLoginModal: true})
   }
 
+  closeLoginModal(e) {
+    this.setState({showLoginModal: false})
+  }
+
   fetchNavbar() {
     fetch('/api/navbar', {
       credentials: 'include'
@@ -91,7 +98,8 @@ export default class Navbar extends React.Component {
             username: data.username,
             profile_image_src: data.profile_image_src,
             profileName: data.profileName,
-            loggedIn: true
+            loggedIn: true,
+            showLoginModal: false
           });
         }
       }
@@ -145,17 +153,7 @@ export default class Navbar extends React.Component {
                   </li>
                 </ul>
               </div>
-              <div className="btn-group">
-                <button className="dropdown-toggle" type="button" data-toggle="dropdown">
-                  <img id="notifications_icon" alt="notifications icon" className="banner_button" src={notification_icon}></img>
-                  <span className="caret"></span>
-                </button>
-                <ul className="dropdown-menu">
-                  <li className="form-group">
-                    Yo
-                  </li>
-                </ul>
-              </div>
+              <Notifications />
               <div className="btn-group">
                 <button className="dropdown-toggle" type="button" data-toggle="dropdown">
                   Messages<span className="caret"></span>
@@ -170,7 +168,7 @@ export default class Navbar extends React.Component {
             :
             <div id="banner_user_div">
               <button id="banner_login_button" onClick={this.showLoginModal}>Login</button>
-              <LoginModal showModal={this.state.showLoginModal} handleLogin={this.props.handleLogin}/>
+              <LoginModal showModal={this.state.showLoginModal} closeModal={this.closeLoginModal} handleLogin={this.props.handleLogin}/>
               <Link to={"/signup"}>
                 <button id="signup_button" className="banner_button">Sign Up</button>
               </Link>

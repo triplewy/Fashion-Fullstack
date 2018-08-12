@@ -17,16 +17,12 @@ export default class PlaylistModal extends React.Component {
       mediaId: this.props.mediaId
     };
 
-    this.handleTitleChange = this.handleTitleChange.bind(this);
-    this.handleGenreChange = this.handleGenreChange.bind(this);
-    this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
-    this.handleOptionChange = this.handleOptionChange.bind(this);
+    this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this);
     this.getPlaylists = this.getPlaylists.bind(this)
     this.addToPlaylist = this.addToPlaylist.bind(this);
     this.createNewPlaylist = this.createNewPlaylist.bind(this);
     this.backButton = this.backButton.bind(this);
-    this.close = this.close.bind(this)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -36,20 +32,8 @@ export default class PlaylistModal extends React.Component {
     });
   }
 
-  handleTitleChange(e) {
-    this.setState({titleInput: e.target.value})
-  }
-
-  handleGenreChange(e) {
-    this.setState({genreInput: e.target.value})
-  }
-
-  handleDescriptionChange(e) {
-    this.setState({descriptionInput: e.target.value})
-  }
-
-  handleOptionChange(e) {
-    this.setState({selectedOption: e.target.value});
+  handleChange(e) {
+    this.setState({[e.target.name]: e.target.value})
   }
 
   handleSubmit(e) {
@@ -134,12 +118,6 @@ export default class PlaylistModal extends React.Component {
     this.setState({showNewPlaylist: false})
   }
 
-  close(e){
-    console.log("close");
-    // e.stopPropagation()
-    this.setState({ showModal: false });
-  }
-
 
   render() {
     var renderedPlaylists = []
@@ -163,7 +141,7 @@ export default class PlaylistModal extends React.Component {
     }
 
     return (
-      <Modal show={this.state.showModal} onHide={this.close} onEnter={this.getPlaylists}>
+      <Modal show={this.state.showModal} onHide={this.props.closeModal} onEnter={this.getPlaylists}>
         {this.state.showNewPlaylist ?
         <div>
         <Modal.Header closeButton>
@@ -173,27 +151,27 @@ export default class PlaylistModal extends React.Component {
           <div id="create_new_playlist_wrapper">
             <div className="playlist_input_div">
               <label className="playlist_input_label">Title</label>
-              <input className="playlist_input" type="text" placeholder="title" value={this.state.titleInput}
-                onChange={this.handleTitleChange}></input>
+              <input className="playlist_input" type="text" placeholder="title" name="titleInput" value={this.state.titleInput}
+                onChange={this.handleChange}></input>
             </div>
             <div className="playlist_input_div">
               <label className="playlist_input_label">Genre</label>
-              <input className="playlist_input" type="text" placeholder="genre" value={this.state.genreInput}
-                onChange={this.handleGenreChange}></input>
+              <input className="playlist_input" type="text" placeholder="genre" name="genreInput" value={this.state.genreInput}
+                onChange={this.handleChange}></input>
             </div>
             <div className="playlist_input_div">
               <label className="playlist_input_label">Description</label>
-              <textarea className="playlist_input" type="text" placeholder="description" value={this.state.descriptionInput}
-                onChange={this.handleDescriptionChange}></textarea>
+              <textarea className="playlist_input" type="text" placeholder="description" name="descriptionInput" value={this.state.descriptionInput}
+                onChange={this.handleChange}></textarea>
             </div>
             <div className="playlist_input_div">
               <label className="playlist_input_label">Public</label>
-              <input type="radio" name="privacy" id="public_radio_input" value="public"
-                checked={this.state.selectedOption === 'public'} onChange={this.handleOptionChange}></input>
+              <input type="radio" name="selectedOption" id="public_radio_input" value="public"
+                checked={this.state.selectedOption === 'public'} onChange={this.handleChange}></input>
               <label className="playlist_input_label">Private</label>
-              <input className="playlist_input" type="radio" name="privacy"
+              <input className="playlist_input" type="radio" name="selectedOption"
                 id="private_radio_input" value="private" checked={this.state.selectedOption === 'private'}
-                onChange={this.handleOptionChange}></input>
+                onChange={this.handleChange}></input>
             </div>
             <button type="button" id="create_playlist_button" onClick={this.handleSubmit} disabled={!this.state.titleInput}>Create</button>
           </div>

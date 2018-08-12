@@ -10,6 +10,8 @@ button {
   margin: 0 0;
   background-color: transparent;
   outline: none;
+  -webkit-transition: color 0.12s ease-in, border-color 0.12s ease-in, background-color 0.12s ease-in;
+  transition: color 0.12s ease-in, border-color 0.12s ease-in, background-color 0.12s ease-in;
 }
 
 button:disabled:hover {
@@ -20,16 +22,69 @@ p {
   margin: 0 0;
 }
 
-input:focus {
-  outline:none;
+input {
+  display: block;
+  background-color: transparent;
+  width: 100%;
+  padding: 8px 0;
+  border: 0;
+  box-shadow: 0 1px 0px 0px #ebebeb;
+  -webkit-transition: box-shadow 0.5s;
+  transition: box-shadow 0.5s;
 }
+
+input:focus {
+  outline: none;
+  box-shadow: 0 1px 0px 0px #4EA6EA;
+}
+
 
 input[type="file"] {
   display: none;
 }
 
+.valid_field {
+  display: block;
+  background-color: transparent;
+  width: 100%;
+  padding: 8px 0;
+  border: 0;
+  box-shadow: 0 1px 0px 0px green;
+  -webkit-transition: box-shadow 0.5s;
+  transition: box-shadow 0.5s;
+}
+
+.valid_field:focus {
+  outline: none;
+  box-shadow: 0 1px 0px 0px green;
+}
+
 textarea {
   resize: none;
+}
+
+.fade.modal-backdrop.in {
+  z-index: 2;
+}
+
+.modal-header {
+  padding: 10px;
+  border: none;
+}
+
+.modal-title {
+  text-align: center;
+  font-weight: 500;
+  font-size: 24px;
+  padding: 20px;
+}
+
+.close {
+  vertical-align: middle;
+}
+
+.modal-body {
+  padding: 20px 20px;
 }
 
 #app {
@@ -42,26 +97,38 @@ textarea {
 #banner {
   display: flex;
   position: fixed;
+  opacity: 1;
+  visibility: 1;
   top: 0;
   background-color: white;
   width: 100%;
   height: 70px;
   color: black;
-  z-index: 2;
+  z-index: 1;
   padding: 0 10%;
   border-bottom: 1px solid #f1f1f1;
+  -webkit-transition:opacity 0.2s ease-in;
+  -moz-transition:opacity 0.2s ease-in;
+  transition: opacity 0.2s ease-in;
 }
 
 #banner_hide {
-  display: none;
+  display: flex;
   position: fixed;
+  opacity: 0;
+  visibility: 0;
   top: 0;
   background-color: white;
   width: 100%;
-  height: 0;
+  height: 70px;
   color: black;
-  padding: 0 auto;
+  z-index: 1;
+  padding: 0 10%;
   border-bottom: 1px solid #f1f1f1;
+  -webkit-transition:opacity 0.2s ease-out;
+  -moz-transition:opacity 0.2s ease-out;
+  transition: opacity 0.2s ease-out;
+  pointer-events: none;
 }
 
 .banner_section {
@@ -69,7 +136,6 @@ textarea {
 }
 
 #banner_left {
-
 }
 
 #banner_center {
@@ -78,7 +144,6 @@ textarea {
 }
 
 #banner_right {
-
 }
 
 #banner_title {
@@ -112,6 +177,7 @@ textarea {
   padding: 5px 10px;
   background-color: transparent;
   border: 0;
+  box-shadow: none;
 }
 
 #search_bar_button {
@@ -172,7 +238,7 @@ textarea {
   cursor: pointer;
   height: 100%;
   font-size: 14px;
-  padding-left: 40px;
+  margin-left: 40px;
 }
 
 #notifications_icon {
@@ -189,6 +255,7 @@ textarea {
 #white_background_wrapper {
   position: relative;
   overflow: hidden;
+  z-index: 0;
   /* width: 1250px; */
   width: 1100px;
   min-height: 706px;
@@ -265,6 +332,8 @@ textarea {
   display: inline-block;
   max-width: 70%;
   border: 1px solid #f1f1f1;
+  -webkit-transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s;
 }
 
 #polaroid_div:hover {
@@ -295,13 +364,13 @@ textarea {
 
 #genre_button {
   float: right;
-  vertical-align: middle;
   text-align: center;
   background-color: gray;
   color: white;
   border-radius: 20px;
   font-size: 12px;
   padding: 2px 10px;
+  margin: 15px 15px;
 }
 
 #genre_button:hover {
@@ -319,6 +388,7 @@ textarea {
   display: inline-block;
   height: 50px;
   width: 50px;
+  vertical-align: middle;
 }
 
 #profile_image {
@@ -1191,6 +1261,54 @@ textarea {
   border: none;
 }
 
+.welcome_text {
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+.oauth_div {
+  text-align: center;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.oauth_div img {
+  border-radius: 6px;
+  height: 50px;
+  width: 50px;
+}
+
+.oauth_div img:hover {
+  box-shadow: 0 5px 4px #888888;
+  -webkit-transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s;
+}
+
+#login_input_fields {
+  width: 320px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+#login_input_fields input{
+  margin-bottom: 40px;
+}
+
+#login_input_fields button {
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 40px;
+  border: 1px solid #4EA6EA;
+  color: #4EA6EA;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+#login_input_fields button:hover {
+  border: 1px solid blue;
+  color: blue;
+}
+
 .dropdown-menu {
   padding: 10px 10px;
 }
@@ -1300,18 +1418,23 @@ textarea {
 }
 
 #profile_links div.profile_links_dropdown {
-  display: none;
+  display: block;
+  max-height: 0;
   background-color: black;
   color: white;
   width: 200px;
   text-align: center;
+  -webkit-transition: max-height 0.15s ease-out;
+  transition: max-height 0.15s ease-out;
 }
 
 #profile_links:hover div.profile_links_dropdown {
   display: block;
   position: absolute;
   top: 0px;
-
+  max-height: 100px;
+  -webkit-transition: max-height 0.25s ease-in;
+  transition: max-height 0.25s ease-in;
 }
 
 #comments_input_bar {
@@ -1355,10 +1478,6 @@ textarea {
 
 .modal {
   text-align: center;
-}
-
-.modal-body {
-  padding: 0 0;
 }
 
 .modal-dialog {
@@ -1570,10 +1689,6 @@ textarea {
   z-index: auto;
 }
 
-#login_modal_body {
-  padding: 10px 10px;
-}
-
 .post_profile_link {
   display: inline-block;
 }
@@ -1586,10 +1701,14 @@ textarea {
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 6px;
+  -webkit-transition: opacity 0.15s ease-out;
+  transition: opacity 0.15s ease-out;
 }
 
 .post_profile_link:hover div.dropdown {
   display: block;
+  -webkit-transition: opacity 0.15s ease-in;
+  transition: opacity 0.15s ease-in;
 }
 
 #dropdown_follow {

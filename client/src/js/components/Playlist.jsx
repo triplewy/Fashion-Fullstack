@@ -107,32 +107,32 @@ export default class Playlist extends React.Component {
     var currentPost = this.state.playlistPosts[this.state.playlistIndex]
     console.log("currentPost is", currentPost);
     var rendered_playlist_posts = [];
-    if (this.state.playlistPosts.length > 0) {
-      rendered_playlist_posts = this.state.playlistPosts.map((item, index) => {
-        return (
-          <li key={index} value={index} className={(this.state.playlistIndex === index) ? 'playlist_post_selected' : 'playlist_post'}
-                disabled={(this.state.playlistIndex === index)}>
-            <div id="playlist_post_user_title_div" onClick={this.setPlaylistIndex.bind(this, index)}>
-              <div className="post_profile_link">
-                <Link to={"/" + item.username}>
-                  <p id="playlist_post_user">{item.profileName}</p>
-                </Link>
-                <DropdownProfile username={item.username} location={item.location}
-                  userFollowers={item.userFollowers} userFollowed={item.userFollowed} followsYou={item.followsYou}/>
-              </div>
-
-              <p id="playlist_post_title">{item.title}</p>
-            </div>
-            {this.state.playlistIndex === index &&
-              <div id="stats_wrapper">
-                <StatsHeader mediaId={item.mediaId} views={item.views} likes={item.likes} reposts={item.reposts} comments={item.comments}
-                  reposted={item.reposted} liked={item.liked}/>
-              </div>
-            }
-          </li>
-          )
-      });
-    }
+    // if (this.state.playlistPosts.length > 0) {
+    //   rendered_playlist_posts = this.state.playlistPosts.map((item, index) => {
+    //     return (
+    //       <li key={index} value={index} className={(this.state.playlistIndex === index) ? 'playlist_post_selected' : 'playlist_post'}
+    //             disabled={(this.state.playlistIndex === index)}>
+    //         <div id="playlist_post_user_title_div" onClick={this.setPlaylistIndex.bind(this, index)}>
+    //           <div className="post_profile_link">
+    //             <Link to={"/" + item.username}>
+    //               <p id="playlist_post_user">{item.profileName}</p>
+    //             </Link>
+    //             <DropdownProfile username={item.username} location={item.location}
+    //               userFollowers={item.userFollowers} userFollowed={item.userFollowed} followsYou={item.followsYou}/>
+    //           </div>
+    //
+    //           <p id="playlist_post_title">{item.title}</p>
+    //         </div>
+    //         {this.state.playlistIndex === index &&
+    //           <div id="stats_wrapper">
+    //             <StatsHeader mediaId={item.mediaId} views={item.views} likes={item.likes} reposts={item.reposts} comments={item.comments}
+    //               reposted={item.reposted} liked={item.liked}/>
+    //           </div>
+    //         }
+    //       </li>
+    //       )
+    //   });
+    // }
 
       return (
         <div id="post_wrapper">
