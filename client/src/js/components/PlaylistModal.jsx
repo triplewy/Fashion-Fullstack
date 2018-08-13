@@ -142,54 +142,47 @@ export default class PlaylistModal extends React.Component {
 
     return (
       <Modal show={this.state.showModal} onHide={this.props.closeModal} onEnter={this.getPlaylists}>
-        {this.state.showNewPlaylist ?
-        <div>
         <Modal.Header closeButton>
-          <Modal.Title>Create New Playlist</Modal.Title>
+          <Modal.Title>{this.state.showNewPlaylist ? "Create New Playlist" : "Add To Playlist"}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <div id="create_new_playlist_wrapper">
-            <div className="playlist_input_div">
-              <label className="playlist_input_label">Title</label>
-              <input className="playlist_input" type="text" placeholder="title" name="titleInput" value={this.state.titleInput}
-                onChange={this.handleChange}></input>
+        <Modal.Body id="playlist_modal">
+          {this.state.showNewPlaylist ?
+            <div id="create_new_playlist_wrapper">
+              <div className="playlist_input_div">
+                <label className="playlist_input_label">Title</label>
+                <input className="playlist_input" type="text" placeholder="title" name="titleInput" value={this.state.titleInput}
+                  onChange={this.handleChange}></input>
+              </div>
+              <div className="playlist_input_div">
+                <label className="playlist_input_label">Genre</label>
+                <input className="playlist_input" type="text" placeholder="genre" name="genreInput" value={this.state.genreInput}
+                  onChange={this.handleChange}></input>
+              </div>
+              <div className="playlist_input_div">
+                <label className="playlist_input_label">Description</label>
+                <textarea className="playlist_input" type="text" placeholder="description" name="descriptionInput" value={this.state.descriptionInput}
+                  onChange={this.handleChange}></textarea>
+              </div>
+              <div className="playlist_input_div">
+                <label className="playlist_input_label">Public</label>
+                <input type="radio" name="selectedOption" id="public_radio_input" value="public"
+                  checked={this.state.selectedOption === 'public'} onChange={this.handleChange}></input>
+                <label className="playlist_input_label">Private</label>
+                <input className="playlist_input" type="radio" name="selectedOption"
+                  id="private_radio_input" value="private" checked={this.state.selectedOption === 'private'}
+                  onChange={this.handleChange}></input>
+              </div>
+              <button type="button" id="create_playlist_button" onClick={this.handleSubmit} disabled={!this.state.titleInput}>Create</button>
             </div>
-            <div className="playlist_input_div">
-              <label className="playlist_input_label">Genre</label>
-              <input className="playlist_input" type="text" placeholder="genre" name="genreInput" value={this.state.genreInput}
-                onChange={this.handleChange}></input>
+            :
+            <div>
+              <div id="create_new_playlist" className="playlist_selector" onClick={this.createNewPlaylist}>New Playlist +</div>
+              <ul id="playlists_list">
+                {renderedPlaylists}
+              </ul>
             </div>
-            <div className="playlist_input_div">
-              <label className="playlist_input_label">Description</label>
-              <textarea className="playlist_input" type="text" placeholder="description" name="descriptionInput" value={this.state.descriptionInput}
-                onChange={this.handleChange}></textarea>
-            </div>
-            <div className="playlist_input_div">
-              <label className="playlist_input_label">Public</label>
-              <input type="radio" name="selectedOption" id="public_radio_input" value="public"
-                checked={this.state.selectedOption === 'public'} onChange={this.handleChange}></input>
-              <label className="playlist_input_label">Private</label>
-              <input className="playlist_input" type="radio" name="selectedOption"
-                id="private_radio_input" value="private" checked={this.state.selectedOption === 'private'}
-                onChange={this.handleChange}></input>
-            </div>
-            <button type="button" id="create_playlist_button" onClick={this.handleSubmit} disabled={!this.state.titleInput}>Create</button>
-          </div>
+          }
         </Modal.Body>
-        </div>
-        :
-        <div>
-        <Modal.Header closeButton>
-          <Modal.Title>Add to Playlist</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div id="create_new_playlist" className="playlist_selector" onClick={this.createNewPlaylist}>New Playlist +</div>
-          <ul id="playlists_list">
-            {renderedPlaylists}
-          </ul>
-        </Modal.Body>
-        </div>
-      }
       </Modal>
     );
   }

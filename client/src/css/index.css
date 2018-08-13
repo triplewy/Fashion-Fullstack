@@ -22,6 +22,10 @@ p {
   margin: 0 0;
 }
 
+a:hover {
+  text-decoration: none;
+}
+
 input {
   display: block;
   background-color: transparent;
@@ -500,11 +504,6 @@ textarea {
   list-style: none;
 }
 
-#stats_header {
-  padding: 15px 0;
-  width: 100%;
-}
-
 #toggle_like {
   font-size: 20px;
 }
@@ -513,24 +512,34 @@ textarea {
   color: #e2264d;
 }
 
-.stats_button {
+#stats_header {
+  padding: 15px 0;
+  width: 100%;
+}
+
+#stats_header button {
   display: inline-block;
   padding: 0 0;
   padding-right: 20px;
 }
 
-.collection_stats_button {
-  display: inline-block;
-  padding: 0 0;
-  padding-right: 20px;
-}
-
-.stats_icon {
+#stats_header img {
   display: inline-block;
   width: 30px;
 }
 
-.collection_stats_icon {
+#collection_stats_header {
+  padding: 15px 0;
+  width: 100%;
+}
+
+#collection_stats_header button {
+  display: inline-block;
+  padding: 0 0;
+  padding-right: 20px;
+}
+
+#collection_stats_header img {
   display: inline-block;
   width: 20px;
 }
@@ -543,12 +552,6 @@ textarea {
 
 #non_stat_div {
   float: right;
-}
-
-.non_stat_icon {
-  width: 25px;
-  border: 1px solid black;
-  border-radius: 4px;
 }
 
 #add_playlist_wrapper {
@@ -564,6 +567,7 @@ textarea {
 
 #stats_column {
   width: 300px;
+  padding: 15px 20px;
 }
 
 #stats_wrapper {
@@ -803,7 +807,6 @@ textarea {
 
 #single_post_polaroid_div {
   display: inline-block;
-  border: 1px solid #f1f1f1;
   max-width: 850px;
 }
 
@@ -1310,7 +1313,15 @@ textarea {
 }
 
 .dropdown-menu {
-  padding: 10px 10px;
+  margin: 0 0;
+  padding: 0 0;
+}
+
+.dropdown-menu li {
+}
+
+.dropdown-menu li>a {
+  padding: 15px 20px;
 }
 
 .form-group {
@@ -1488,6 +1499,10 @@ textarea {
 
 #comments_wrapper {
   padding: 10px 0;
+}
+
+#playlist_modal {
+  padding: 0 0;
 }
 
 .playlist_selector {

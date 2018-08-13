@@ -43,7 +43,7 @@ export default class LoginModal extends React.Component {
         <Modal.Header closeButton>
           <Modal.Title>Login</Modal.Title>
         </Modal.Header>
-        <Modal.Body id="login_modal_body" closeButton>
+        <Modal.Body id="login_modal_body">
           <div className="welcome_text">
             <p>Use Google, Facebook, or Reddit to login</p>
             <div className="oauth_div">

@@ -122,11 +122,11 @@ export default class Navbar extends React.Component {
             </div>
           </div>
           <div id="banner_right" className="banner_section">
-            <Link to="/finder">
-              <button id="outfit_finder_button" className="banner_button">Explore</button>
-            </Link>
             {this.state.loggedIn ?
               <div id="banner_user_div">
+              <Link to="/finder">
+                <button id="outfit_finder_button" className="banner_button">Explore</button>
+              </Link>
               <Link to="/upload">
                 <button id="upload_button" className="banner_button">Upload</button>
               </Link>

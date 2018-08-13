@@ -81,18 +81,16 @@ export default class Collections extends React.Component {
     } else {
       rendered_posts = this.state.playlistsLikes.map((item, index) => {
           return (
-            <li className="collection_item" key={item.playlistId}>
-              <div className="collection_item_div">
-                <Link to={"/" + item.username}>
-                  <strong className="collection_item_title">{item.profileName}</strong>
-                </Link>
-                <Link to={{ pathname: '/' + item.username + '/playlist/' + item.mediaId, state: { post_data: item} }}>
-                  <p className="collection_item_title">{item.title}</p>
-                  <img className="collection_item_img" alt="collection item" src={item.playlist_cover_img_src}></img>
-                </Link>
-                <PlaylistStatsHeader playlistId={item.playlistId} likes={item.likes}
-                  reposts={item.reposts} followers={item.followers} liked={item.liked} reposted={item.reposted}/>
-              </div>
+            <li id="polaroid_div" key={item.playlistId}>
+              <Link to={"/" + item.username}>
+                <strong className="collection_item_title">{item.profileName}</strong>
+              </Link>
+              <Link to={{ pathname: '/' + item.username + '/playlist/' + item.mediaId, state: { post_data: item} }}>
+                <p className="collection_item_title">{item.title}</p>
+                <img className="collection_item_img" alt="collection item" src={item.imageUrl}></img>
+              </Link>
+              <PlaylistStatsHeader playlistId={item.playlistId} likes={item.likes} is_collection={true}
+                reposts={item.reposts} followers={item.followers} liked={item.liked} reposted={item.reposted}/>
             </li>
           )
       });

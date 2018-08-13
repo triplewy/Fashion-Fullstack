@@ -113,14 +113,14 @@ passport.use('local-signup', new LocalStrategy({
     }
     bcrypt.hash(password, 10, function(err, passwordHash) {
       bcrypt.hash(randomstring.generate(), 10, function(err, verificationHash) {
-        conn.query('INSERT INTO users (username, profileName, followers, following) VALUES (?,?,?,?)',
-        [username.toLowerCase(), username, 0, 0], function(err, result) {
+        conn.query('INSERT INTO users (username, profileName) VALUES (?,?)',
+        [username.toLowerCase(), username], function(err, result) {
           if (err) {
             return done(err)
           } else {
             var userId = result.insertId
-            conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, verificationHash, verified, userId) VALUES (?,?,?,?,?,?,?)',
-              [username.toLowerCase(), email, password, passwordHash, verificationHash, false, userId], function(err, result) {
+            conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, verificationHash, userId) VALUES (?,?,?,?,?,?)',
+              [username.toLowerCase(), email, password, passwordHash, verificationHash, userId], function(err, result) {
               if (err) {
                 return done(err)
               } else {
@@ -164,8 +164,8 @@ passport.use(new GoogleStrategy({
        Promise.all([generateUsername(username)])
        .then(function(allData) {
          console.log(allData[0]);
-         conn.query('INSERT INTO users (username, profileName, followers, following) VALUES (?,?,?,?)',
-         [allData[0], profile.displayName, 0, 0], function(err, result) {
+         conn.query('INSERT INTO users (username, profileName) VALUES (?,?)',
+         [allData[0], profile.displayName], function(err, result) {
            if (err) {
              return done(err)
            }
@@ -255,53 +255,111 @@ conn.query('DROP TABLE IF EXISTS playlistsComments');
 conn.query('DROP TABLE IF EXISTS notifications')
 conn.query('DROP TABLE IF EXISTS following');
 conn.query('DROP TABLE IF EXISTS logins')
+conn.query('DROP TRIGGER IF EXISTS after_following_insert')
+conn.query('DROP TRIGGER IF EXISTS after_following_delete')
+conn.query('DROP TRIGGER IF EXISTS after_likes_insert')
 conn.query('SET foreign_key_checks = 1')
 
 conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER AUTO_INCREMENT PRIMARY KEY, ' +
-'username VARCHAR(255) NOT NULL UNIQUE, profileName TEXT, profile_image_src TEXT, ' +
-'location TEXT, followers INTEGER, following INTEGER, description TEXT, createdDate DATETIME DEFAULT CURRENT_TIMESTAMP)')
+'username VARCHAR(255) NOT NULL UNIQUE, profileName TEXT, profile_image_src VARCHAR(255), ' +
+'location TEXT, followers INTEGER DEFAULT 0, following INTEGER DEFAULT 0, description TEXT, createdDate DATETIME DEFAULT CURRENT_TIMESTAMP)')
 
-conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER, ' +
-'network TEXT, networkId TEXT, accessToken TEXT, username VARCHAR(255) UNIQUE, email VARCHAR(255) UNIQUE, passwordText TEXT, passwordSalt TEXT, ' +
-'passwordHash CHAR(60), verificationHash CHAR(60), verified BOOLEAN, FOREIGN KEY (userId) REFERENCES users(userId));')
+conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, ' +
+'network TEXT, networkId TEXT, accessToken TEXT, username VARCHAR(255) NOT NULL UNIQUE, email VARCHAR(255) UNIQUE, passwordText TEXT, passwordSalt TEXT, ' +
+'passwordHash CHAR(60), verificationHash CHAR(60), verified BOOLEAN NOT NULL DEFAULT FALSE, FOREIGN KEY (userId) REFERENCES users(userId));')
 
-conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER, ' +
-'title VARCHAR(255) NOT NULL, public BOOLEAN, genre TEXT, imageUrl VARCHAR(255) NOT NULL UNIQUE, original BOOLEAN, ' +
-'views INTEGER, likes INTEGER, reposts INTEGER, comments INTEGER, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (userId) REFERENCES users(userId));')
+conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, ' +
+'title VARCHAR(255) NOT NULL, genre TEXT, imageUrl VARCHAR(255) NOT NULL UNIQUE, original BOOLEAN, ' +
+'views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (userId) REFERENCES users(userId));')
 
 conn.query('CREATE TABLE IF NOT EXISTS playlists (playlistId INTEGER AUTO_INCREMENT PRIMARY KEY, ' +
-'userId INTEGER, title VARCHAR(255), genre TEXT, public BOOLEAN, likes INTEGER, reposts INTEGER, ' +
-'followers INTEGER, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(title, userId))')
+'userId INTEGER NOT NULL, title VARCHAR(255), genre TEXT, public BOOLEAN, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, ' +
+'followers INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(title, userId))')
 
 conn.query('CREATE TABLE IF NOT EXISTS notifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, userId INTEGER, mediaId INTEGER, playlistId INTEGER, activity TEXT, comment TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY (playlistId) REFERENCES playlists(playlistId))')
 
 conn.query('CREATE TABLE IF NOT EXISTS tags (tagId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER, itemType TEXT, itemName TEXT, itemBrand TEXT, original BOOLEAN, x INTEGER, y INTEGER, FOREIGN KEY (mediaId) REFERENCES posts(mediaId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS reposts (repostId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER, userId INTEGER, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
+conn.query('CREATE TABLE IF NOT EXISTS reposts (repostId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS likes (mediaId INTEGER, userId INTEGER, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
+conn.query('CREATE TABLE IF NOT EXISTS likes (likeId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS views (mediaId INTEGER, userId INTEGER, IP_Address TEXT, viewCount INTEGER, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP)');
 
-conn.query('CREATE TABLE IF NOT EXISTS comments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER, userId INTEGER, comment TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId))');
+conn.query('CREATE TABLE IF NOT EXISTS comments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsPosts (playlistPostId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER, mediaId INTEGER, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (mediaId) REFERENCES posts(mediaId), UNIQUE(playlistId, mediaId))');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsPosts (playlistPostId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (mediaId) REFERENCES posts(mediaId), UNIQUE(playlistId, mediaId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsFollowers (playlistId INTEGER, userId INTEGER, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsFollowers (playlistFollowId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsReposts (repostId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER, userId INTEGER, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsReposts (repostId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsLikes (playlistId INTEGER, userId INTEGER, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsLikes (likeId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsComments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER, userId INTEGER, comment TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (userId) REFERENCES users(userId))')
+conn.query('CREATE TABLE IF NOT EXISTS playlistsComments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (userId) REFERENCES users(userId))')
 
-conn.query('CREATE TABLE IF NOT EXISTS following (userId INTEGER, followingId INTEGER, FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY (followingId) REFERENCES users(userId), UNIQUE(userId, followingId))')
+conn.query('CREATE TABLE IF NOT EXISTS following (followingId INTEGER AUTO_INCREMENT PRIMARY KEY, followerUserId INTEGER NOT NULL, followingUserId INTEGER NOT NULL, FOREIGN KEY (followerUserId) REFERENCES users(userId), FOREIGN KEY (followingUserId) REFERENCES users(userId), UNIQUE(followerUserId, followingUserId))')
 
-// conn.query('CREATE TRIGGER IF NOT EXISTS likedPost AFTER INSERT ON likes BEGIN INSERT INTO notifications (userId, mediaId, activity, dateTime) VALUES (new.userId, new.mediaId, \'like\', new.dateTime); END;')
+conn.query('CREATE TRIGGER after_following_insert AFTER INSERT ON following FOR EACH ROW BEGIN ' +
+'UPDATE users SET followers = (SELECT COUNT(*) FROM following WHERE followingUserId=NEW.followingUserId) WHERE userId=NEW.followingUserId; ' +
+'UPDATE users SET following = (SELECT COUNT(*) FROM following WHERE followerUserId=NEW.followerUserId) WHERE userId=NEW.followerUserId; END;')
 
-var insertQuery = ["jbin", "Jennifer Bin", "Shanghai, China", 1450, 288, "yuh"];
-var insertSQL = 'INSERT INTO users (username, profileName, location, followers, following, description) ' +
-  'VALUES (?, ?, ?, ?, ?, ?)';
+conn.query('CREATE TRIGGER after_following_delete AFTER DELETE ON following FOR EACH ROW BEGIN ' +
+'UPDATE users SET followers = (SELECT COUNT(*) FROM following WHERE followingUserId=OLD.followingUserId) WHERE userId=OLD.followingUserId; ' +
+'UPDATE users SET following = (SELECT COUNT(*) FROM following WHERE followerUserId=OLD.followerUserId) WHERE userId=OLD.followerUserId; ' + 'END;')
+
+conn.query('CREATE TRIGGER after_likes_insert AFTER INSERT ON likes FOR EACH ROW BEGIN ' +
+'UPDATE posts SET likes = (SELECT COUNT(*) FROM likes WHERE mediaId=NEW.mediaId) WHERE mediaId=NEW.mediaId; ' +
+'INSERT INTO notifications (userId, mediaId, activity, dateTime) VALUES ((SELECT userId FROM posts WHERE mediaId=NEW.mediaId), NEW.mediaId, \'like\', NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_likes_delete AFTER DELETE ON likes FOR EACH ROW BEGIN ' +
+'UPDATE posts SET likes = (SELECT COUNT(*) FROM likes WHERE mediaId=OLD.mediaId) WHERE mediaId=OLD.mediaId; END;')
+
+conn.query('CREATE TRIGGER after_reposts_insert AFTER INSERT ON reposts FOR EACH ROW BEGIN ' +
+'UPDATE posts SET reposts = (SELECT COUNT(*) FROM reposts WHERE mediaId=NEW.mediaId) WHERE mediaId=NEW.mediaId; ' +
+'INSERT INTO notifications (userId, mediaId, activity, dateTime) VALUES ((SELECT userId FROM posts WHERE mediaId=NEW.mediaId), NEW.mediaId, \'repost\', NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_reposts_delete AFTER DELETE ON reposts FOR EACH ROW BEGIN ' +
+'UPDATE posts SET reposts = (SELECT COUNT(*) FROM reposts WHERE mediaId=OLD.mediaId) WHERE mediaId=OLD.mediaId; END;')
+
+conn.query('CREATE TRIGGER after_comments_insert AFTER INSERT ON comments FOR EACH ROW BEGIN ' +
+'UPDATE posts SET comments = (SELECT COUNT(*) FROM comments WHERE mediaId=NEW.mediaId) WHERE mediaId=NEW.mediaId; ' +
+'INSERT INTO notifications (userId, mediaId, activity, comment, dateTime) VALUES ((SELECT userId FROM posts WHERE mediaId=NEW.mediaId), NEW.mediaId, \'comment\', \'NEW.comment\', NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_comments_delete AFTER DELETE ON comments FOR EACH ROW BEGIN ' +
+'UPDATE posts SET comments = (SELECT COUNT(*) FROM comments WHERE mediaId=OLD.mediaId) WHERE mediaId=OLD.mediaId; END;')
+
+conn.query('CREATE TRIGGER after_playlistsLikes_insert AFTER INSERT ON playlistsLikes FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET likes = (SELECT COUNT(*) FROM playlistsLikes WHERE playlistId=NEW.playlistId) WHERE playlistId=NEW.playlistId; ' +
+'INSERT INTO notifications (userId, playlistId, activity, dateTime) VALUES ((SELECT userId FROM playlists WHERE playlistId=NEW.playlistId), NEW.playlistId, \'playlist like\', NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_playlistsLikes_delete AFTER DELETE ON playlistsLikes FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET likes = (SELECT COUNT(*) FROM playlistsLikes WHERE playlistId=OLD.playlistId) WHERE playlistId=OLD.playlistId; END;')
+
+conn.query('CREATE TRIGGER after_playlistsReposts_insert AFTER INSERT ON playlistsReposts FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET reposts = (SELECT COUNT(*) FROM playlistsReposts WHERE playlistId=NEW.playlistId) WHERE playlistId=NEW.playlistId; ' +
+'INSERT INTO notifications (userId, playlistId, activity, dateTime) VALUES ((SELECT userId FROM playlists WHERE playlistId=NEW.playlistId), NEW.playlistId, \'playlist repost\', NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_playlistsReposts_delete AFTER DELETE ON playlistsReposts FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET reposts = (SELECT COUNT(*) FROM playlistsReposts WHERE playlistId=OLD.playlistId) WHERE playlistId=OLD.playlistId; END;')
+
+conn.query('CREATE TRIGGER after_playlistsFollowers_insert AFTER INSERT ON playlistsFollowers FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET followers = (SELECT COUNT(*) FROM playlistsFollowers WHERE playlistId=NEW.playlistId) WHERE playlistId=NEW.playlistId; ' +
+'INSERT INTO notifications (userId, playlistId, activity, dateTime) VALUES ((SELECT userId FROM playlists WHERE playlistId=NEW.playlistId), NEW.playlistId, \'playlist follow\', NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_playlistsFollowers_delete AFTER DELETE ON playlistsFollowers FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET followers = (SELECT COUNT(*) FROM playlistsFollowers WHERE playlistId=OLD.playlistId) WHERE playlistId=OLD.playlistId; END;')
+
+conn.query('CREATE TRIGGER after_playlistsComments_insert AFTER INSERT ON playlistsComments FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET comments = (SELECT COUNT(*) FROM playlistsComments WHERE playlistId=NEW.playlistId) WHERE playlistId=NEW.playlistId; ' +
+'INSERT INTO notifications (userId, playlistId, activity, comment, dateTime) VALUES ((SELECT userId FROM playlists WHERE playlistId=NEW.playlistId), NEW.playlistId, \'playlist comment\', \'NEW.comment\', NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_playlistsComments_delete AFTER DELETE ON playlistsComments FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET comments = (SELECT COUNT(*) FROM playlistsComments WHERE playlistId=OLD.playlistId) WHERE playlistId=OLD.playlistId; END;')
+
+var insertQuery = ["jbin", "Jennifer Bin", "Shanghai, China", "yuh"];
+var insertSQL = 'INSERT INTO users (username, profileName, location, description) ' +
+  'VALUES (?, ?, ?, ?)';
 conn.query(insertSQL, insertQuery, function(err, result) {
   if (err) {
     /*TODO: Handle Error*/
@@ -322,9 +380,9 @@ bcrypt.hash('password', 10, function(err, hash) {
   })
 })
 
-insertQuery = [1, "Shanghai", "Techwear", "/images/image-1527760266767.jpg", 1, 0, 0, 0, 0, "Jbin in Shanghai"];
-insertSQL = 'INSERT INTO posts (userId, title, genre, imageUrl, original, views, likes, reposts, comments, description) ' +
-  'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+insertQuery = [1, "Shanghai", "Techwear", "/images/image-1527760266767.jpg", 1, "Jbin in Shanghai"];
+insertSQL = 'INSERT INTO posts (userId, title, genre, imageUrl, original, description) ' +
+  'VALUES (?, ?, ?, ?, ?, ?)';
 
 conn.query(insertSQL, insertQuery, function(err, result) {
   if (err) {
@@ -351,9 +409,9 @@ conn.query('INSERT INTO comments (mediaId, userId, comment) VALUES (?, ?, ?)', [
   });
 
 
-  insertQuery = ["tkd", "The Killa Detail", "Perth, Australia", 954, 80, "filler description", '/profileImages/tkd-pfp.jpg'];
-  insertSQL = 'INSERT INTO users (username, profileName, location, followers, following, description, profile_image_src) ' +
-    'VALUES (?, ?, ?, ?, ?, ?, ?)';
+  insertQuery = ["tkd", "The Killa Detail", "Perth, Australia", "filler description", '/profileImages/tkd-pfp.jpg'];
+  insertSQL = 'INSERT INTO users (username, profileName, location, description, profile_image_src) ' +
+    'VALUES (?, ?, ?, ?, ?)';
   conn.query(insertSQL, insertQuery, function(err, result) {
       if (err) {
         /*TODO: Handle Error*/
@@ -363,9 +421,9 @@ conn.query('INSERT INTO comments (mediaId, userId, comment) VALUES (?, ?, ?)', [
       }
     })
 
-  insertQuery = [2, "Laundromat", "Streetwear", "/images/image-1529571492908.jpg", 0, 0, 0, 0, 0, "filler"];
-  insertSQL = 'INSERT INTO posts (userId, title, genre, imageUrl, original, views, likes, reposts, comments, description)' +
-    'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  insertQuery = [2, "Laundromat", "Streetwear", "/images/image-1529571492908.jpg", 0, "filler"];
+  insertSQL = 'INSERT INTO posts (userId, title, genre, imageUrl, original, description)' +
+    'VALUES (?, ?, ?, ?, ?, ?)';
 
   conn.query(insertSQL, insertQuery, function(err, result) {
       if (err) {
@@ -376,8 +434,8 @@ conn.query('INSERT INTO comments (mediaId, userId, comment) VALUES (?, ?, ?)', [
       }
     })
 
-    conn.query('INSERT INTO playlists (userId, title, public, likes, reposts, followers, description) VALUES ' +
-    '(?,?,?,?,?,?,?)', [1, "Test Playlist", 1, 0, 0, 0, "Test playlist description"], function(err, result) {
+    conn.query('INSERT INTO playlists (userId, title, public, description) VALUES ' +
+    '(?,?,?,?)', [1, "Test Playlist", 1, "Test playlist description"], function(err, result) {
         if (err) {
           console.log(err);
         } else {
@@ -418,7 +476,7 @@ conn.query('INSERT INTO comments (mediaId, userId, comment) VALUES (?, ?, ?)', [
     }
   })
 
-  conn.query('INSERT INTO following (userId, followingId) VALUES (?,?)', [2,1], function(err, result) {
+  conn.query('INSERT INTO following (followerUserId, followingUserId) VALUES (?,?)', [2,1], function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -513,14 +571,15 @@ app.post('/api/newPlaylist', (req, res) => {
   var genre = req.body.genre
   var description = req.body.description
 
-  conn.query('INSERT OR IGNORE INTO playlists (userId, title, genre, public, likes, ' +
-  'reposts, comments, followers, description) VALUES ' +
-  '(?, ?, ?, ?, ?, ?, ?, ?, ?)', [userId, title, genre, isPublic, 0, 0, 0, 0, description], function(err, result) {
+  conn.query('INSERT IGNORE INTO playlists (userId, title, genre, public, description) VALUES (?, ?, ?, ?, ?)', [userId, title, genre, isPublic, description], function(err, result) {
     if (err) {
       console.log(err);
     } else {
       console.log(result.insertId);
-      conn.query('INSERT OR IGNORE INTO playlistsPosts (playlistId, mediaId) VALUES (?,?)', [result.insertId, mediaId], function(err, result) {
+      if (!result.insertId) {
+        res.send({message: "Playlist title already exists"})
+      }
+      conn.query('INSERT IGNORE INTO playlistsPosts (playlistId, mediaId) VALUES (?,?)', [result.insertId, mediaId], function(err, result) {
         if (err) {
           console.log(err);
         } else {
@@ -566,7 +625,7 @@ app.post('/api/repost', loggedIn, function(req, res) {
 })
 
 app.post('/api/unrepost', loggedIn, function(req, res) {
-  console.log('- Request received:', req.method.cyan, '/api/repost');
+  console.log('- Request received:', req.method.cyan, '/api/unrepost');
   Promise.all([removeFromCollection(req, 'reposts', 'mediaId')])
   .then(function(allData) {
     res.send(allData[0])
@@ -610,7 +669,7 @@ app.post('/api/playlistRepost', loggedIn, function(req, res) {
 })
 
 app.post('/api/playlistUnrepost', loggedIn, function(req, res) {
-  console.log('- Request received:', req.method.cyan, '/api/playlistRepost');
+  console.log('- Request received:', req.method.cyan, '/api/playlistUnrepost');
   Promise.all([removeFromCollection(req, 'playlistsReposts', 'playlistId')])
   .then(function(allData) {
     res.send(allData[0])
@@ -624,19 +683,17 @@ app.post('/api/playlistFollow', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/playlistFollow');
   var userId = req.user
   var playlistId = req.body.playlistId
-  conn.query('INSERT OR IGNORE INTO playlistsFollowers (playlistId, userId) VALUES (?,?)',
+  conn.query('INSERT IGNORE INTO playlistsFollowers (playlistId, userId) VALUES (?,?)',
   [playlistId, userId], function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      conn.query('UPDATE playlists SET followers = (SELECT COUNT(*) FROM playlistsFollowers WHERE playlistId=?)', playlistId, function(err, result) {
-        if (err) {
-          console.log(err);
-        } else {
-          console.log("Playlist Followed Successfully");
-          res.send({message: "success"})
-        }
-      })
+      if (!result.insertId) {
+        res.send({message: "Already Followed"})
+      } else {
+        console.log("Playlist Followed Successfully");
+        res.send({message: "success"})
+      }
     }
   })
 })
@@ -650,14 +707,12 @@ app.post('/api/playlistUnfollow', loggedIn, function(req, res) {
     if (err) {
       console.log(err);
     } else {
-      conn.query('UPDATE playlists SET followers = (SELECT COUNT(*) FROM playlistsFollowers WHERE playlistId=?)', playlistId, function(err, result) {
-        if (err) {
-          console.log(err);
-        } else {
-          console.log("Playlist Unfollowed Successfully");
-          res.send({message: "success"})
-        }
-      })
+      if (!result.affectedRows) {
+        res.send({message: "Didn't Follow"})
+      } else {
+        console.log("Playlist unollowed Successfully");
+        res.send({message: "success"})
+      }
     }
   })
 })
@@ -672,14 +727,20 @@ app.post('/api/comment', loggedIn, function(req, res) {
     if (err) {
       console.log(err);
     } else {
-      conn.query('UPDATE posts SET comments = (SELECT COUNT(*) FROM comments WHERE mediaId=?) WHERE mediaId=?', [mediaId, mediaId], function(err, result) {
-        if (err) {
-          console.log(err);
-        } else {
-          console.log("commented successfully");
-          res.send({message: "success"})
-        }
-      })
+      if (!result.insertId) {
+        res.send({message: 'failed'})
+      } else {
+        console.log("commented successfully");
+        res.send({message: "success"})
+      }
+      // conn.query('UPDATE posts SET comments = (SELECT COUNT(*) FROM comments WHERE mediaId=?) WHERE mediaId=?', [mediaId, mediaId], function(err, result) {
+      //   if (err) {
+      //     console.log(err);
+      //   } else {
+      //     console.log("commented successfully");
+      //     res.send({message: "success"})
+      //   }
+      // })
     }
   })
 })
@@ -690,12 +751,17 @@ app.post('/api/addToPlaylist', function(req, res) {
   var playlistId = req.body.playlistId
   var mediaId = req.body.mediaId
   console.log("mediaId is", mediaId);
-  conn.query('INSERT OR IGNORE INTO playlistsPosts (playlistId, mediaId) VALUES (?, ?)',
+  conn.query('INSERT IGNORE INTO playlistsPosts (playlistId, mediaId) VALUES (?, ?)',
   [playlistId, mediaId], function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      res.send({message: "success"})
+      console.log("result lastInsert Id is", result.insertId);
+      if (result.insertId == 0) {
+        res.send({message: "Already in playlist"})
+      } else {
+        res.send({message: "success"})
+      }
     }
   })
 })
@@ -727,10 +793,10 @@ app.get('/api/you/collections/likes', function(req, res) {
 app.get('/api/you/collections/playlistsLikes', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/you/collections/playlistsLikes');
   var userId = req.user;
-  conn.query('SELECT playlists.*, b.dateTime as likeTime, c.username AS username, c.profileName AS profileName, c.profile_image_src AS profile_image_src, ' +
-  '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=? AND playlistId = playlists.playlistId) > 0) AS reposted ' +
+  conn.query('SELECT playlists.*, b.dateTime as likeTime, c.username AS username, c.profileName AS profileName, c.profile_image_src AS profile_image_src, (SELECT imageUrl FROM posts WHERE mediaId = (SELECT mediaId FROM playlistsPosts WHERE playlistId = playlists.playlistId ORDER BY dateTime DESC LIMIT 1)) AS imageUrl, ' +
+  '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=? AND playlistId = playlists.playlistId) > 0) AS reposted, ((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=? AND playlistId = playlists.playlistId) > 0) AS playlistFollowed ' +
   'FROM playlists INNER JOIN playlistsLikes AS b ON playlists.playlistId = b.playlistId INNER JOIN users AS c ON c.userId = playlists.userId ' +
-  'WHERE b.userId=? ORDER BY likeTime DESC', [userId, userId], function(err, result) {
+  'WHERE b.userId=? ORDER BY likeTime DESC', [userId, userId, userId], function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -739,7 +805,7 @@ app.get('/api/you/collections/playlistsLikes', function(req, res) {
       for (var i = 0; i < result.length; i++) {
         var row = result[i]
         likes.push({playlistId:row.playlistId, likes:row.likes, reposts:row.reposts,
-          followers: row.followers, genre: row.genre, title:row.title, genre:row.genre,
+          followers: row.followers, genre: row.genre, title:row.title, genre:row.genre, imageUrl: row.imageUrl,
           description:row.description, uploadDate:row.dateTime, username: row.username, profile_image_src: row.profile_image_src,
           profileName: row.profileName, likeDate: row.likeDate, liked: true, reposted: row.reposted});
       }
@@ -755,8 +821,8 @@ app.get('/api/:profile', (req, res) => {
 
   conn.query('SELECT a.*, (SELECT COUNT(*) FROM posts WHERE userId=(SELECT userId FROM users WHERE username=:username)) AS numPosts, ' +
   '(b.rcount > 0) as isFollowing FROM users AS a, ' +
-  '(SELECT COUNT(*) AS rcount FROM following WHERE followingId IN (SELECT userId FROM users WHERE username=:username) ' +
-  'AND userId=:userId) AS b WHERE a.username=:username',
+  '(SELECT COUNT(*) AS rcount FROM following WHERE followingUserId IN (SELECT userId FROM users WHERE username=:username) ' +
+  'AND followerUserId=:userId) AS b WHERE a.username=:username',
   {username: username, userId: userId}, function(err, result) {
     if (err) {
       console.log(err);
@@ -960,24 +1026,22 @@ app.post('/api/:profile/follow', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/follow');
   var username = req.params.profile;
   var userId = req.user;
-
-  conn.query('INSERT OR IGNORE INTO following (followingId, userId) VALUES ((SELECT userId FROM users WHERE username=?),?)',
-  [username, userId], function(err, result) {
+  conn.query('SELECT userId FROM users WHERE username=?', [username], function(err, result) {
     if (err) {
-      console.log("insert error");
       console.log(err);
     } else {
-      conn.query('UPDATE users SET followers = (SELECT COUNT(*) FROM following WHERE followingId=(SELECT userId FROM users WHERE username=?)) WHERE username=?', [username, username], function(err, result) {
+      console.log(result[0]);
+      var profileId = result[0].userId
+      conn.query('INSERT IGNORE INTO following (followingUserId, followerUserId) VALUES (?, ?)', [profileId, userId], function(err, result) {
         if (err) {
+          console.log("insert error");
           console.log(err);
         } else {
-          conn.query('UPDATE users SET following = (SELECT COUNT(*) FROM following WHERE userId=?) WHERE userId=?', [userId, userId], function(err, result) {
-            if (err) {
-              console.log(err);
-            } else {
-              res.send({message: 'success'})
-            }
-          })
+          if (!result.insertId) {
+            res.send({message: "Already Followed"})
+          } else {
+            res.send({message: 'success'})
+          }
         }
       })
     }
@@ -988,24 +1052,22 @@ app.post('/api/:profile/unfollow', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/unfollow');
   var username = req.params.profile;
   var userId = req.user;
-
-  conn.query('DELETE FROM following WHERE followingId IN (SELECT userId FROM users WHERE username=?) AND userId=?',
-  [username, userId], function(err, result) {
+  conn.query('SELECT userId FROM users WHERE username=?', [username], function(err, result) {
     if (err) {
-      console.log("delete error");
       console.log(err);
     } else {
-      conn.query('UPDATE users SET followers = (SELECT COUNT(*) FROM following WHERE followingId=(SELECT userId FROM users WHERE username=?)) WHERE username=?', [username, username], function(err, result) {
+      var profileId = result[0].userId
+      conn.query('DELETE FROM following WHERE followingUserId=? AND followerUserId=?',
+      [profileId, userId], function(err, result) {
         if (err) {
+          console.log("delete error");
           console.log(err);
         } else {
-          conn.query('UPDATE users SET following = (SELECT COUNT(*) FROM following WHERE userId=?) WHERE userId=?', [userId, userId], function(err, result) {
-            if (err) {
-              console.log(err);
-            } else {
-              res.send({message: 'success'})
-            }
-          })
+          if (!result.affectedRows) {
+            res.send({message: 'failed'})
+          } else {
+            res.send({message: 'success'})
+          }
         }
       })
     }
@@ -1203,7 +1265,7 @@ function getPostsComments(mediaIds, question_query) {
 function getComments(ids, question_query, commentsTable, idType) {
   return new Promise(function(resolve, reject) {
     conn.query('SELECT ' + commentsTable + '.*, a.profileName as profileName, a.userName as username, ' +
-    'a.location as location, a.followers as userFollowers, ((SELECT COUNT(*) FROM following WHERE userId=?1 AND followingId = a.userId) > 0) AS userFollowed' +
+    'a.location as location, a.followers as userFollowers, ((SELECT COUNT(*) FROM following WHERE followerUserId=?1 AND followingUserId = a.userId) > 0) AS userFollowed' +
     ' FROM ' + commentsTable + ' INNER JOIN users AS a ON a.userId = ' + commentsTable + '.userId ' +
     'WHERE ' + idType + ' IN (' + question_query + ') ORDER BY dateTime DESC', ids, function(err, result) {
       if (err) {
@@ -1239,7 +1301,7 @@ function getComments(ids, question_query, commentsTable, idType) {
 function getPlaylistsPosts(playlistIds, question_query) {
   return new Promise(function(resolve, reject) {
     conn.query('SELECT a.*, playlistId, b.username AS username , b.profileName AS profileName, b.profile_image_src AS profile_image_src, b.location AS location, b.followers AS userFollowers, ' +
-    '((SELECT COUNT(*) FROM following WHERE userId=?1 AND followingId = b.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE userId=b.userId AND followingId = ?1) > 0) AS followsYou, ' +
+    '((SELECT COUNT(*) FROM following WHERE followerUserId=?1 AND followingUserId = b.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE followerUserId=b.userId AND followingUserId = ?1) > 0) AS followsYou, ' +
     '((SELECT COUNT(*) FROM reposts WHERE userId=?1 AND mediaId = a.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=?1 AND mediaId = a.mediaId) > 0) AS liked ' +
     'FROM playlistsPosts INNER JOIN posts AS a ON a.mediaId = playlistsPosts.mediaId INNER JOIN users AS b ON b.userId = a.userId ' +
     'WHERE playlistsPosts.playlistId IN (' + question_query + ') ORDER BY dateTime DESC', playlistIds, function(err, result) {
@@ -1308,10 +1370,10 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     var profileToggle4 = ''
 
     if (!isProfile) {
-      profileToggle1 = 'playlistsReposts.userId IN (SELECT followingId FROM following WHERE userId=:userId) OR '
-      profileToggle2 = 'a.userId IN (SELECT followingId FROM following WHERE userId=:userId) OR '
-      profileToggle3 = 'reposts.userId IN (SELECT followingId FROM following WHERE userId=:userId) OR '
-      profileToggle4 = 'posts.userId IN (SELECT followingId FROM following WHERE userId=:userId) OR '
+      profileToggle1 = 'playlistsReposts.userId IN (SELECT followingUserId FROM following WHERE followerUserId=:userId) OR '
+      profileToggle2 = 'a.userId IN (SELECT followingUserId FROM following WHERE followerUserId=:userId) OR '
+      profileToggle3 = 'reposts.userId IN (SELECT followingUserId FROM following WHERE followerUserId=:userId) OR '
+      profileToggle4 = 'posts.userId IN (SELECT followingUserId FROM following WHERE followerUserId=:userId) OR '
     }
 
     var originalToggle1 = ''
@@ -1325,8 +1387,8 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     'null AS views, a.likes, a.reposts, a.followers AS playlistFollowers, a.description, a.dateTime AS uploadDate, playlistsReposts.dateTime as orderTime, ' +
     'b.username AS repost_username, b.profileName AS repost_profileName, b.profile_image_src AS repost_profile_image_src, b.location AS repost_location, b.followers AS repost_userFollowers, ' +
     'c.username AS username, c.profileName AS profileName, c.profile_image_src AS profile_image_src, c.location AS location, c.followers AS userFollowers, ' +
-    '((SELECT COUNT(*) FROM following WHERE userId=:cookieUser AND followingId = a.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE userId=a.userId AND followingId = :cookieUser) > 0) AS followsYou, ' +
-    '((SELECT COUNT(*) FROM following WHERE userId=:cookieUser AND followingId = b.userId) > 0) AS repost_userFollowed, null AS postTags, GROUP_CONCAT(d.comment, d.dateTime) AS playlistComments, null AS postComments, GROUP_CONCAT(f.title, f.original, f.imageUrl, f.views, f.likes, f.reposts, e.dateTime) AS playlistPosts, ' +
+    '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = a.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE followerUserId=a.userId AND followingUserId = :cookieUser) > 0) AS followsYou, ' +
+    '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = b.userId) > 0) AS repost_userFollowed, null AS postTags, GROUP_CONCAT(d.comment, d.dateTime) AS playlistComments, null AS postComments, GROUP_CONCAT(f.title, f.original, f.imageUrl, f.views, f.likes, f.reposts, e.dateTime) AS playlistPosts, ' +
     '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS reposted, ((SELECT COUNT(*) FROM playlistsLikes WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS liked, ((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS followed ' +
     'FROM playlistsReposts INNER JOIN playlists AS a ON a.playlistId = playlistsReposts.playlistId INNER JOIN users AS c ON c.userId = a.userId INNER JOIN users AS b ON b.userId = playlistsReposts.userId LEFT JOIN playlistsComments AS d ON d.playlistId = playlistsReposts.playlistId LEFT JOIN playlistsPosts AS e ON e.playlistId = playlistsReposts.playlistId LEFT JOIN posts AS f ON f.mediaId = e.mediaId ' +
     'WHERE ' + profileToggle1 + 'playlistsReposts.userId=:userId GROUP BY playlistsReposts.repostId'
@@ -1335,29 +1397,29 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     'null AS views, a.likes, a.reposts, a.followers AS playlistFollowers, a.description, a.dateTime AS uploadDate, a.dateTime as orderTime, ' +
     'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, null AS repost_location, null AS repost_userFollowers, ' +
     'username AS username, profileName AS profileName, profile_image_src AS profile_image_src, location AS location, users.followers AS userFollowers, ' +
-    '((SELECT COUNT(*) FROM following WHERE userId=:cookieUser AND followingId = a.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE userId=a.userId AND followingId = :cookieUser) > 0) AS followsYou, ' +
+    '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = a.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE followerUserId=a.userId AND followingUserId = :cookieUser) > 0) AS followsYou, ' +
     'null AS repost_userFollowed, null AS postTags, GROUP_CONCAT(playlistsComments.comment, playlistsComments.dateTime) AS playlistComments, null AS postComments, GROUP_CONCAT(posts.title, posts.original, posts.imageUrl, posts.views, posts.likes, posts.reposts, playlistsPosts.dateTime) AS playlistPosts, ' +
     '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS reposted, ((SELECT COUNT(*) FROM playlistsLikes WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS liked, ((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS followed ' +
     'FROM playlists AS a INNER JOIN users ON users.userId = a.userId LEFT JOIN playlistsComments ON playlistsComments.playlistId = a.playlistId LEFT JOIN playlistsPosts ON playlistsPosts.playlistId = a.playlistId LEFT JOIN posts ON posts.mediaId = playlistsPosts.mediaId WHERE ' + profileToggle2 + 'a.userId=:userId GROUP BY a.playlistId'
 
-    var userReposts = 'SELECT a.mediaId, null as playlistId, a.title, a.genre, a.public, a.original, a.imageUrl, a.views, ' +
+    var userReposts = 'SELECT a.mediaId, null as playlistId, a.title, a.genre, null, a.original, a.imageUrl, a.views, ' +
     'a.likes, a.reposts, null as playlistFollowers, a.description, a.dateTime AS uploadDate, reposts.dateTime as orderTime, ' +
     'b.username as repost_username, b.profileName as repost_profileName, b.profile_image_src AS repost_profile_image_src, b.location AS repost_location, b.followers AS repost_userFollowers, ' +
     'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src, c.location AS location, c.followers AS userFollowers, ' +
-    '((SELECT COUNT(*) FROM following WHERE userId=:cookieUser AND followingId = a.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE userId=a.userId AND followingId = :cookieUser) > 0) AS followsYou, ' +
-    '((SELECT COUNT(*) FROM following WHERE userId=:cookieUser AND followingId = b.userId) > 0) AS repost_userFollowed, GROUP_CONCAT(d.itemType, d.itemName, d.itemBrand, d.original, d.x, d.y) AS postTags, null AS playlistComments, GROUP_CONCAT(e.comment, e.dateTime) AS postComments, null AS playlistPosts, ' +
+    '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = a.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE followerUserId=a.userId AND followingUserId = :cookieUser) > 0) AS followsYou, ' +
+    '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = b.userId) > 0) AS repost_userFollowed, GROUP_CONCAT(d.itemType, d.itemName, d.itemBrand, d.original, d.x, d.y) AS postTags, null AS playlistComments, GROUP_CONCAT(e.comment, e.dateTime) AS postComments, null AS playlistPosts, ' +
     '((SELECT COUNT(*) FROM reposts WHERE userId=:cookieUser AND mediaId = a.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=:cookieUser AND mediaId = a.mediaId) > 0) AS liked, null AS followed ' +
     'FROM reposts INNER JOIN posts AS a ON a.mediaId = reposts.mediaId INNER JOIN users AS c ON c.userId = a.userId INNER JOIN users AS b ON b.userId = reposts.userId LEFT JOIN tags AS d ON d.mediaId = reposts.mediaId LEFT JOIN comments AS e ON e.mediaId = reposts.mediaId ' +
-    'WHERE (' + profileToggle3 + 'reposts.userId=:userId) ' + originalToggle2 + 'GROUP BY reposts.repostId'
+    'WHERE (' + profileToggle3 + 'reposts.userId=:userId) ' + originalToggle2 + ' GROUP BY reposts.repostId'
 
-    var userPosts = 'SELECT posts.mediaId, null as playlistId, title, genre, public, posts.original, imageUrl, views, likes, reposts, ' +
+    var userPosts = 'SELECT posts.mediaId, null as playlistId, title, genre, null, posts.original, imageUrl, views, likes, reposts, ' +
     'null as playlistFollowers, posts.description, posts.dateTime AS uploadDate, posts.dateTime as orderTime, ' +
     'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, null AS repost_location, null AS repost_userFollowers, ' +
     'username AS username, profileName AS profileName, profile_image_src AS profile_image_src, location AS location, followers AS userFollowers, ' +
-    '((SELECT COUNT(*) FROM following WHERE userId=:cookieUser AND followingId = posts.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE userId=posts.userId AND followingId = :cookieUser) > 0) AS followsYou, ' +
+    '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = posts.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE followerUserId=posts.userId AND followingUserId = :cookieUser) > 0) AS followsYou, ' +
     'null AS repost_userFollowed, GROUP_CONCAT(tags.itemType, tags.itemName, tags.itemBrand, tags.original, tags.x, tags.y) AS postTags, null AS playlistComments, GROUP_CONCAT(comments.comment, comments.dateTime) AS postComments, null AS playlistPosts, ' +
     '((SELECT COUNT(*) FROM reposts WHERE userId=:cookieUser AND mediaId = posts.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=:cookieUser AND mediaId = posts.mediaId) > 0) AS liked, null AS followed ' +
-    'FROM posts INNER JOIN users ON users.userId = posts.userId LEFT JOIN tags ON tags.mediaId = posts.mediaId LEFT JOIN comments ON comments.mediaId = posts.mediaId WHERE (' + profileToggle4 + 'posts.userId=:userId) ' + originalToggle1 + 'GROUP BY posts.mediaId'
+    'FROM posts INNER JOIN users ON users.userId = posts.userId LEFT JOIN tags ON tags.mediaId = posts.mediaId LEFT JOIN comments ON comments.mediaId = posts.mediaId WHERE (' + profileToggle4 + 'posts.userId=:userId) ' + originalToggle1 + ' GROUP BY posts.mediaId'
 
     var orderBy = ' ORDER BY orderTime DESC LIMIT 20'
 
@@ -1472,19 +1534,17 @@ function addToCollection(req, table, idType) {
         likesOrReposts = 'reposts'
       }
     }
-    conn.query('INSERT OR IGNORE INTO ' + table + ' (' + idType  + ', userId) VALUES (?,?)',
+    conn.query('INSERT IGNORE INTO ' + table + ' (' + idType  + ', userId) VALUES (?,?)',
     [id, userId], function(err, result) {
       if (err) {
         return reject(err);
       } else {
-        conn.query('UPDATE ' + postsOrPlaylists + ' SET ' + likesOrReposts + ' = (SELECT COUNT(*) FROM ' + table + ' WHERE ' + idType + '=?) WHERE ' + idType + '=?', [id, id], function(err, result) {
-          if (err) {
-            return reject(err);
-          } else {
-            console.log(table + "ed post successfully");
-            return resolve({message: "success"})
-          }
-        })
+        if (!result.insertId) {
+          return resolve({message: "Already " + likesOrReposts})
+        } else {
+          console.log(table + "ed post successfully");
+          return resolve({message: "success"})
+        }
       }
     })
   })
@@ -1520,14 +1580,12 @@ function removeFromCollection(req, table, idType) {
       if (err) {
         return reject(err);
       } else {
-        conn.query('UPDATE ' + postsOrPlaylists + ' SET ' + likesOrReposts + ' = ' + likesOrReposts + ' - 1 WHERE ' + idType + '=?', [id], function(err, result) {
-          if (err) {
-            return reject(err);
-          } else {
-            console.log('un' + table + "ed post successfully");
-            return resolve({message: "success"})
-          }
-        })
+        if (!result.affectedRows) {
+          return resolve({message: "Already " + likesOrReposts})
+        } else {
+          console.log('un' + table + "ed post successfully");
+          return resolve({message: "success"})
+        }
       }
     })
   })

@@ -179,24 +179,29 @@ export default class StatsHeader extends React.Component {
   }
 
   render() {
+    var stats_header_style = "stats_header"
+    if (this.props.is_collection) {
+      stats_header_style = "collection_stats_header";
+    }
+
     return (
-      <div id="stats_header">
-        <button id="followers" className="stats_button" onClick={this.state.followed ? this.handleUnfollow : this.handleFollow}>
-          <img id="follower_icon" alt="follower icon" className="stats_icon" src={this.state.followed ? followers_icon_followed : followers_icon_notFollowed}></img>
+      <div id={stats_header_style}>
+        <button id="followers" onClick={this.state.followed ? this.handleUnfollow : this.handleFollow}>
+          <img id="follower_icon" alt="follower icon" src={this.state.followed ? followers_icon_followed : followers_icon_notFollowed}></img>
           <p className="stats_number" id="follower_number">{this.state.followers}</p>
         </button>
-        <button id="likes" className="stats_button" onClick={this.state.liked ? this.handleUnlike : this.handleLike}>
-          <img id="like_icon" alt="like icon" className="stats_icon" src={this.state.liked ? like_icon_liked : like_icon}></img>
+        <button id="likes" onClick={this.state.liked ? this.handleUnlike : this.handleLike}>
+          <img id="like_icon" alt="like icon" src={this.state.liked ? like_icon_liked : like_icon}></img>
           <p className="stats_number" id="like_number">{this.state.likes}</p>
         </button>
-        <button id="reposts" className="stats_button" onClick={this.state.reposted ? this.handleUnrepost : this.handleRepost}>
-          <img id="repost_icon" alt="repost icon" className="stats_icon" src={this.state.reposted ? repost_icon_reposted : repost_icon}></img>
+        <button id="reposts" onClick={this.state.reposted ? this.handleUnrepost : this.handleRepost}>
+          <img id="repost_icon" alt="repost icon" src={this.state.reposted ? repost_icon_reposted : repost_icon}></img>
           <p className="stats_number" id="repost_number">{this.state.reposts}</p>
         </button>
         <div id="non_stat_div">
           <div className="btn-group">
-            <button id="more" className="dropdown-toggle" type="button" data-toggle="dropdown">
-              <img id="more_icon" alt="more icon" className="non_stat_icon" src={more_icon}></img>
+            <button id="more" type="button" data-toggle="dropdown">
+              <img id="more_icon" alt="more icon" src={more_icon}></img>
             </button>
             <ul className="dropdown-menu">
               <li className="form-group">
