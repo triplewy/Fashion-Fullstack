@@ -36,7 +36,7 @@ export default class RepostHeader extends React.Component {
             <strong id="user_name">{this.props.profileName}</strong>
           </Link>
           <DropdownProfile username={this.props.username} location={this.props.location}
-            userFollowers={this.props.userFollowers} userFollowed={this.props.userFollowed} />
+            userFollowers={this.props.userFollowers} userFollowed={this.props.userFollowed} isProfile={this.props.isPoster}/>
         </div>
         <p id="post_status">{this.dateDiffInDays(new Date(this.props.repostDate))}</p>
         <Link to={"/" + this.props.repost_username} className="post_profile_link">
@@ -45,7 +45,7 @@ export default class RepostHeader extends React.Component {
           </div>
           <strong id="user_name">{this.props.repost_profileName}</strong>
           <DropdownProfile username={this.props.repost_username} location={this.props.repost_location}
-            userFollowers={this.props.repost_userFollowers} userFollowed={this.props.repost_userFollowed} />
+            userFollowers={this.props.repost_userFollowers} userFollowed={this.props.repost_userFollowed} isProfile={this.props.isReposter}/>
         </Link>
         {this.props.genre && <button id="genre_button">{this.props.genre}</button>}
       </div>

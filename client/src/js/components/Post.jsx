@@ -46,7 +46,7 @@ export default class Post extends React.Component {
             repost_profileName={this.props.repost_profileName} repost_profile_image_src={this.props.repost_profile_image_src}
             repost_location={this.props.repost_location} repost_userFollowers={this.props.repost_userFollowers}
             repost_isFollowing={this.props.repost_isFollowing} genre={this.props.genre} repostDate={this.props.repostDate}
-            repost_userFollowed={this.props.repost_userFollowed} followsYou={this.props.followsYou}/> :
+            repost_userFollowed={this.props.repost_userFollowed} followsYou={this.props.followsYou} isPoster={this.props.isPoster} isReposter={this.props.isReposter}/> :
             <div id="post_header">
               <div className="post_profile_link">
                 <Link to={"/" + this.props.username}>
@@ -56,7 +56,8 @@ export default class Post extends React.Component {
                   <strong id="user_name">{this.props.profileName}</strong>
                 </Link>
                 <DropdownProfile username={this.props.username} location={this.props.location}
-                  userFollowers={this.props.userFollowers} userFollowed={this.props.userFollowed} followsYou={this.props.followsYou}/>
+                  userFollowers={this.props.userFollowers} userFollowed={this.props.userFollowed} followsYou={this.props.followsYou}
+                  isProfile={this.props.isPoster}/>
               </div>
               <p id="post_status">{this.dateDiffInDays(new Date(this.props.uploadDate))}</p>
               {this.props.genre && <button id="genre_button">{this.props.genre}</button>}

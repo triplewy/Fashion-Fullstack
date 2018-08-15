@@ -3,6 +3,20 @@ import InputTag from './InputTag.jsx';
 import Tags from './Tags.jsx'
 import * as loadImage from 'blueimp-load-image'
 
+{/* <p className="form_input_text" id="title_input">Title:</p>
+<input className="input_box" type="text" name="title"
+  onChange={this.handleChange} placeholder="Title of your post"
+  value={this.state.title}></input>
+<p className="form_input_text" id="genre_input">Genre:</p>
+<input className="input_box" type="text" name="genre"
+  onChange={this.handleChange} placeholder="Genre of your post"
+  value={this.state.genre}></input>
+<p className="form_input_text" id="description_input">Description:</p>
+<textarea className="input_box" id="description_input_box" name="description"
+  onChange={this.handleChange} placeholder="Description of your post" cols="10"
+  value={this.state.description}></textarea>
+   */}
+
 export default class Upload extends React.Component {
   constructor(props) {
     super(props);
@@ -225,34 +239,26 @@ export default class Upload extends React.Component {
 
             </div>
             <div id="input_div">
-              <form id="input_form">
-                <p className="form_input_text" id="title_input">Title:</p>
-                <input className="input_box" type="text" name="title"
-                  onChange={this.handleChange} placeholder="Title of your post"
-                  value={this.state.title}></input>
-                <p className="form_input_text" id="genre_input">Genre:</p>
-                <input className="input_box" type="text" name="genre"
-                  onChange={this.handleChange} placeholder="Genre of your post"
-                  value={this.state.genre}></input>
-                <p className="form_input_text" id="description_input">Description:</p>
-                <textarea className="input_box" id="description_input_box" name="description"
-                  onChange={this.handleChange} placeholder="Description of your post" cols="10"
-                  value={this.state.description}></textarea>
-                <p className="form_input_text" id="tags_input"><span>Tags</span></p>
-                <div id="input_tag_header_div">
-                  <button id="add_tag_button" type="button" onClick={this.showInputBox}>Add Tag</button>
-                </div>
-                <Tags tags={this.state.inputTags} modify={true} handleTagDelete={this.handleTagDelete}
-                  handleTagEdit={this.handleTagEdit}/>
-                <hr id="input_hr"></hr>
-                <label htmlFor="input_image_button" id="image_upload_label">
-                  Change image
-                </label>
-                <input id="input_image_button" type="file" name="post_pic" accept="image/*"
-                  onChange={this.readImageFile}></input>
-                <input id="form_submit" type="button" onClick={this.handleSubmit} value="Submit" disabled={!this.state.title}></input>
-              </form>
-            </div>
+              <p className="form_input_text" id="tags_input"><span>Post Info</span></p>
+              <input type="text" autocomplete="off" placeholder="Title"
+                name="title" onChange={this.handleChange} value={this.state.title}></input>
+              <input type="text" autocomplete="off" placeholder="Genre"
+                name="genre" onChange={this.handleChange} value={this.state.genre}></input>
+              <textarea type="text" autocomplete="off" placeholder="Description"
+                name="description" onChange={this.handleChange} value={this.state.description}></textarea>
+              <p className="form_input_text" id="tags_input"><span>Tags</span></p>
+              <div id="input_tag_header_div">
+                <button id="add_tag_button" type="button" onClick={this.showInputBox}>Add Tag</button>
+              </div>
+              <Tags tags={this.state.inputTags} modify={true} handleTagDelete={this.handleTagDelete}
+                handleTagEdit={this.handleTagEdit}/>
+              <label htmlFor="input_image_button" id="image_upload_label">
+                Change image
+              </label>
+              <input id="input_image_button" type="file" name="post_pic" accept="image/*"
+                onChange={this.readImageFile}></input>
+              <input id="form_submit" type="button" onClick={this.handleSubmit} value="Submit" disabled={!this.state.title}></input>
+          </div>
         </div>
          :
         <div id="input_box">

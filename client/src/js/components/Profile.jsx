@@ -294,13 +294,6 @@ export default class Profile extends React.Component {
                 }
               </div>
             </div>
-            <div id="profile_links">
-              <p id="profile_description_text">Links ▼</p>
-              <div className="profile_links_dropdown">
-                {this.state.profileInfo.description}
-              </div>
-            </div>
-
           </div>
           <div id="content_wrapper">
             <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Posts", "Playlists", "Reposts"]}

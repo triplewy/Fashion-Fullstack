@@ -255,25 +255,18 @@ conn.query('DROP TABLE IF EXISTS playlistsComments');
 conn.query('DROP TABLE IF EXISTS notifications')
 conn.query('DROP TABLE IF EXISTS following');
 conn.query('DROP TABLE IF EXISTS logins')
-conn.query('DROP TRIGGER IF EXISTS after_following_insert')
-conn.query('DROP TRIGGER IF EXISTS after_following_delete')
-conn.query('DROP TRIGGER IF EXISTS after_likes_insert')
 conn.query('SET foreign_key_checks = 1')
 
-conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER AUTO_INCREMENT PRIMARY KEY, ' +
-'username VARCHAR(255) NOT NULL UNIQUE, profileName TEXT, profile_image_src VARCHAR(255), ' +
+conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255) NOT NULL UNIQUE, profileName TEXT, profile_image_src VARCHAR(255), ' +
 'location TEXT, followers INTEGER DEFAULT 0, following INTEGER DEFAULT 0, description TEXT, createdDate DATETIME DEFAULT CURRENT_TIMESTAMP)')
 
-conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, ' +
-'network TEXT, networkId TEXT, accessToken TEXT, username VARCHAR(255) NOT NULL UNIQUE, email VARCHAR(255) UNIQUE, passwordText TEXT, passwordSalt TEXT, ' +
+conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, network TEXT, networkId TEXT, accessToken TEXT, username VARCHAR(255) NOT NULL UNIQUE, email VARCHAR(255) UNIQUE, passwordText TEXT, passwordSalt TEXT, ' +
 'passwordHash CHAR(60), verificationHash CHAR(60), verified BOOLEAN NOT NULL DEFAULT FALSE, FOREIGN KEY (userId) REFERENCES users(userId));')
 
-conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, ' +
-'title VARCHAR(255) NOT NULL, genre TEXT, imageUrl VARCHAR(255) NOT NULL UNIQUE, original BOOLEAN, ' +
+conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, title VARCHAR(255) NOT NULL, genre TEXT, imageUrl VARCHAR(255) NOT NULL UNIQUE, original BOOLEAN, ' +
 'views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (userId) REFERENCES users(userId));')
 
-conn.query('CREATE TABLE IF NOT EXISTS playlists (playlistId INTEGER AUTO_INCREMENT PRIMARY KEY, ' +
-'userId INTEGER NOT NULL, title VARCHAR(255), genre TEXT, public BOOLEAN, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, ' +
+conn.query('CREATE TABLE IF NOT EXISTS playlists (playlistId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, title VARCHAR(255), genre TEXT, public BOOLEAN, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, ' +
 'followers INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(title, userId))')
 
 conn.query('CREATE TABLE IF NOT EXISTS notifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, userId INTEGER, mediaId INTEGER, playlistId INTEGER, activity TEXT, comment TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY (playlistId) REFERENCES playlists(playlistId))')
@@ -733,14 +726,6 @@ app.post('/api/comment', loggedIn, function(req, res) {
         console.log("commented successfully");
         res.send({message: "success"})
       }
-      // conn.query('UPDATE posts SET comments = (SELECT COUNT(*) FROM comments WHERE mediaId=?) WHERE mediaId=?', [mediaId, mediaId], function(err, result) {
-      //   if (err) {
-      //     console.log(err);
-      //   } else {
-      //     console.log("commented successfully");
-      //     res.send({message: "success"})
-      //   }
-      // })
     }
   })
 })
@@ -1389,7 +1374,8 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     'c.username AS username, c.profileName AS profileName, c.profile_image_src AS profile_image_src, c.location AS location, c.followers AS userFollowers, ' +
     '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = a.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE followerUserId=a.userId AND followingUserId = :cookieUser) > 0) AS followsYou, ' +
     '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = b.userId) > 0) AS repost_userFollowed, null AS postTags, GROUP_CONCAT(d.comment, d.dateTime) AS playlistComments, null AS postComments, GROUP_CONCAT(f.title, f.original, f.imageUrl, f.views, f.likes, f.reposts, e.dateTime) AS playlistPosts, ' +
-    '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS reposted, ((SELECT COUNT(*) FROM playlistsLikes WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS liked, ((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS followed ' +
+    '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS reposted, ((SELECT COUNT(*) FROM playlistsLikes WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS liked, ((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS followed, ' +
+    '(a.userId = :cookieUser) AS isPoster, (b.userId = :cookieUser) AS isReposter ' +
     'FROM playlistsReposts INNER JOIN playlists AS a ON a.playlistId = playlistsReposts.playlistId INNER JOIN users AS c ON c.userId = a.userId INNER JOIN users AS b ON b.userId = playlistsReposts.userId LEFT JOIN playlistsComments AS d ON d.playlistId = playlistsReposts.playlistId LEFT JOIN playlistsPosts AS e ON e.playlistId = playlistsReposts.playlistId LEFT JOIN posts AS f ON f.mediaId = e.mediaId ' +
     'WHERE ' + profileToggle1 + 'playlistsReposts.userId=:userId GROUP BY playlistsReposts.repostId'
 
@@ -1399,7 +1385,8 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     'username AS username, profileName AS profileName, profile_image_src AS profile_image_src, location AS location, users.followers AS userFollowers, ' +
     '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = a.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE followerUserId=a.userId AND followingUserId = :cookieUser) > 0) AS followsYou, ' +
     'null AS repost_userFollowed, null AS postTags, GROUP_CONCAT(playlistsComments.comment, playlistsComments.dateTime) AS playlistComments, null AS postComments, GROUP_CONCAT(posts.title, posts.original, posts.imageUrl, posts.views, posts.likes, posts.reposts, playlistsPosts.dateTime) AS playlistPosts, ' +
-    '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS reposted, ((SELECT COUNT(*) FROM playlistsLikes WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS liked, ((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS followed ' +
+    '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS reposted, ((SELECT COUNT(*) FROM playlistsLikes WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS liked, ((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS followed, ' +
+    '(a.userId = :cookieUser) AS isPoster, false AS isReposter ' +
     'FROM playlists AS a INNER JOIN users ON users.userId = a.userId LEFT JOIN playlistsComments ON playlistsComments.playlistId = a.playlistId LEFT JOIN playlistsPosts ON playlistsPosts.playlistId = a.playlistId LEFT JOIN posts ON posts.mediaId = playlistsPosts.mediaId WHERE ' + profileToggle2 + 'a.userId=:userId GROUP BY a.playlistId'
 
     var userReposts = 'SELECT a.mediaId, null as playlistId, a.title, a.genre, null, a.original, a.imageUrl, a.views, ' +
@@ -1408,7 +1395,7 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src, c.location AS location, c.followers AS userFollowers, ' +
     '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = a.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE followerUserId=a.userId AND followingUserId = :cookieUser) > 0) AS followsYou, ' +
     '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = b.userId) > 0) AS repost_userFollowed, GROUP_CONCAT(d.itemType, d.itemName, d.itemBrand, d.original, d.x, d.y) AS postTags, null AS playlistComments, GROUP_CONCAT(e.comment, e.dateTime) AS postComments, null AS playlistPosts, ' +
-    '((SELECT COUNT(*) FROM reposts WHERE userId=:cookieUser AND mediaId = a.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=:cookieUser AND mediaId = a.mediaId) > 0) AS liked, null AS followed ' +
+    '((SELECT COUNT(*) FROM reposts WHERE userId=:cookieUser AND mediaId = a.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=:cookieUser AND mediaId = a.mediaId) > 0) AS liked, null AS followed, (a.userId = :cookieUser) AS isPoster, (b.userId = :cookieUser) AS isReposter ' +
     'FROM reposts INNER JOIN posts AS a ON a.mediaId = reposts.mediaId INNER JOIN users AS c ON c.userId = a.userId INNER JOIN users AS b ON b.userId = reposts.userId LEFT JOIN tags AS d ON d.mediaId = reposts.mediaId LEFT JOIN comments AS e ON e.mediaId = reposts.mediaId ' +
     'WHERE (' + profileToggle3 + 'reposts.userId=:userId) ' + originalToggle2 + ' GROUP BY reposts.repostId'
 
@@ -1418,7 +1405,7 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     'username AS username, profileName AS profileName, profile_image_src AS profile_image_src, location AS location, followers AS userFollowers, ' +
     '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = posts.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE followerUserId=posts.userId AND followingUserId = :cookieUser) > 0) AS followsYou, ' +
     'null AS repost_userFollowed, GROUP_CONCAT(tags.itemType, tags.itemName, tags.itemBrand, tags.original, tags.x, tags.y) AS postTags, null AS playlistComments, GROUP_CONCAT(comments.comment, comments.dateTime) AS postComments, null AS playlistPosts, ' +
-    '((SELECT COUNT(*) FROM reposts WHERE userId=:cookieUser AND mediaId = posts.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=:cookieUser AND mediaId = posts.mediaId) > 0) AS liked, null AS followed ' +
+    '((SELECT COUNT(*) FROM reposts WHERE userId=:cookieUser AND mediaId = posts.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=:cookieUser AND mediaId = posts.mediaId) > 0) AS liked, null AS followed, (posts.userId = :cookieUser) AS isPoster, false AS isReposter ' +
     'FROM posts INNER JOIN users ON users.userId = posts.userId LEFT JOIN tags ON tags.mediaId = posts.mediaId LEFT JOIN comments ON comments.mediaId = posts.mediaId WHERE (' + profileToggle4 + 'posts.userId=:userId) ' + originalToggle1 + ' GROUP BY posts.mediaId'
 
     var orderBy = ' ORDER BY orderTime DESC LIMIT 20'
@@ -1477,7 +1464,7 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
                 repost_profile_image_src: row.repost_profile_image_src, repostDate: row.orderTime,
                 repost_location: row.repost_location, repost_userFollowers: row.repost_userFollowers,
                 reposted: row.reposted, liked: row.liked, userFollowed: row.userFollowed, followsYou: row.followsYou,
-                repost_userFollowed: row.repost_userFollowed}
+                repost_userFollowed: row.repost_userFollowed, isPoster: row.isPoster, isReposter: row.isReposter}
               stream.push(post)
             } else if (playlistId) {
               var playlist = {playlistId:row.playlistId, likes:row.likes, reposts:row.reposts,
@@ -1490,7 +1477,7 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
                 location: row.location, userFollowers: row.userFollowers,
                 comments:row.postComments, posts: row.playlistPosts, reposted: row.reposted,
                 liked: row.liked, followed: row.followed, userFollowed: row.userFollowed, followsYou: row.followsYou,
-                repost_userFollowed: row.repost_userFollowed}
+                repost_userFollowed: row.repost_userFollowed, isPoster: row.isPoster, isReposter: row.isReposter}
               stream.push(playlist)
             }
         //     } else {

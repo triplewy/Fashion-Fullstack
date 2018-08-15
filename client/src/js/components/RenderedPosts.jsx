@@ -26,7 +26,7 @@ export default class RenderedPosts extends React.Component {
                   repost_location={item.repost_location} repost_userFollowers={item.repost_userFollowers}
                   repost_profile_image_src={item.repost_profile_image_src} repostDate={item.repostDate}
                   reposted={item.reposted} liked={item.liked} userFollowed={item.userFollowed} followsYou={item.followsYou}
-                  repost_userFollowed={item.repost_userFollowed}/>
+                  repost_userFollowed={item.repost_userFollowed} isPoster={item.isPoster} isReposter={item.isReposter}/>
           )
         } else if (item.playlistId) {
           return (
@@ -41,7 +41,7 @@ export default class RenderedPosts extends React.Component {
                   repost_profile_image_src={item.repost_profile_image_src} repostDate={item.repostDate}
                   reposted={item.reposted} liked={item.liked} followed={item.followed}
                   userFollowed={item.userFollowed} followsYou={item.followsYou}
-                  repost_userFollowed={item.repost_userFollowed}/>
+                  repost_userFollowed={item.repost_userFollowed} isPoster={item.isPoster} isReposter={item.isReposter}/>
           )
         } else {
           return (

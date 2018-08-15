@@ -64,7 +64,19 @@ input[type="file"] {
 }
 
 textarea {
+  display: block;
+  background-color: transparent;
+  width: 100%;
+  padding: 8px 8px;
+  border: 1px solid #ebebeb;
+  -webkit-transition: border-color 0.5s;
+  transition: border-color 0.5s;
   resize: none;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #4EA6EA;
 }
 
 .fade.modal-backdrop.in {
@@ -1287,6 +1299,14 @@ textarea {
   transition: box-shadow 0.2s;
 }
 
+#input_div input {
+  margin-bottom: 30px;
+}
+
+#input_div textarea {
+  margin-bottom: 30px;
+}
+
 #login_input_fields {
   width: 320px;
   margin: 0 auto;
@@ -1415,37 +1435,38 @@ textarea {
   color: black;
 }
 
-#profile_links {
-  float: right;
-  float: top;
-  background-color: black;
-  opacity: 0.6;
-  color: white;
-  font-size: 12px;
-  padding: 1px 0;
-  width: 200px;
-  border-radius: 2px;
-  text-align: center;
-}
-
-#profile_links div.profile_links_dropdown {
-  display: block;
-  max-height: 0;
-  background-color: black;
-  color: white;
-  width: 200px;
-  text-align: center;
-  -webkit-transition: max-height 0.15s ease-out;
-  transition: max-height 0.15s ease-out;
-}
-
-#profile_links:hover div.profile_links_dropdown {
-  display: block;
+.type_selector_dropdown_div {
   position: absolute;
-  top: 0px;
-  max-height: 100px;
-  -webkit-transition: max-height 0.25s ease-in;
-  transition: max-height 0.25s ease-in;
+  right: 0;
+}
+
+.profile_dropdown_div {
+  display: inline-block;
+  font-size: 16px;
+  padding: 5px 10px;
+  padding-left: 30px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.profile_dropdown_div div.links_dropdown {
+  position: absolute;
+  right: 0;
+  border-radius: 4px;
+  background-color: white;
+  padding: 20px 20px;
+  opacity: 0;
+  width: 300px;
+  /* min-height: 200px; */
+  max-height: 0px;
+  -webkit-transition: box-shadow 0.5s;
+  transition: box-shadow 0.5s;
+}
+
+.profile_dropdown_div:hover div.links_dropdown {
+  max-height: 1000px;
+  opacity: 1;
+  box-shadow: -2px 4px 12px 2px #888888;
 }
 
 #comments_input_bar {
@@ -1547,10 +1568,6 @@ textarea {
 
 .playlist_icon {
   height: 30px;
-}
-
-#public_indicator {
-  float: right;
 }
 
 #create_new_playlist_wrapper {

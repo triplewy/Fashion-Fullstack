@@ -55,10 +55,12 @@ export default class DropdownProfile extends React.Component {
       <div className="dropdown">
         <p className="dropdown_text">{this.props.location}</p>
         <p className="dropdown_text">{'Followers: ' + this.state.userFollowers}</p>
-        <button id="dropdown_follow" onClick={this.state.userFollowed ? this.handleUnfollow : this.handleFollow}
-          style={{color: this.state.userFollowed ? 'red' : 'black'}}>
-          {buttonText}
-        </button>
+        {!this.props.isProfile &&
+          <button id="dropdown_follow" onClick={this.state.userFollowed ? this.handleUnfollow : this.handleFollow}
+            style={{color: this.state.userFollowed ? 'red' : 'black'}}>
+            {buttonText}
+          </button>
+        }
       </div>
     );
   }
