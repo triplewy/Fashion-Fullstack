@@ -35,12 +35,8 @@ export default class Collections extends React.Component {
   }
 
   toggle_type(e) {
-    var data = this.state.json_data;
-    var temp_data = [];
-    if (e.target.name == 0) {
-      temp_data = this.state.json_data
-    } else if (e.target.name == 1) {
-      temp_data = this.state.json_data
+    if (e.target.name === 0) {
+    } else if (e.target.name === 1) {
       fetch('/api/you/collections/playlistsLikes', {
         credentials: 'include'
       })
@@ -53,14 +49,13 @@ export default class Collections extends React.Component {
         console.error(error);
       });
     } else {
-      temp_data = data;
     }
     this.setState({type_selector_value: e.target.name});
   }
 
   render() {
     var rendered_posts = [];
-    if (this.state.json_data != null && this.state.type_selector_value == 0) {
+    if (this.state.json_data != null && this.state.type_selector_value === 0) {
       rendered_posts = this.state.json_data.map((item, index) => {
           return (
             <li id="polaroid_div" key={item.mediaId}>

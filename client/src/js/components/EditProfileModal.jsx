@@ -9,7 +9,6 @@ export default class EditProfileModal extends React.Component {
       profileName: this.props.profileInfo.profileName,
       location: this.props.profileInfo.location,
       description: this.props.profileInfo.description,
-      username: this.props.profileInfo.username,
       profile_image_src: this.props.profile_image_src,
       changed_profile_image: false,
       showModal: this.props.showModal
@@ -28,7 +27,6 @@ export default class EditProfileModal extends React.Component {
       profileName: nextProps.profileInfo.profileName,
       location: nextProps.profileInfo.location,
       description: nextProps.profileInfo.description,
-      username: nextProps.profileInfo.username,
       profile_image_src: nextProps.profile_image_src
     });
   }
@@ -59,7 +57,7 @@ export default class EditProfileModal extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message == 'success') {
+      if (data.message === 'success') {
         this.props.getUserDetails()
         this.close()
       }

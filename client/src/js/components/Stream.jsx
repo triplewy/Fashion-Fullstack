@@ -38,7 +38,7 @@ export default class Stream extends React.Component {
   }
 
   toggle_type(e) {
-    if (e.target.name == 1) {
+    if (e.target.name === 1) {
       console.log("og");
       this.getOriginalStream()
     } else {
@@ -53,7 +53,7 @@ export default class Stream extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message == 'not logged in') {
+      if (data.message === 'not logged in') {
         this.setState({redirect: true});
       }
       console.log("api home data is", data);
@@ -72,7 +72,7 @@ export default class Stream extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message == 'not logged in') {
+      if (data.message === 'not logged in') {
         this.setState({redirect: true});
       }
       console.log("api home data is", data);
@@ -95,7 +95,6 @@ export default class Stream extends React.Component {
           <TypeSelector toggle_type={this.toggle_type} types={["All", "Original"]}
           type_selector_value={this.state.type_selector_value}/>
           <div id="content_wrapper">
-
             <RenderedPosts streamData={this.state.streamData} />
           </div>
         </div>

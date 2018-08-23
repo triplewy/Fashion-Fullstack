@@ -107,6 +107,7 @@ export default class Navbar extends React.Component {
   }
 
   render() {
+    console.log("navbar rerendering");
       return (
         <div id={this.state.showNavbar ? 'banner' : 'banner_hide'}>
           <div id="banner_left" className="banner_section">
@@ -136,7 +137,6 @@ export default class Navbar extends React.Component {
                     <img id="profile_image" alt="" src={this.state.profile_image_src}></img>
                   </div>
                   <p id="user_name">{this.state.profileName}</p>
-                  <span className="caret"></span>
                 </button>
                 <ul className="dropdown-menu">
                   <li>
@@ -155,9 +155,7 @@ export default class Navbar extends React.Component {
               </div>
               <Notifications />
               <div className="btn-group">
-                <button className="dropdown-toggle" type="button" data-toggle="dropdown">
-                  Messages<span className="caret"></span>
-                </button>
+                <button className="dropdown-toggle" type="button" data-toggle="dropdown">Messages</button>
                 <ul className="dropdown-menu">
                   <li className="form-group">
                     Yo

@@ -70,7 +70,7 @@ export default class Post extends React.Component {
         </Link>
         <div id="stats_wrapper">
           <StatsHeader mediaId={this.props.mediaId} views={this.props.views} likes={this.props.likes} reposts={this.props.reposts}
-            reposted={this.props.reposted} liked={this.props.liked}/>
+            reposted={this.props.reposted} liked={this.props.liked} isPoster={this.props.isPoster}/>
         </div>
       </div>
       <div id="tags_div_wrapper">

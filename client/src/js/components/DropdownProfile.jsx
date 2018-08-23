@@ -20,7 +20,7 @@ export default class DropdownProfile extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message == 'success') {
+      if (data.message === 'success') {
         this.setState({userFollowed: true, userFollowers: this.state.userFollowers + 1})
       }
     })
@@ -34,7 +34,7 @@ export default class DropdownProfile extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message == 'success') {
+      if (data.message === 'success') {
         this.setState({userFollowed: false, userFollowers: this.state.userFollowers - 1})
       }
     })

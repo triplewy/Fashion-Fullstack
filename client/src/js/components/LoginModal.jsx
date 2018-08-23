@@ -55,7 +55,7 @@ export default class LoginModal extends React.Component {
             <p>Did you forgot your password?</p>
           </div>
           <div id="login_input_fields">
-            <input type="text" autocomplete="off" placeholder="Username or Email"
+            <input type="text" autoComplete="off" placeholder="Username or Email"
               name="username" onChange={this.handleChange} value={this.state.username}></input>
             <input type="password" placeholder="Password" name="password" onChange={this.handleChange}
             onKeyPress={this.handleKeyPress} value={this.state.password}></input>

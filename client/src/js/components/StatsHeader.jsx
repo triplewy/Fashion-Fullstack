@@ -156,10 +156,12 @@ export default class StatsHeader extends React.Component {
           <img id="like_icon" alt="like icon" src={this.state.liked ? like_icon_liked : like_icon}></img>
           <p className="stats_number" id="like_number">{this.state.likes}</p>
         </button>
+        {!this.props.isPoster &&
         <button id="reposts" onClick={this.state.reposted ? this.handleUnrepost : this.handleRepost}>
           <img id="repost_icon" alt="repost icon" src={this.state.reposted ? repost_icon_reposted : repost_icon}></img>
           <p className="stats_number" id="repost_number">{this.state.reposts}</p>
         </button>
+        }
         <div id="non_stat_div">
           <div id="add_playlist_wrapper">
             <button id="add_to_playlist" onClick={this.showModal}>

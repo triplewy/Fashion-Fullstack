@@ -29,6 +29,7 @@ export default class RenderedPosts extends React.Component {
                   repost_userFollowed={item.repost_userFollowed} isPoster={item.isPoster} isReposter={item.isReposter}/>
           )
         } else if (item.playlistId) {
+          console.log(item.posts);
           return (
             <Playlist key={index} playlistId={item.playlistId} genre={item.genre} username={item.username}
                   profileName={item.profileName} profile_image_src={item.profile_image_src}
