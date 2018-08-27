@@ -27,3 +27,5 @@ Three words that best describe the philosophy of this startup: Underground, stat
 * Tags
 
 ’Tags’ are the most important aspect for startup brands looking to showcase and sell their own designs on the website. Tags on this website will be much more detailed in that they will feature a brand name, item name, original boolean, and option to provide a link. Users will get to see exactly what clothing of item are in posts and can search the platform based on those tags or click on optional links to direct them to buying these clothes.
+
+#### Developed by Alex Yu
