@@ -3,7 +3,6 @@ import RenderedPosts from './RenderedPosts.jsx'
 import TypeSelector from './TypeSelector.jsx'
 import EditProfileModal from './EditProfileModal.jsx'
 import memoize from 'memoize-one'
-import flower_background from 'images/flowers-background.jpg'
 import * as loadImage from 'blueimp-load-image'
 
 // style={{backgroundImage: `url(${flower_background})`}}
@@ -46,13 +45,13 @@ export default class Profile extends React.Component {
   }
 
   toggle_type(e) {
-    if (e.target.name == 1) {
+    if (e.target.name === 1) {
       this.getOriginalStream()
-    } else if (e.target.name == 2) {
+    } else if (e.target.name === 2) {
       this.getPostStream()
-    } else if (e.target.name == 3) {
+    } else if (e.target.name === 3) {
       this.getPlaylistStream()
-    } else if (e.target.name == 4) {
+    } else if (e.target.name === 4) {
       this.getRepostStream()
     } else {
       this.getStream()
@@ -67,11 +66,11 @@ export default class Profile extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message == 'success') {
+      if (data.message === 'success') {
         var tempProfileInfo = this.state.profileInfo
         tempProfileInfo.followers += 1
         this.setState({isFollowing: true, profileInfo: tempProfileInfo})
-      } else if (data.message == 'not logged in') {
+      } else if (data.message === 'not logged in') {
         console.log("not logged in");
       }
     })
@@ -87,7 +86,7 @@ export default class Profile extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message == 'success') {
+      if (data.message === 'success') {
         var tempProfileInfo = this.state.profileInfo
         tempProfileInfo.followers -= 1
         this.setState({isFollowing: false, profileInfo: tempProfileInfo})
@@ -239,7 +238,7 @@ export default class Profile extends React.Component {
         })
         .then(response => {
           console.log(response);
-          if (response.status == 400) {
+          if (response.status === 400) {
             console.log("not logged in");
           } else {
             return response.json()
@@ -247,7 +246,7 @@ export default class Profile extends React.Component {
         })
         .then(data => {
           console.log(data.message);
-          if (data.message == 'success') {
+          if (data.message === 'success') {
             console.log("updated profile pic successfully");
             this.setState({
               profile_image_file: file,

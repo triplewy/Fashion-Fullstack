@@ -14,31 +14,19 @@ export default class Stream extends React.Component {
       type_selector_value: 0
     };
 
-    this.getRequest();
     this.toggle_type = this.toggle_type.bind(this);
     this.getStream = this.getStream.bind(this)
     this.getOriginalStream = this.getOriginalStream.bind(this)
   }
 
   componentDidMount() {
+    console.log("stream mounted");
     this.getStream()
-
     window.scrollTo(0, 0)
   }
 
-  getRequest() {
-    fetch('http://ec2-18-216-120-197.us-east-2.compute.amazonaws.com:3030/feed/start')
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }
-
   toggle_type(e) {
-    if (e.target.name === 1) {
+    if (e.target.name == 1) {
       console.log("og");
       this.getOriginalStream()
     } else {
@@ -56,7 +44,6 @@ export default class Stream extends React.Component {
       if (data.message === 'not logged in') {
         this.setState({redirect: true});
       }
-      console.log("api home data is", data);
       var streamData = data.stream
       console.log("streamData is", streamData);
       this.setState({streamData: streamData});

@@ -345,7 +345,7 @@ textarea:focus {
   float: right;
 }
 
-#post_wrapper {
+.post_wrapper {
   display: inline-block;
   position: relative;
   width: 100%;
@@ -1911,6 +1911,18 @@ textarea:focus {
   padding: 10px 10px;
   width: 400px;
   height: 90px;
+  font-size: 12px;
+}
+
+.notifications_list button {
+  border: 1px solid black;
+  border-radius: 4px;
+  padding: 2px 5px;
+}
+
+.notifications_list button:hover {
+  color: red;
+  border-color: red;
 }
 
 .activity_type {
@@ -1939,6 +1951,16 @@ textarea:focus {
   color: gray;
 }
 
+.notification_date p {
+  font-size: 12px;
+}
+
+.notification_followed_you_text {
+  display: inline-block;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
 #see_all_notifications {
   height: 40px;
   text-align: center;
@@ -1946,6 +1968,27 @@ textarea:focus {
 
 #see_all_notifications p {
   display: inline-block;
+}
+
+.notificationsPage_list {
+  list-style: none;
+  padding: 0 0;
+}
+
+.notificationsPage_list li {
+  padding: 10px 10px;
+  font-size: 12px;
+}
+
+.notificationsPage_list button {
+  border: 1px solid black;
+  border-radius: 4px;
+  padding: 2px 5px;
+}
+
+.notificationsPage_list button:hover {
+  color: red;
+  border-color: red;
 }
 
 @media only screen and (max-width: 1300px) {

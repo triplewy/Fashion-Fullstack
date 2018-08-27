@@ -43,13 +43,13 @@ export default class Tags extends React.Component {
     }
 
   showTagLocation(index) {
-    if (this.state.displayClickTagLocation != index) {
+    if (this.state.displayClickTagLocation !== index) {
       this.setState({displayTagLocation: index})
     }
   }
 
   showClickTagLocation(index) {
-    if (this.state.displayClickTagLocation == index) {
+    if (this.state.displayClickTagLocation === index) {
       this.setState({displayClickTagLocation: -2})
     } else {
       this.setState({displayClickTagLocation: index})
@@ -84,14 +84,14 @@ export default class Tags extends React.Component {
                 </div>
                 {this.props.modify && <div id="tag_modifiers_div">
                   <button className="tag_modifier_button" id="edit_tag_button" type="button" onClick={this.props.handleTagEdit.bind(this, index)}>
-                    <img className="tag_modifier_button_image" src={edit_icon}></img>
+                    <img className="tag_modifier_button_image" src={edit_icon} alt="edit icon"></img>
                   </button>
                   <button className="tag_modifier_button" id="delete_tag_button" type="button" onClick={this.props.handleTagDelete.bind(this, index)}>
-                    <img className="tag_modifier_button_image" src={trash_icon}></img>
+                    <img className="tag_modifier_button_image" src={trash_icon} alt="delete icon"></img>
                   </button>
                 </div>}
                 <div id="og_tag">
-                  {item.original != 0 && <span>✔</span>}
+                  {item.original !== 0 && <span>✔</span>}
                 </div>
             </li>
           )

@@ -2,12 +2,12 @@ import React from 'react';
 import notification_icon from 'images/notification-icon.png'
 import socketIOClient from 'socket.io-client'
 import {Dropdown} from 'react-bootstrap'
-import RenderedNotifications from './RenderedNotifications.jsx'
+import {Link} from 'react-router-dom'
+import NotificationItem from './NotificationItem.jsx'
 
 export default class Notifications extends React.Component {
   constructor(props) {
     super(props);
-    console.log("Notifications component created");
     this.state = {
       endpoint: 'http://localhost:8081',
       unread: 0,
@@ -15,6 +15,8 @@ export default class Notifications extends React.Component {
     };
 
     this.getNotifications = this.getNotifications.bind(this)
+    this.handleFollow = this.handleFollow.bind(this)
+    this.handleUnfollow = this.handleUnfollow.bind(this)
   }
 
   componentDidMount() {
@@ -40,13 +42,64 @@ export default class Notifications extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
       this.setState({notifications: data.notifications, unread: 0})
     })
   }
 
+  handleFollow(profile, index) {
+    fetch('/api/' + profile + '/follow', {
+      method: 'POST',
+      credentials: 'include',
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === 'success') {
+        var tempNotifications = this.state.notifications
+        if (tempNotifications[index].follow) {
+          tempNotifications[index].follow.isFollowing = true
+        }
+        this.setState({notifications: tempNotifications})
+      } else if (data.message === 'not logged in') {
+        console.log("not logged in");
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
+  handleUnfollow(profile, index) {
+    fetch('/api/' + profile + '/unfollow', {
+      method: 'POST',
+      credentials: 'include',
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === 'success') {
+        var tempNotifications = this.state.notifications
+        if (tempNotifications[index].follow) {
+          tempNotifications[index].follow.isFollowing = false
+        }
+        this.setState({notifications: tempNotifications})
+      } else if (data.message === 'not logged in') {
+        console.log("not logged in");
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
   render() {
-    console.log("unreads are", this.state.unread);
+    var renderedNotifications = []
+    if (this.state.notifications) {
+      renderedNotifications = this.state.notifications.map((item, index) => {
+        return (
+          <NotificationItem item={item} index={index} key={index} handleFollow={this.handleFollow} handleUnfollow={this.handleUnfollow}/>
+        )
+      })
+    }
+
     return (
       <Dropdown id="notifications_dropdown" onToggle={this.getNotifications}>
         <Dropdown.Toggle className="banner_button" noCaret={true}>
@@ -56,7 +109,14 @@ export default class Notifications extends React.Component {
           </div>
         </Dropdown.Toggle>
         <Dropdown.Menu style={{left: '-150px'}}>
-          <RenderedNotifications notifications={this.state.notifications}/>
+          <ul className="notifications_list">
+            {renderedNotifications}
+            <Link to="/you/notifications">
+              <li id="see_all_notifications">
+                  <p>All Notifications</p>
+              </li>
+            </Link>
+          </ul>
         </Dropdown.Menu>
       </Dropdown>
     );

@@ -618,13 +618,13 @@ app.get('/api/notificationsDropdown/:unread', loggedIn, (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      conn.query('SELECT a.mediaId, null AS playlistId, c.title, c.imageUrl, a.activity, a.comment, b.username, b.profileName, b.profile_image_src, a.dateTime FROM postsNotifications AS a ' +
+      conn.query('SELECT a.mediaId, null AS playlistId, c.title, c.imageUrl, a.activity, a.comment, b.username, b.profileName, b.profile_image_src, null AS isFollowing, a.dateTime FROM postsNotifications AS a ' +
       'INNER JOIN users AS b ON b.userId = a.senderId INNER JOIN posts AS c ON c.mediaId = a.mediaId WHERE receiverId=? UNION ALL ' +
-      'SELECT null AS mediaId, a.playlistId AS playlistId, c.title, null, a.activity, a.comment, b.username, b.profileName, b.profile_image_src, a.dateTime FROM playlistsNotifications AS a ' +
+      'SELECT null AS mediaId, a.playlistId AS playlistId, c.title, null, a.activity, a.comment, b.username, b.profileName, b.profile_image_src, null AS isFollowing, a.dateTime FROM playlistsNotifications AS a ' +
       'INNER JOIN users AS b ON b.userId = a.senderId INNER JOIN playlists AS c ON c.playlistId = a.playlistId WHERE receiverId=? UNION ALL ' +
-      'SELECT null AS mediaId, null AS playlistId, null AS title, null, null, null AS comment, b.username, b.profileName, b.profile_image_src, a.dateTime FROM followingNotifications AS a ' +
+      'SELECT null AS mediaId, null AS playlistId, null AS title, null, null, null AS comment, b.username, b.profileName, b.profile_image_src, (SELECT COUNT(*) FROM following WHERE followerUserId=? AND followingUserId = b.userId) > 0 AS isFollowing,  a.dateTime FROM followingNotifications AS a ' +
       'INNER JOIN users AS b ON b.userId = a.senderId WHERE receiverId=? ' +
-      'ORDER BY dateTime DESC LIMIT ?', [userId, userId, userId, numUnreads], function(err, result) {
+      'ORDER BY dateTime DESC LIMIT ?', [userId, userId, userId, userId, numUnreads], function(err, result) {
         if (err) {
           console.log(err);
         } else {
@@ -638,7 +638,7 @@ app.get('/api/notificationsDropdown/:unread', loggedIn, (req, res) => {
               notifications.push({playlist: {playlistId: row.playlistId, title: row.title, imageUrl: row.imageUrl, activity: row.activity,
                 dateTime: row.dateTime, comment: row.comment, user:{username: row.username, profileName: row.profileName, profile_image_src: row.profile_image_src}}})
             } else {
-              notifications.push({follow: {dateTime: row.dateTime, user:{username: row.username, profileName: row.profileName, profile_image_src: row.profile_image_src}}})
+              notifications.push({follow: {dateTime: row.dateTime, isFollowing: row.isFollowing, user:{username: row.username, profileName: row.profileName, profile_image_src: row.profile_image_src}}})
             }
           }
           res.send({notifications: notifications});

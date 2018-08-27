@@ -38,7 +38,7 @@ export default class PlaylistModal extends React.Component {
 
   handleSubmit(e) {
     var isPublic = false
-    if (this.state.selectedOption == 'public') {
+    if (this.state.selectedOption === 'public') {
       isPublic = true
     }
 
@@ -128,11 +128,11 @@ export default class PlaylistModal extends React.Component {
             <p id="playlist_title">{item.title}</p>
             <p className="playlist_icon_div">{item.public ? "Public" : "Private"}</p>
             <div className="playlist_icon_div">
-              <img className="playlist_icon" src={followers_icon}></img>
+              <img className="playlist_icon" src={followers_icon} alt="followers icon"></img>
               {item.followers}
             </div>
             <div className="playlist_icon_div">
-              <img className="playlist_icon" src={posts_icon}></img>
+              <img className="playlist_icon" src={posts_icon} alt="posts icon"></img>
               {item.numPosts}
             </div>
           </li>

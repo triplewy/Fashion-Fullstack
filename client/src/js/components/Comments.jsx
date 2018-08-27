@@ -46,7 +46,7 @@ export default class Comments extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message == "success") {
+      if (data.message === "success") {
         fetch('/api/' + this.props.username + '/' + this.props.mediaId + '/comments', {
           credentials: 'include'
         })

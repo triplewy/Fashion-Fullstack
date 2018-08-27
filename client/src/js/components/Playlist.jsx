@@ -101,7 +101,6 @@ export default class Playlist extends React.Component {
 
   render() {
     var currentPost = this.state.playlistPosts[this.state.playlistIndex]
-    console.log("currentPost is", currentPost);
     var rendered_playlist_posts = [];
     if (this.state.playlistPosts.length > 0) {
       rendered_playlist_posts = this.state.playlistPosts.map((item, index) => {
@@ -131,7 +130,7 @@ export default class Playlist extends React.Component {
     }
 
       return (
-        <div id="post_wrapper">
+        <div className="post_wrapper" id={"post_wrapper_" + this.props.index}>
           <div id="polaroid_div">
             {this.props.repost_username ? <RepostHeader username={this.props.username} profileName={this.props.profileName}
               location={this.props.location} userFollowers={this.props.userFollowers} userFollowed={this.props.userFollowed}

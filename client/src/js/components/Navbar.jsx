@@ -2,9 +2,7 @@ import React from 'react';
 import StatsColumn from './StatsColumn.jsx'
 import LoginModal from './LoginModal.jsx'
 import Notifications from './Notifications.jsx'
-import { Link, Redirect} from 'react-router-dom';
-import notification_icon from 'images/notification-icon.png'
-import socketIOClient from 'socket.io-client'
+import { Link } from 'react-router-dom';
 
 // {this.state.search_redirect && <Redirect to={'/search'}/>}
 
@@ -107,7 +105,6 @@ export default class Navbar extends React.Component {
   }
 
   render() {
-    console.log("navbar rerendering");
       return (
         <div id={this.state.showNavbar ? 'banner' : 'banner_hide'}>
           <div id="banner_left" className="banner_section">

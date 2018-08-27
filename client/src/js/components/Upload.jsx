@@ -3,20 +3,6 @@ import InputTag from './InputTag.jsx';
 import Tags from './Tags.jsx'
 import * as loadImage from 'blueimp-load-image'
 
-{/* <p className="form_input_text" id="title_input">Title:</p>
-<input className="input_box" type="text" name="title"
-  onChange={this.handleChange} placeholder="Title of your post"
-  value={this.state.title}></input>
-<p className="form_input_text" id="genre_input">Genre:</p>
-<input className="input_box" type="text" name="genre"
-  onChange={this.handleChange} placeholder="Genre of your post"
-  value={this.state.genre}></input>
-<p className="form_input_text" id="description_input">Description:</p>
-<textarea className="input_box" id="description_input_box" name="description"
-  onChange={this.handleChange} placeholder="Description of your post" cols="10"
-  value={this.state.description}></textarea>
-   */}
-
 export default class Upload extends React.Component {
   constructor(props) {
     super(props);
@@ -114,7 +100,7 @@ export default class Upload extends React.Component {
     })
     .then(response => {
       console.log(response);
-      if (response.status == 400) {
+      if (response.status === 400) {
         console.log("not logged in");
       } else {
         return response.json()
@@ -122,7 +108,7 @@ export default class Upload extends React.Component {
     })
     .then(data => {
       console.log(data.message);
-      if (data.message == 'success') {
+      if (data.message === 'success') {
 
       }
     })

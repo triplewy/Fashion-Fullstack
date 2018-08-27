@@ -6,7 +6,12 @@ export default class RenderedPosts extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      scrollY: 0
     };
+  }
+
+  componentDidMount() {
+    console.log("rendered posts mounted");
   }
 
   render() {
@@ -16,7 +21,7 @@ export default class RenderedPosts extends React.Component {
       rendered_posts = streamData.map((item, index) => {
         if (item.mediaId) {
           return (
-            <Post key={index} mediaId={item.mediaId} genre={item.genre} username={item.username}
+            <Post key={index} index={index} mediaId={item.mediaId} genre={item.genre} username={item.username}
                   profileName={item.profileName} profile_image_src={item.profile_image_src}
                   location={item.location} userFollowers={item.userFollowers} original={item.original}
                   post_image_src={item.post_image_src} views={item.views} likes={item.likes}
@@ -29,9 +34,8 @@ export default class RenderedPosts extends React.Component {
                   repost_userFollowed={item.repost_userFollowed} isPoster={item.isPoster} isReposter={item.isReposter}/>
           )
         } else if (item.playlistId) {
-          console.log(item.posts);
           return (
-            <Playlist key={index} playlistId={item.playlistId} genre={item.genre} username={item.username}
+            <Playlist key={index} index={index} playlistId={item.playlistId} genre={item.genre} username={item.username}
                   profileName={item.profileName} profile_image_src={item.profile_image_src}
                   location={item.location} userFollowers={item.userFollowers}
                   playlist_image_srcs={item.playlist_image_srcs} likes={item.likes}

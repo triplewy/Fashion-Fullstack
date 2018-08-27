@@ -13,10 +13,32 @@ export default class Post extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      comments: this.props.comments
+      comments: this.props.comments,
+      bottom: 0
     };
 
     this.dateDiffInDays = this.dateDiffInDays.bind(this);
+    this.handleScroll = this.handleScroll.bind(this)
+  }
+
+  componentDidMount() {
+    console.log("post mounted");
+    window.addEventListener('scroll', this.handleScroll);
+    var body = document.body.getBoundingClientRect()
+    var element = document.getElementById('post_wrapper_' + this.props.index).getBoundingClientRect()
+    var offset = element.top - body.top
+    console.log("post bottom is", offset);
+    this.setState({bottom: offset})
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleScroll)
+  }
+
+  handleScroll() {
+    if (window.scrollY >= this.state.bottom) {
+      console.log("hit bottom");
+    }
   }
 
   addNewPlaylist(e) {
@@ -36,9 +58,8 @@ export default class Post extends React.Component {
   }
 
   render() {
-    console.log(this.props.original);
     return (
-      <div id="post_wrapper">
+      <div className="post_wrapper" id={"post_wrapper_" + this.props.index}>
         <div id="polaroid_div">
           {this.props.repost_username ? <RepostHeader username={this.props.username} profileName={this.props.profileName}
             location={this.props.location} userFollowers={this.props.userFollowers} userFollowed={this.props.userFollowed}

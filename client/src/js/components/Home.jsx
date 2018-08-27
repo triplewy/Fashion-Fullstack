@@ -59,7 +59,7 @@ export default class Home extends React.Component {
   }
 
   handleSignup(e) {
-    if (this.state.password == this.state.confirmPassword) {
+    if (this.state.password === this.state.confirmPassword) {
       console.log(true);
     }
     fetch('/api/signup', {
@@ -77,7 +77,7 @@ export default class Home extends React.Component {
     })
     .then(res => {
       console.log("res.status is", res.status);
-      if (res.status == 200) {
+      if (res.status === 200) {
         this.setState({redirect: true, redirectURL: res.url});
       }
     }).catch(function(err) {
@@ -93,7 +93,7 @@ export default class Home extends React.Component {
         <div id="white_background_wrapper">
 
             <p id="title">Fashion App</p>
-            
+
             <div id="trending_div">
 
             </div>

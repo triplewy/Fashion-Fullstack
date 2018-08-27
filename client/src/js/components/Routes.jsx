@@ -23,6 +23,7 @@ import Outfit_Finder from './OutfitFinder.jsx'
 import Search from './Search.jsx'
 import Playlist from './Playlist.jsx'
 import Stats from './Stats.jsx'
+import NotificationsPage from './NotificationsPage.jsx'
 
 export default class Routes extends React.Component {
   constructor(props) {
@@ -78,7 +79,7 @@ export default class Routes extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message == 'success') {
+      if (data.message === 'success') {
         this.setState({loggedIn: true});
       } else {
         this.setState({loggedIn: false})
@@ -100,7 +101,7 @@ export default class Routes extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message == 'success') {
+      if (data.message === 'success') {
         this.setState({loggedIn: false})
       } else {
         console.log("Could not logout for some reason");
@@ -148,6 +149,7 @@ export default class Routes extends React.Component {
               <PrivateRoute exact path='/upload' component={Upload} />}/>
               <PrivateRoute exact path='/you/collections' component={Collections} />
               <PrivateRoute exact path='/you/stats' component={Stats} />
+              <PrivateRoute exact path='/you/notifications' component={NotificationsPage} />
               <Route path='/verify' component={Verify} />
               <Route exact path='/finder' component={Outfit_Finder}/>
               <Route exact path='/search' component={Search}/>
