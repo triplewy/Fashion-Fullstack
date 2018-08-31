@@ -6,97 +6,93 @@ import Comments from './Comments.jsx'
 import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
 import DropdownProfile from './DropdownProfile.jsx'
 import { Link } from 'react-router-dom';
-
-const _MS_PER_MINUTE = 1000 * 60;
+import {dateDiffInDays} from './DateHelper.js'
+import Cookie from 'js-cookie'
 
 export default class Playlist extends React.Component {
   constructor(props) {
     super(props);
 
+    var posts = JSON.parse(this.props.posts)
+
     this.state = {
-      followers: this.props.followers,
-      likes: this.props.likes,
-      reposts: this.props.reposts,
-      comments: this.props.comments,
-      playlist_mediaIds: [],
-      playlistPosts: JSON.parse(this.props.posts),
-      playlistIndex: 0
+      playlistPosts: posts,
+      playlistIndex: 0,
+      bottom: 0,
+      seen: new Array(posts.length).fill(false)
     };
 
-    this.handleLike = this.handleLike.bind(this);
-    this.handleRepost = this.handleRepost.bind(this);
-    this.handleFollow = this.handleFollow.bind(this);
+    this.myRef = React.createRef()
     this.setPlaylistIndex = this.setPlaylistIndex.bind(this)
+    this.handleScroll = this.handleScroll.bind(this)
   }
 
-  handleLike(e) {
-    fetch('/api/playlistLike', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        mediaId: this.props.id,
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.message === "success") {
-        this.setState({likes: this.state.likes + 1})
-      } else {
-        console.log(data.message);
+  componentDidMount() {
+    console.log(this.state.seen);
+    console.log("playlist mounted");
+    window.addEventListener('scroll', this.handleScroll);
+    setTimeout(() => {
+      console.log("component height", this.myRef.current.clientHeight);
+      console.log("component bottom", this.myRef.current.offsetTop + this.myRef.current.clientHeight);
+      this.setState({bottom: this.myRef.current.offsetTop + this.myRef.current.clientHeight - 80})
+    }, 10);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleScroll)
+  }
+
+  handleScroll() {
+    if (window.scrollY + window.innerHeight >= this.state.bottom && !this.state.seen[this.state.playlistIndex]) {
+      console.log("hit bottom");
+      var now = new Date()
+      var viewType = 2
+      if (this.props.repost_username) {
+        viewType = 3
       }
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-  }
+      if (Cookie.get('viewHistory')) {
+        var arr = JSON.parse(Cookie.get('viewHistory'));
 
-  handleRepost(e) {
-    fetch('/api/playlistRepost', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        mediaId: this.props.id,
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.message === "success") {
-        this.setState({reposts: this.state.reposts + 1})
+        arr.push({mediaId: this.state.playlistPosts[this.state.playlistIndex].mediaId, viewType: viewType, dateTime: now.toISOString()})
+        if (arr.length > 9) {
+          fetch('/api/storeViews', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              views: arr,
+            })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.message === "success") {
+              console.log("success");
+              Cookie.set('viewHistory', [])
+            } else {
+              console.log(data.message);
+            }
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+        }
+        Cookie.set('viewHistory', arr)
       } else {
-        console.log(data.message);
+        var arr = [{mediaId: this.state.playlistPosts[this.state.playlistIndex].mediaId, viewType: viewType, dateTime: now.toISOString()}]
+        Cookie.set('viewHistory', JSON.stringify(arr))
       }
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-  }
-
-  handleFollow(e) {
-
+      console.log("seen");
+      var tempSeen = this.state.seen
+      tempSeen[this.state.playlistIndex] = true
+      this.setState({seen: tempSeen})
+    }
   }
 
   setPlaylistIndex(index, e) {
     this.setState({playlistIndex: index})
-  }
-
-  dateDiffInDays(date) {
-    var uploadDate = Math.floor((Date.now() - date) / _MS_PER_MINUTE)
-    if (uploadDate > 1439) {
-      uploadDate = "posted a playlist " + Math.floor((Date.now() - date) / (_MS_PER_MINUTE * 60 * 24)) + " days ago"
-    } else if (uploadDate > 59) {
-      uploadDate = "posted a playlist " + Math.floor((Date.now() - date) / (_MS_PER_MINUTE * 60)) + " hours ago"
-    } else {
-      uploadDate = "posted a playlist " + uploadDate + " minutes ago"
-    }
-    return uploadDate
   }
 
   render() {
@@ -130,7 +126,7 @@ export default class Playlist extends React.Component {
     }
 
       return (
-        <div className="post_wrapper" id={"post_wrapper_" + this.props.index}>
+        <div className="post_wrapper" ref={this.myRef}>
           <div id="polaroid_div">
             {this.props.repost_username ? <RepostHeader username={this.props.username} profileName={this.props.profileName}
               location={this.props.location} userFollowers={this.props.userFollowers} userFollowed={this.props.userFollowed}
@@ -150,17 +146,17 @@ export default class Playlist extends React.Component {
                   <DropdownProfile username={this.props.username} location={this.props.location}
                     userFollowers={this.props.userFollowers} userFollowed={this.props.userFollowed} followsYou={this.props.followsYou} isProfile={this.props.isPoster}/>
                 </div>
-                <p id="post_status">{this.dateDiffInDays(new Date(this.props.uploadDate))}</p>
+                <p id="post_status">{"posted a playlist " + dateDiffInDays(new Date(this.props.uploadDate)) + " ago"}</p>
                 {this.props.genre && <button id="genre_button">{this.props.genre}</button>}
               </div>
             }
             <Link to={{ pathname: '/' + currentPost.username + '/' + currentPost.mediaId, state: { post_data: currentPost} }}>
             <div id="image_wrapper">
-              <img id="post_image" alt="" src={currentPost.imageUrl}></img>
+              <img className="post_image" alt="" src={currentPost.imageUrl}></img>
             </div>
           </Link>
           <div id="stats_wrapper">
-            <PlaylistStatsHeader playlistId={this.props.playlistId} likes={this.state.likes} reposts={this.state.reposts} followers={this.state.followers}
+            <PlaylistStatsHeader playlistId={this.props.playlistId} likes={this.props.likes} reposts={this.props.reposts} followers={this.props.followers}
             reposted={this.props.reposted} liked={this.props.liked} followed={this.props.followed} isPoster={this.props.isPoster}/>
           </div>
           </div>

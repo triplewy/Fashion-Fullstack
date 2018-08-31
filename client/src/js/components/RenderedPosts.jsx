@@ -21,17 +21,17 @@ export default class RenderedPosts extends React.Component {
       rendered_posts = streamData.map((item, index) => {
         if (item.mediaId) {
           return (
-            <Post key={index} index={index} mediaId={item.mediaId} genre={item.genre} username={item.username}
-                  profileName={item.profileName} profile_image_src={item.profile_image_src}
-                  location={item.location} userFollowers={item.userFollowers} original={item.original}
-                  post_image_src={item.post_image_src} views={item.views} likes={item.likes}
-                  reposts={item.reposts} comments={item.comments} title={item.title}
-                  description={item.description} uploadDate={item.uploadDate} tags={item.tags}
-                  repost_username={item.repost_username} repost_profileName={item.repost_profileName}
-                  repost_location={item.repost_location} repost_userFollowers={item.repost_userFollowers}
-                  repost_profile_image_src={item.repost_profile_image_src} repostDate={item.repostDate}
-                  reposted={item.reposted} liked={item.liked} userFollowed={item.userFollowed} followsYou={item.followsYou}
-                  repost_userFollowed={item.repost_userFollowed} isPoster={item.isPoster} isReposter={item.isReposter}/>
+              <Post key={index} index={index} mediaId={item.mediaId} genre={item.genre} username={item.username}
+                    profileName={item.profileName} profile_image_src={item.profile_image_src}
+                    location={item.location} userFollowers={item.userFollowers} original={item.original}
+                    post_image_src={item.post_image_src} views={item.views} likes={item.likes}
+                    reposts={item.reposts} comments={item.comments} title={item.title}
+                    description={item.description} uploadDate={item.uploadDate} tags={item.tags}
+                    repost_username={item.repost_username} repost_profileName={item.repost_profileName}
+                    repost_location={item.repost_location} repost_userFollowers={item.repost_userFollowers}
+                    repost_profile_image_src={item.repost_profile_image_src} repostDate={item.repostDate}
+                    reposted={item.reposted} liked={item.liked} userFollowed={item.userFollowed} followsYou={item.followsYou}
+                    repost_userFollowed={item.repost_userFollowed} isPoster={item.isPoster} isReposter={item.isReposter}/>
           )
         } else if (item.playlistId) {
           return (

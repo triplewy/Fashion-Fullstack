@@ -238,7 +238,7 @@ conn.query('CREATE TABLE IF NOT EXISTS reposts (repostId INTEGER AUTO_INCREMENT 
 
 conn.query('CREATE TABLE IF NOT EXISTS likes (likeId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS views (mediaId INTEGER, userId INTEGER, IP_Address TEXT, viewCount INTEGER, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL)');
+conn.query('CREATE TABLE IF NOT EXISTS views (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, viewerId INTEGER NOT NULL, receiverId INTEGER NOT NULL, IP_Address TEXT, viewType INTEGER NOT NULL, dateTime DATETIME NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (viewerId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS comments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId))');
 
@@ -334,6 +334,10 @@ conn.query('CREATE TRIGGER after_playlistsComments_delete AFTER DELETE ON playli
 conn.query('CREATE TRIGGER after_postNotifications_update AFTER UPDATE ON postsNotifications FOR EACH ROW BEGIN ' +
 'UPDATE playlistsNotifications SET unread=0 WHERE receiverId=NEW.receiverId; ' +
 'UPDATE followingNotifications SET unread=0 WHERE receiverId=NEW.receiverId; END;')
+
+conn.query('CREATE TRIGGER before_views_insert BEFORE INSERT ON views FOR EACH ROW BEGIN ' +
+'DECLARE receiverId INTEGER; SET receiverId = (SELECT userId FROM posts WHERE mediaId = NEW.mediaId LIMIT 1); ' +
+'IF (NEW.viewerId != receiverId) THEN SET NEW.receiverId = receiverId; END IF; END;')
 
 var connectedUserIds = []
 var usersToSockets = {}
@@ -648,6 +652,20 @@ app.get('/api/notificationsDropdown/:unread', loggedIn, (req, res) => {
   })
 })
 
+app.get('/api/profileStats', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/profileStats');
+  var userId = req.user.userId
+  var now = new Date()
+  var yesterday = new Date(Date.now() - (24 * 60 * 60 * 1000));
+  conn.query('SELECT COUNT(dateTime BETWEEN ? AND ?) AS dayViews, COUNT(*) AS totalViews FROM views WHERE receiverId = ?', [yesterday.toISOString(), now.toISOString(), userId], function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send({dayViews: result[0].dayViews, totalViews: result[0].totalViews})
+    }
+  })
+})
+
 app.get('/api/home', loggedIn, (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/home');
   Promise.all([getStream(req.user.userId, req.user.userId, false, false, false, false, false)])
@@ -684,6 +702,27 @@ app.get('/api/getPlaylists', (req, res) => {
         numPosts: row.numPosts, genre: row.genre, followers: row.followers, dateTime: row.dateTime})
       }
       res.send({playlists: playlists})
+    }
+  })
+})
+
+app.post('/api/storeViews', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/storeViews');
+  var userId = req.user.userId
+  var views = req.body.views
+  var question_query = ''
+  var query_array = []
+  for (var i = 0; i < views.length; i++) {
+    question_query += '(?,?,?,?),'
+    query_array.push(views[i].mediaId, userId, views[i].viewType, views[i].dateTime)
+  }
+  question_query = question_query.slice(0, -1)
+  conn.query('INSERT IGNORE INTO views (mediaId, viewerId, viewType, dateTime) VALUES ' + question_query, query_array, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Recorded views successfully");
+      res.send({message: "success"})
     }
   })
 })
@@ -1507,7 +1546,7 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     'c.username AS username, c.profileName AS profileName, c.profile_image_src AS profile_image_src, c.location AS location, c.followers AS userFollowers, ' +
     '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = a.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE followerUserId=a.userId AND followingUserId = :cookieUser) > 0) AS followsYou, ' +
     '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = b.userId) > 0) AS repost_userFollowed, null AS postTags, GROUP_CONCAT(d.comment, d.dateTime) AS playlistComments, null AS postComments, ' +
-    'JSON_ARRAYAGG(JSON_OBJECT(\'mediaId\', f.mediaId, \'title\', f.title, \'original\',f.original, \'imageUrl\', f.imageUrl, \'views\', f.views, \'likes\', f.likes, \'reposts\', f.reposts, \'dateTime\', e.dateTime, \'username\', g.username, \'profileName\', g.profileName, \'location\', g.location, \'userFollowers\', g.followers)) AS playlistPosts, ' +
+    'JSON_ARRAYAGG(JSON_OBJECT(\'mediaId\', f.mediaId, \'title\', f.title, \'original\',f.original, \'imageUrl\', f.imageUrl, \'views\', (SELECT COUNT(*) FROM views WHERE mediaId = f.mediaId), \'likes\', f.likes, \'reposts\', f.reposts, \'dateTime\', e.dateTime, \'username\', g.username, \'profileName\', g.profileName, \'location\', g.location, \'userFollowers\', g.followers)) AS playlistPosts, ' +
     '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS reposted, ((SELECT COUNT(*) FROM playlistsLikes WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS liked, ((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS followed, ' +
     '(a.userId = :cookieUser) AS isPoster, (b.userId = :cookieUser) AS isReposter ' +
     'FROM playlistsReposts INNER JOIN playlists AS a ON a.playlistId = playlistsReposts.playlistId INNER JOIN users AS c ON c.userId = a.userId INNER JOIN users AS b ON b.userId = playlistsReposts.userId LEFT JOIN playlistsComments AS d ON d.playlistId = playlistsReposts.playlistId LEFT JOIN playlistsPosts AS e ON e.playlistId = playlistsReposts.playlistId LEFT JOIN posts AS f ON f.mediaId = e.mediaId LEFT JOIN users AS g ON g.userId = f.userId ' +
@@ -1519,12 +1558,12 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     'b.username AS username, b.profileName AS profileName, b.profile_image_src AS profile_image_src, b.location AS location, b.followers AS userFollowers, ' +
     '((SELECT COUNT(*) FROM following WHERE followerUserId=:cookieUser AND followingUserId = a.userId) > 0) AS userFollowed, ((SELECT COUNT(*) FROM following WHERE followerUserId=a.userId AND followingUserId = :cookieUser) > 0) AS followsYou, ' +
     'null AS repost_userFollowed, null AS postTags, GROUP_CONCAT(playlistsComments.comment, playlistsComments.dateTime) AS playlistComments, null AS postComments, ' +
-    'JSON_ARRAYAGG(JSON_OBJECT(\'mediaId\', posts.mediaId, \'title\', posts.title, \'original\', posts.original, \'imageUrl\', posts.imageUrl, \'views\', posts.views, \'likes\', posts.likes, \'reposts\', posts.reposts, \'dateTime\', playlistsPosts.dateTime, \'username\', c.username, \'profileName\', c.profileName, \'location\', c.location, \'userFollowers\', c.followers)) AS playlistPosts, ' +
+    'JSON_ARRAYAGG(JSON_OBJECT(\'mediaId\', posts.mediaId, \'title\', posts.title, \'original\', posts.original, \'imageUrl\', posts.imageUrl, \'views\', (SELECT COUNT(*) FROM views WHERE mediaId = posts.mediaId), \'likes\', posts.likes, \'reposts\', posts.reposts, \'dateTime\', playlistsPosts.dateTime, \'username\', c.username, \'profileName\', c.profileName, \'location\', c.location, \'userFollowers\', c.followers)) AS playlistPosts, ' +
     '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS reposted, ((SELECT COUNT(*) FROM playlistsLikes WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS liked, ((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=:cookieUser AND playlistId = a.playlistId) > 0) AS followed, ' +
     '(a.userId = :cookieUser) AS isPoster, false AS isReposter ' +
     'FROM playlists AS a INNER JOIN users AS b ON b.userId = a.userId LEFT JOIN playlistsComments ON playlistsComments.playlistId = a.playlistId LEFT JOIN playlistsPosts ON playlistsPosts.playlistId = a.playlistId LEFT JOIN posts ON posts.mediaId = playlistsPosts.mediaId LEFT JOIN users AS c ON c.userId = posts.userId WHERE ' + profileToggle2 + 'a.userId=:userId GROUP BY a.playlistId'
 
-    var userReposts = 'SELECT a.mediaId, null as playlistId, a.title, a.genre, null, a.original, a.imageUrl, a.views, ' +
+    var userReposts = 'SELECT a.mediaId, null as playlistId, a.title, a.genre, null, a.original, a.imageUrl, (SELECT COUNT(*) FROM views WHERE mediaId = a.mediaId) AS views, ' +
     'a.likes, a.reposts, null as playlistFollowers, a.description, a.dateTime AS uploadDate, reposts.dateTime as orderTime, ' +
     'b.username as repost_username, b.profileName as repost_profileName, b.profile_image_src AS repost_profile_image_src, b.location AS repost_location, b.followers AS repost_userFollowers, ' +
     'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src, c.location AS location, c.followers AS userFollowers, ' +
@@ -1534,7 +1573,7 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     'FROM reposts INNER JOIN posts AS a ON a.mediaId = reposts.mediaId INNER JOIN users AS c ON c.userId = a.userId INNER JOIN users AS b ON b.userId = reposts.userId LEFT JOIN tags AS d ON d.mediaId = reposts.mediaId LEFT JOIN comments AS e ON e.mediaId = reposts.mediaId ' +
     'WHERE (' + profileToggle3 + 'reposts.userId=:userId) ' + originalToggle2 + ' GROUP BY reposts.repostId'
 
-    var userPosts = 'SELECT posts.mediaId, null as playlistId, title, genre, null, posts.original, imageUrl, views, likes, reposts, ' +
+    var userPosts = 'SELECT posts.mediaId, null as playlistId, title, genre, null, posts.original, imageUrl, (SELECT COUNT(*) FROM views WHERE mediaId = posts.mediaId) AS views, likes, reposts, ' +
     'null as playlistFollowers, posts.description, posts.dateTime AS uploadDate, posts.dateTime as orderTime, ' +
     'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, null AS repost_location, null AS repost_userFollowers, ' +
     'username AS username, profileName AS profileName, profile_image_src AS profile_image_src, location AS location, followers AS userFollowers, ' +
@@ -1556,77 +1595,49 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
       queryString = userPlaylistReposts + ' UNION ALL ' + userReposts + orderBy
     } else {
       queryString = userPlaylistReposts + ' UNION ALL ' + userPlaylistPosts + ' UNION ALL ' + userReposts + ' UNION ALL ' + userPosts + orderBy
-      // queryString = userPosts + orderBy
-      // console.log(queryString);
     }
 
     conn.query(queryString, {cookieUser: cookieUser, userId: userId}, function(err, result) {
       if (err) {
         return reject(err)
       } else {
-        // console.log(result);
-        // var mediaIds = []
-        // var playlistIds = []
-        // mediaIds.push(userId)
-        // playlistIds.push(userId)
-        // var media_question_query = ''
-        // var playlist_question_query = ''
-        // for (var i = 0; i < result.length; i++) {
-        //   playlistIds.push(result[i].playlistId)
-        //   mediaIds.push(result[i].mediaId)
-        //   media_question_query += '?' + (i+2) + ','
-        //   playlist_question_query += '?' + (i+2) + ','
-        // }
-        // media_question_query = media_question_query.slice(0, -1);
-        // playlist_question_query = playlist_question_query.slice(0, -1);
-        // Promise.all([getTagDetailsRevised(mediaIds, media_question_query), getPostsComments(mediaIds, media_question_query),
-        //   getPlaylistsPosts(playlistIds, playlist_question_query), getPlaylistsComments(playlistIds, playlist_question_query)])
-        // .then(function(allData) {
-          var stream = []
-          for (var i = 0; i < result.length; i++) {
-            var row = result[i]
-            var mediaId = row.mediaId
-            var playlistId = row.playlistId
-            if (mediaId) {
-                var post = {mediaId:row.mediaId, views:row.views, likes:row.likes,
-                reposts:row.reposts, comments:row.comments, post_image_src:row.imageUrl,
-                title:row.title, genre:row.genre, description:row.description,
-                date:row.dateTime, original: row.original, username: row.username,
-                profileName: row.profileName, profile_image_src: row.profile_image_src,
-                location: row.location, userFollowers: row.userFollowers,
-                tags:row.post_tags, comments:row.postComments, uploadDate: row.uploadDate,
-                repost_username: row.repost_username, repost_profileName: row.repost_profileName,
-                repost_profile_image_src: row.repost_profile_image_src, repostDate: row.orderTime,
-                repost_location: row.repost_location, repost_userFollowers: row.repost_userFollowers,
-                reposted: row.reposted, liked: row.liked, userFollowed: row.userFollowed, followsYou: row.followsYou,
-                repost_userFollowed: row.repost_userFollowed, isPoster: row.isPoster, isReposter: row.isReposter}
-              stream.push(post)
-            } else if (playlistId) {
-              var playlist = {playlistId:row.playlistId, likes:row.likes, reposts:row.reposts,
-                genre: row.genre, comments:row.comments, followers: row.playlistFollowers, title:row.title,
-                description:row.description, uploadDate:row.uploadDate, public: row.public,
-                repost_username: row.repost_username, repost_profileName: row.repost_profileName,
-                repost_location: row.repost_location, repost_userFollowers: row.repost_userFollowers,
-                repost_profile_image_src: row.repost_profile_image_src, repostDate: row.orderTime,
-                username: row.username, profileName: row.profileName, profile_image_src: row.profile_image_src,
-                location: row.location, userFollowers: row.userFollowers,
-                comments:row.postComments, posts: row.playlistPosts, reposted: row.reposted,
-                liked: row.liked, followed: row.followed, userFollowed: row.userFollowed, followsYou: row.followsYou,
-                repost_userFollowed: row.repost_userFollowed, isPoster: row.isPoster, isReposter: row.isReposter}
-              stream.push(playlist)
-            }
-        //     } else {
-        //       return reject("ERROR - Neither post or playlist");
-        //     }
-        //   }
-        //   return resolve({stream: stream})
-        // }).catch(err => {
-        //   return reject(err);
-        // })
-      }
+        var stream = []
+        for (var i = 0; i < result.length; i++) {
+          var row = result[i]
+          var mediaId = row.mediaId
+          var playlistId = row.playlistId
+          if (mediaId) {
+              var post = {mediaId:row.mediaId, views:row.views, likes:row.likes,
+              reposts:row.reposts, comments:row.comments, post_image_src:row.imageUrl,
+              title:row.title, genre:row.genre, description:row.description,
+              date:row.dateTime, original: row.original, username: row.username,
+              profileName: row.profileName, profile_image_src: row.profile_image_src,
+              location: row.location, userFollowers: row.userFollowers,
+              tags:row.post_tags, comments:row.postComments, uploadDate: row.uploadDate,
+              repost_username: row.repost_username, repost_profileName: row.repost_profileName,
+              repost_profile_image_src: row.repost_profile_image_src, repostDate: row.orderTime,
+              repost_location: row.repost_location, repost_userFollowers: row.repost_userFollowers,
+              reposted: row.reposted, liked: row.liked, userFollowed: row.userFollowed, followsYou: row.followsYou,
+              repost_userFollowed: row.repost_userFollowed, isPoster: row.isPoster, isReposter: row.isReposter}
+            stream.push(post)
+          } else if (playlistId) {
+            var playlist = {playlistId:row.playlistId, likes:row.likes, reposts:row.reposts,
+              genre: row.genre, comments:row.comments, followers: row.playlistFollowers, title:row.title,
+              description:row.description, uploadDate:row.uploadDate, public: row.public,
+              repost_username: row.repost_username, repost_profileName: row.repost_profileName,
+              repost_location: row.repost_location, repost_userFollowers: row.repost_userFollowers,
+              repost_profile_image_src: row.repost_profile_image_src, repostDate: row.orderTime,
+              username: row.username, profileName: row.profileName, profile_image_src: row.profile_image_src,
+              location: row.location, userFollowers: row.userFollowers,
+              comments:row.postComments, posts: row.playlistPosts, reposted: row.reposted,
+              liked: row.liked, followed: row.followed, userFollowed: row.userFollowed, followsYou: row.followsYou,
+              repost_userFollowed: row.repost_userFollowed, isPoster: row.isPoster, isReposter: row.isReposter}
+            stream.push(playlist)
+          }
+        }
         return resolve({stream: stream})
-    }
-  })
+      }
+    })
   })
 }
 

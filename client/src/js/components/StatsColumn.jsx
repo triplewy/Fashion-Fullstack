@@ -14,13 +14,13 @@ export default class StatsColumn extends React.Component {
       <div id="stats_column">
         <div className="view_div">
           <p className="view_counter">Views Last 24 Hours</p>
-          <p className="stat_number">2,504</p>
+          <p className="stat_number">{this.props.dayPlays}</p>
         </div>
         <div className="view_div" id="right_half_view_div">
           <p className="view_counter" id="seven_days_counter">Views Last 7 days</p>
           <p className="stat_number" id="seven_days_views">20,902</p>
         </div>
-        <p id="total_plays">129,756 views in total</p>
+        <p id="total_plays">{this.props.totalPlays} views in total</p>
         <hr id="stats_title_hr"></hr>
         <p id="time_period_title">This Week</p>
         <p className="top_location_title">Top Country:</p>

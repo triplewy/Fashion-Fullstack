@@ -1,10 +1,31 @@
 import React from 'react';
-import StatsColumn from './StatsColumn.jsx'
 import LoginModal from './LoginModal.jsx'
 import Notifications from './Notifications.jsx'
+import NavbarProfile from './NavbarProfile.jsx'
 import { Link } from 'react-router-dom';
 
-// {this.state.search_redirect && <Redirect to={'/search'}/>}
+{/* <div className="btn-group">
+  <button className="dropdown-toggle" type="button" data-toggle="dropdown" onClick={this.fetchStats}>
+    <div id="profile_image_div">
+      <img id="profile_image" alt="" src={this.state.profile_image_src}></img>
+    </div>
+    <p id="user_name">{this.state.profileName}</p>
+  </button>
+  <ul className="dropdown-menu">
+    <li>
+      <Link to={"/" + this.state.username}>Profile</Link>
+    </li>
+    <li>
+      <Link to={"/you/collections"}>Collections</Link>
+    </li>
+    <li>
+      <StatsColumn show_profile={false}/>
+    </li>
+    <li>
+      <button onClick={this.props.handleLogout}>Logout</button>
+    </li>
+  </ul>
+</div> */}
 
 export default class Navbar extends React.Component {
   constructor(props) {
@@ -22,6 +43,7 @@ export default class Navbar extends React.Component {
       showLoginModal: false,
       redirect: false
     };
+
     this.onChange = this.onChange.bind(this);
     this.searchSubmit = this.searchSubmit.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
@@ -98,9 +120,12 @@ export default class Navbar extends React.Component {
             profileName: data.profileName,
             loggedIn: true,
             showLoginModal: false
-          });
+          })
         }
       }
+    })
+    .catch(e => {
+      console.log(e);
     })
   }
 
@@ -128,28 +153,7 @@ export default class Navbar extends React.Component {
               <Link to="/upload">
                 <button id="upload_button" className="banner_button">Upload</button>
               </Link>
-              <div className="btn-group">
-                <button className="dropdown-toggle" type="button" data-toggle="dropdown">
-                  <div id="profile_image_div">
-                    <img id="profile_image" alt="" src={this.state.profile_image_src}></img>
-                  </div>
-                  <p id="user_name">{this.state.profileName}</p>
-                </button>
-                <ul className="dropdown-menu">
-                  <li>
-                    <Link to={"/" + this.state.username}>Profile</Link>
-                  </li>
-                  <li>
-                    <Link to={"/you/collections"}>Collections</Link>
-                  </li>
-                  <li>
-                    <StatsColumn show_profile={false}/>
-                  </li>
-                  <li>
-                    <button onClick={this.props.handleLogout}>Logout</button>
-                  </li>
-                </ul>
-              </div>
+              <NavbarProfile profileUrl={this.state.profileUrl} profile_image_src={this.state.profile_image_src} profileName={this.state.profileName} />
               <Notifications />
               <div className="btn-group">
                 <button className="dropdown-toggle" type="button" data-toggle="dropdown">Messages</button>
