@@ -9,7 +9,8 @@ export default class NavbarProfile extends React.Component {
 
     this.state = {
       totalViews: 0,
-      dayViews: 0
+      dayViews: 0,
+      weekViews: 0
     };
 
     this.fetchStats = this.fetchStats.bind(this)
@@ -23,7 +24,7 @@ export default class NavbarProfile extends React.Component {
     .then(data => {
       if (data) {
         console.log(data);
-        this.setState({dayViews: data.dayViews, totalViews: data.totalViews})
+        this.setState({dayViews: data.dayViews, weekViews: data.weekViews, totalViews: data.totalViews})
       }
     })
     .catch(e => {
@@ -48,7 +49,7 @@ export default class NavbarProfile extends React.Component {
             <Link to={"/you/collections"}>Collections</Link>
           </li>
           <li>
-            <StatsColumn dayPlays={this.state.dayViews} totalPlays={this.state.totalViews} />
+            <StatsColumn dayViews={this.state.dayViews} weekViews={this.state.weekViews} totalViews={this.state.totalViews} />
           </li>
           <li>
             <button onClick={this.props.handleLogout}>Logout</button>

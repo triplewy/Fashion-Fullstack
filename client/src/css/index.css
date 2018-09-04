@@ -589,8 +589,14 @@ textarea:focus {
 }
 
 #stats_column {
+  border-top: 1px solid #f1f1f1;
   width: 300px;
   padding: 15px 20px;
+}
+
+#stats_column h1 {
+  margin: 0 0;
+  font-size: 18px;
 }
 
 #stats_wrapper {
@@ -627,6 +633,7 @@ textarea:focus {
   display: inline-block;
   width: 50%;
   border-right: 1px solid #ccc;
+  margin-top: 20px;
 }
 
 #right_half_view_div {
@@ -1173,9 +1180,8 @@ textarea:focus {
   float: right;
 }
 
-#time_period_dropdown {
+.time_period_dropdown {
   float: right;
-  margin: 20px 100px;
 }
 
 #time_period_button {

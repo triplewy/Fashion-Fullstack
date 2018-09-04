@@ -4,29 +4,6 @@ import Notifications from './Notifications.jsx'
 import NavbarProfile from './NavbarProfile.jsx'
 import { Link } from 'react-router-dom';
 
-{/* <div className="btn-group">
-  <button className="dropdown-toggle" type="button" data-toggle="dropdown" onClick={this.fetchStats}>
-    <div id="profile_image_div">
-      <img id="profile_image" alt="" src={this.state.profile_image_src}></img>
-    </div>
-    <p id="user_name">{this.state.profileName}</p>
-  </button>
-  <ul className="dropdown-menu">
-    <li>
-      <Link to={"/" + this.state.username}>Profile</Link>
-    </li>
-    <li>
-      <Link to={"/you/collections"}>Collections</Link>
-    </li>
-    <li>
-      <StatsColumn show_profile={false}/>
-    </li>
-    <li>
-      <button onClick={this.props.handleLogout}>Logout</button>
-    </li>
-  </ul>
-</div> */}
-
 export default class Navbar extends React.Component {
   constructor(props) {
     super(props);
@@ -34,7 +11,7 @@ export default class Navbar extends React.Component {
     this.state = {
       search_value: '',
       search_redirect: false,
-      profileUrl: '',
+      username: '',
       profile_image_src: '',
       profileName: '',
       showNavbar: true,
@@ -153,7 +130,8 @@ export default class Navbar extends React.Component {
               <Link to="/upload">
                 <button id="upload_button" className="banner_button">Upload</button>
               </Link>
-              <NavbarProfile profileUrl={this.state.profileUrl} profile_image_src={this.state.profile_image_src} profileName={this.state.profileName} />
+              <NavbarProfile username={this.state.username} profile_image_src={this.state.profile_image_src} profileName={this.state.profileName}
+                handleLogout={this.props.handleLogout}/>
               <Notifications />
               <div className="btn-group">
                 <button className="dropdown-toggle" type="button" data-toggle="dropdown">Messages</button>

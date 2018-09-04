@@ -46,14 +46,16 @@ export default class Playlist extends React.Component {
     if (window.scrollY + window.innerHeight >= this.state.bottom && !this.state.seen[this.state.playlistIndex]) {
       console.log("hit bottom");
       var now = new Date()
-      var viewType = 2
+      var nowISOString = now.toISOString()
+      var view = {}
       if (this.props.repost_username) {
-        viewType = 3
+        view = {playlistId: this.props.playlistId, mediaId: this.state.playlistPosts[this.state.playlistIndex].mediaId, reposter: this.props.repost_username, dateTime: nowISOString}
+      } else {
+        view = {playlistId: this.props.playlistId, mediaId: this.state.playlistPosts[this.state.playlistIndex].mediaId, dateTime: nowISOString}
       }
       if (Cookie.get('viewHistory')) {
         var arr = JSON.parse(Cookie.get('viewHistory'));
-
-        arr.push({mediaId: this.state.playlistPosts[this.state.playlistIndex].mediaId, viewType: viewType, dateTime: now.toISOString()})
+        arr.push(view)
         if (arr.length > 9) {
           fetch('/api/storeViews', {
             method: 'POST',
@@ -81,7 +83,7 @@ export default class Playlist extends React.Component {
         }
         Cookie.set('viewHistory', arr)
       } else {
-        var arr = [{mediaId: this.state.playlistPosts[this.state.playlistIndex].mediaId, viewType: viewType, dateTime: now.toISOString()}]
+        var arr = [view]
         Cookie.set('viewHistory', JSON.stringify(arr))
       }
       console.log("seen");

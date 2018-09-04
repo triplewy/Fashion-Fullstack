@@ -41,13 +41,16 @@ export default class Post extends React.Component {
     if (window.scrollY + window.innerHeight >= this.state.bottom && !this.state.seen) {
       console.log("hit bottom");
       var now = new Date()
-      var viewType = 0
+      var nowISOString = now.toISOString()
+      var view = {}
       if (this.props.repost_username) {
-        viewType = 1
+        view = {mediaId: this.props.mediaId, reposter:this.props.repost_username, dateTime: nowISOString}
+      } else {
+        view = {mediaId: this.props.mediaId, dateTime: nowISOString}
       }
       if (Cookie.get('viewHistory')) {
         var arr = JSON.parse(Cookie.get('viewHistory'));
-        arr.push({mediaId: this.props.mediaId, viewType: viewType, dateTime: now.toISOString()})
+        arr.push(view)
         if (arr.length > 9) {
           fetch('/api/storeViews', {
             method: 'POST',
@@ -75,7 +78,7 @@ export default class Post extends React.Component {
         }
         Cookie.set('viewHistory', arr)
       } else {
-        var newArr = [{mediaId: this.props.mediaId, viewType: viewType, dateTime: now.toIsoString()}]
+        var newArr = [view]
         Cookie.set('viewHistory', JSON.stringify(newArr))
       }
       this.setState({seen: true})

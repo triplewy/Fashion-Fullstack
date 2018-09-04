@@ -238,7 +238,8 @@ conn.query('CREATE TABLE IF NOT EXISTS reposts (repostId INTEGER AUTO_INCREMENT 
 
 conn.query('CREATE TABLE IF NOT EXISTS likes (likeId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS views (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, viewerId INTEGER NOT NULL, receiverId INTEGER NOT NULL, IP_Address TEXT, viewType INTEGER NOT NULL, dateTime DATETIME NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (viewerId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId))');
+conn.query('CREATE TABLE IF NOT EXISTS views (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER, mediaId INTEGER NOT NULL, reposterId INTEGER, viewerId INTEGER NOT NULL, receiverId INTEGER NOT NULL, IP_Address TEXT, dateTime DATETIME NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), ' +
+'FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (reposterId) REFERENCES users(userId), FOREIGN KEY (viewerId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS comments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId))');
 
@@ -519,6 +520,18 @@ conn.query('INSERT INTO comments (mediaId, userId, comment) VALUES (?, ?, ?)', [
       }
     })
 
+
+  bcrypt.hash('password', 10, function(err, hash) {
+    conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, userId) VALUES (?,?,?,?,?)',
+      ['tkd', 'tkd', 'password', hash, 2], function(err, result) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Records successfully added");
+      }
+    })
+  })
+
   insertQuery = [2, "Laundromat", "Streetwear", "/images/image-1529571492908.jpg", 0, "filler"];
   insertSQL = 'INSERT INTO posts (userId, title, genre, imageUrl, original, description)' +
     'VALUES (?, ?, ?, ?, ?, ?)';
@@ -657,11 +670,125 @@ app.get('/api/profileStats', loggedIn, (req, res) => {
   var userId = req.user.userId
   var now = new Date()
   var yesterday = new Date(Date.now() - (24 * 60 * 60 * 1000));
-  conn.query('SELECT COUNT(dateTime BETWEEN ? AND ?) AS dayViews, COUNT(*) AS totalViews FROM views WHERE receiverId = ?', [yesterday.toISOString(), now.toISOString(), userId], function(err, result) {
+  var weekAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+  conn.query('SELECT SUM(CASE WHEN dateTime BETWEEN :yesterday AND :now THEN 1 ELSE 0 END) AS dayViews, ' +
+  'SUM(CASE WHEN dateTime BETWEEN :weekAgo AND :now THEN 1 ELSE 0 END) AS weekViews, COUNT(*) AS totalViews FROM views WHERE receiverId = :userId',
+  {yesterday: yesterday.toISOString(), now: now.toISOString(), weekAgo: weekAgo.toISOString(), userId: userId}, function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      res.send({dayViews: result[0].dayViews, totalViews: result[0].totalViews})
+      res.send({dayViews: result[0].dayViews, weekViews: result[0].weekViews, totalViews: result[0].totalViews})
+    }
+  })
+})
+
+app.get('/api/postsStats', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/postsStats');
+  var userId = req.user.userId
+  var now = new Date()
+  var weekAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+  conn.query('SELECT SUM(CASE WHEN a.activity = 0 THEN 1 ELSE 0 END) AS likes, SUM(CASE WHEN a.activity = 1 THEN 1 ELSE 0 END) AS reposts, ' +
+  'SUM(CASE WHEN a.activity = 2 THEN 1 ELSE 0 END) AS comments, views.postsViews AS postsViews, views.repostsViews AS repostsViews, views.playlistsViews AS playlistsViews FROM postsNotifications AS a INNER JOIN (SELECT ' +
+  'COUNT(*) AS postsViews, COUNT(b.reposterId) AS repostsViews, COUNT(b.playlistId) AS playlistsViews FROM views AS b WHERE b.dateTime BETWEEN :weekAgo AND :now AND b.receiverId = :userId) AS views ' +
+  'WHERE a.dateTime BETWEEN :weekAgo AND :now AND a.receiverId = :userId GROUP BY views.postsViews, views.repostsViews, views.playlistsViews',
+  {userId: userId, weekAgo: weekAgo.toISOString(), now: now.toISOString()}, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(result);
+      res.send({postsViews: result[0].postsViews, repostsViews: result[0].repostsViews, playlistsViews: result[0].playlistsViews,
+        likes: result[0].likes, reposts: result[0].reposts, comments: result[0].comments})
+    }
+  })
+})
+
+app.get('/api/topPosts', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/topPosts');
+  var userId = req.user.userId
+  var now = new Date()
+  var weekAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+  conn.query('SELECT views.mediaId, posts.title, posts.imageUrl, COUNT(*) AS views FROM views ' +
+  'INNER JOIN posts ON posts.mediaId = views.mediaId WHERE receiverId = :userId AND views.dateTime BETWEEN :weekAgo AND :now ' +
+  'GROUP BY views.mediaId ORDER BY views LIMIT 3', {userId: userId, weekAgo: weekAgo.toISOString(), now: now.toISOString()}, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(result);
+      res.send({topPosts: result})
+    }
+  })
+})
+
+app.get('/api/topPostsViewers', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/topPostsViewers');
+  var userId = req.user.userId
+  var now = new Date()
+  var weekAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+  conn.query('SELECT views.viewerId, users.username, users.profileName, users.profile_image_src, COUNT(*) AS views FROM views ' +
+  'INNER JOIN users ON users.userId = views.viewerId WHERE receiverId = :userId AND views.dateTime BETWEEN :weekAgo AND :now ' +
+  'GROUP BY views.viewerId ORDER BY views LIMIT 3', {userId: userId, weekAgo: weekAgo.toISOString(), now: now.toISOString()}, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(result);
+      res.send({topViewers: result})
+    }
+  })
+})
+
+app.get('/api/playlistsStats', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/playlistsStats');
+  var userId = req.user.userId
+  var now = new Date()
+  var weekAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+  conn.query('SELECT SUM(CASE WHEN a.activity = 0 THEN 1 ELSE 0 END) AS likes, SUM(CASE WHEN a.activity = 1 THEN 1 ELSE 0 END) AS reposts, ' +
+  'SUM(CASE WHEN a.activity = 2 THEN 1 ELSE 0 END) AS comments, SUM(CASE WHEN a.activity = 3 THEN 1 ELSE 0 END) AS followers, ' +
+  'views.playlistsViews AS playlistsViews, views.repostsViews AS repostsViews FROM playlistsNotifications AS a INNER JOIN (SELECT ' +
+  'SUM(CASE WHEN b.playlistId IN (SELECT playlistId FROM playlists WHERE userId = :userId) THEN 1 ELSE 0 END) AS playlistsViews,  ' +
+  'SUM(CASE WHEN b.playlistId IN (SELECT playlistId FROM playlists WHERE userId = :userId) AND b.reposterId IS NOT NULL THEN 1 ELSE 0 END) AS repostsViews FROM views AS b ' +
+  'WHERE b.dateTime BETWEEN :weekAgo AND :now AND b.receiverId = :userId) AS views ' +
+  'WHERE a.dateTime BETWEEN :weekAgo AND :now AND a.receiverId = :userId GROUP BY views.playlistsViews, views.repostsViews',
+  {userId: userId, weekAgo: weekAgo.toISOString(), now: now.toISOString()}, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(result);
+      res.send({views: result[0].views, likes: result[0].likes, reposts: result[0].reposts, comments: result[0].comments, followers: result[0].followers,
+      playlistsViews: result[0].playlistsViews, repostsViews: result[0].repostsViews})
+    }
+  })
+})
+
+app.get('/api/topPlaylists', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/topPlaylists');
+  var userId = req.user.userId
+  var now = new Date()
+  var weekAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+  conn.query('SELECT views.playlistId, playlists.title, COUNT(*) AS views FROM views ' +
+  'INNER JOIN playlists ON playlists.playlistId = views.playlistId WHERE receiverId = :userId AND views.dateTime BETWEEN :weekAgo AND :now AND views.playlistId IS NOT NULL ' +
+  'GROUP BY views.playlistId ORDER BY views LIMIT 3', {userId: userId, weekAgo: weekAgo.toISOString(), now: now.toISOString()}, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(result);
+      res.send({topPlaylists: result})
+    }
+  })
+})
+
+app.get('/api/topPlaylistsViewers', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/topPlaylistsViewers');
+  var userId = req.user.userId
+  var now = new Date()
+  var weekAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+  conn.query('SELECT views.viewerId, users.username, users.profileName, users.profile_image_src, COUNT(*) AS views FROM views ' +
+  'INNER JOIN users ON users.userId = views.viewerId WHERE receiverId = :userId AND views.dateTime BETWEEN :weekAgo AND :now AND views.playlistId IS NOT NULL ' +
+  'GROUP BY views.viewerId ORDER BY views LIMIT 3', {userId: userId, weekAgo: weekAgo.toISOString(), now: now.toISOString()}, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(result);
+      res.send({topViewers: result})
     }
   })
 })
@@ -709,15 +836,18 @@ app.get('/api/getPlaylists', (req, res) => {
 app.post('/api/storeViews', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/storeViews');
   var userId = req.user.userId
-  var views = req.body.views
+  var reqViews = req.body.views
   var question_query = ''
-  var query_array = []
-  for (var i = 0; i < views.length; i++) {
-    question_query += '(?,?,?,?),'
-    query_array.push(views[i].mediaId, userId, views[i].viewType, views[i].dateTime)
+  var views = []
+
+  for (var i = 0; i < reqViews.length; i++) {
+    var currView = reqViews[i]
+    views.push(currView.playlistId, currView.mediaId, currView.reposter, userId, currView.dateTime)
+    question_query += '(?,?,(SELECT userId FROM users WHERE username = ? LIMIT 1),?,?),'
   }
   question_query = question_query.slice(0, -1)
-  conn.query('INSERT IGNORE INTO views (mediaId, viewerId, viewType, dateTime) VALUES ' + question_query, query_array, function(err, result) {
+
+  conn.query('INSERT IGNORE INTO views (playlistId, mediaId, reposterId, viewerId, dateTime) VALUES ' + question_query, views, function(err, result) {
     if (err) {
       console.log(err);
     } else {
