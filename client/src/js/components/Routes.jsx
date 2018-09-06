@@ -24,6 +24,9 @@ import Search from './Search.jsx'
 import Playlist from './Playlist.jsx'
 import Stats from './Stats.jsx'
 import NotificationsPage from './NotificationsPage.jsx'
+import FollowersPage from './FollowersPage.jsx'
+import FollowingPage from './FollowingPage.jsx'
+
 
 export default class Routes extends React.Component {
   constructor(props) {
@@ -150,6 +153,8 @@ export default class Routes extends React.Component {
               <PrivateRoute exact path='/you/collections' component={Collections} />
               <PrivateRoute exact path='/you/stats' component={Stats} />
               <PrivateRoute exact path='/you/notifications' component={NotificationsPage} />
+              <PrivateRoute exact path='/you/followers' component={FollowersPage} />
+              <PrivateRoute exact path='/you/following' component={FollowingPage} />
               <Route path='/verify' component={Verify} />
               <Route exact path='/finder' component={Outfit_Finder}/>
               <Route exact path='/search' component={Search}/>

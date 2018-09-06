@@ -367,7 +367,6 @@ textarea:focus {
 
 #post_header {
   height: 60px;
-  width: 100%;
   padding: 5px 5px;
 }
 
@@ -1996,6 +1995,21 @@ textarea:focus {
 .notificationsPage_list button:hover {
   color: red;
   border-color: red;
+}
+
+.followers_profile {
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.followers_profile img {
+  width: 175px;
+  height: 175px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin: 10px 0;
 }
 
 @media only screen and (max-width: 1300px) {

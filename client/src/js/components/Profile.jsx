@@ -2,6 +2,7 @@ import React from 'react';
 import RenderedPosts from './RenderedPosts.jsx'
 import TypeSelector from './TypeSelector.jsx'
 import EditProfileModal from './EditProfileModal.jsx'
+import ProfileInfo from './ProfileInfo.jsx'
 import memoize from 'memoize-one'
 import * as loadImage from 'blueimp-load-image'
 
@@ -296,7 +297,8 @@ export default class Profile extends React.Component {
           </div>
           <div id="content_wrapper">
             <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Posts", "Playlists", "Reposts"]}
-            type_selector_value={this.state.type_selector_value} profileInfo={this.state.profileInfo} editProfile={this.editProfile}/>
+            type_selector_value={this.state.type_selector_value}
+            right={<ProfileInfo profileInfo={this.state.profileInfo} editProfile={this.editProfile} /> } />
             <RenderedPosts streamData={this.state.streamData} />
           </div>
         </div>

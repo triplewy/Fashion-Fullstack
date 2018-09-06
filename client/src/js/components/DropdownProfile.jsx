@@ -4,12 +4,42 @@ export default class DropdownProfile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      userFollowers: this.props.userFollowers,
-      userFollowed: this.props.userFollowed
+      userFollowers: 0,
+      userFollowed: 0,
+      followsYou: false,
+      location: '',
+      isProfile: false
     };
 
+    this.fetchDropdownProfile = this.fetchDropdownProfile.bind(this)
     this.handleFollow = this.handleFollow.bind(this);
     this.handleUnfollow = this.handleUnfollow.bind(this);
+  }
+
+  componentDidMount() {
+
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.load !== prevProps.load) {
+      this.fetchDropdownProfile()
+    }
+  }
+
+  fetchDropdownProfile() {
+    console.log("fetching dropdown profile data");
+    fetch('/api/dropdownProfile/' + this.props.username, {
+      credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      this.setState({userFollowers: data.followers, userFollowed: data.isFollowing,
+        location: data.location, followsYou: data.followsYou, isProfile: data.isProfile});
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   }
 
   handleFollow(e) {
@@ -53,9 +83,9 @@ export default class DropdownProfile extends React.Component {
     }
     return (
       <div className="dropdown">
-        <p className="dropdown_text">{this.props.location}</p>
+        <p className="dropdown_text">{this.state.location}</p>
         <p className="dropdown_text">{'Followers: ' + this.state.userFollowers}</p>
-        {!this.props.isProfile &&
+        {!this.state.isProfile &&
           <button id="dropdown_follow" onClick={this.state.userFollowed ? this.handleUnfollow : this.handleFollow}
             style={{color: this.state.userFollowed ? 'red' : 'black'}}>
             {buttonText}

@@ -220,7 +220,7 @@ conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER AUTO_INCREMENT PR
 conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, title VARCHAR(255) NOT NULL, genre TEXT, imageUrl VARCHAR(255) NOT NULL UNIQUE, original BOOLEAN, ' +
 'views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (userId) REFERENCES users(userId));')
 
-conn.query('CREATE TABLE IF NOT EXISTS playlists (playlistId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, title VARCHAR(255), genre TEXT, public BOOLEAN, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, ' +
+conn.query('CREATE TABLE IF NOT EXISTS playlists (playlistId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, title VARCHAR(255), genre TEXT, public BOOLEAN, coverImageUrl TEXT, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, ' +
 'followers INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(title, userId))')
 
 conn.query('CREATE TABLE IF NOT EXISTS followingNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
@@ -545,8 +545,8 @@ conn.query('INSERT INTO comments (mediaId, userId, comment) VALUES (?, ?, ?)', [
       }
     })
 
-    conn.query('INSERT INTO playlists (userId, title, public, description) VALUES ' +
-    '(?,?,?,?)', [1, "Test Playlist", 1, "Test playlist description"], function(err, result) {
+    conn.query('INSERT INTO playlists (userId, title, public, coverImageUrl, description) VALUES ' +
+    '(?,?,?,?, ?)', [1, "Test Playlist", 1, "/images/image-1527760266767.jpg", "Test playlist description"], function(err, result) {
         if (err) {
           console.log(err);
         } else {
@@ -624,6 +624,56 @@ app.get('/api/navbar', loggedIn, (req, res) => {
   })
 })
 
+app.get('/api/dropdownProfile/:username', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/dropdownProfile/' + req.params.username);
+  var userId = req.user.userId
+  var username = req.params.username
+  conn.query('SELECT userId, followers, location, ' +
+  '(SELECT COUNT(*) FROM following WHERE followerUserId = :userId AND followingUserId = users.userId) > 0 AS isFollowing, ' +
+  '(SELECT COUNT(*) FROM following WHERE followerUserId = users.userId AND followingUserId = :userId) > 0 AS followsYou, ' +
+  '(userId = :userId) AS isProfile FROM users WHERE username = :username', {userId: userId, username: username}, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      var row = result[0]
+      if (row) {
+        res.send({profileName: row.profileName, location: row.location, followers: row.followers,
+          isFollowing: row.isFollowing, followsYou: row.followsYou, isProfile: row.isProfile})
+      } else {
+        res.send({error: 'no user'})
+      }
+    }
+  })
+})
+
+app.get('/api/followers/:orderBy', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/followers/' + req.params.orderBy);
+  var userId = req.user.userId
+  var orderBy = orderFollowers(req.params.orderBy)
+  conn.query('SELECT a.username, a.profileName, a.profile_image_src FROM following INNER JOIN users AS a ON a.userId = following.followerUserId ' +
+  'WHERE followingUserId = ? ' + orderBy, [userId], function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send({followers: result})
+    }
+  })
+})
+
+app.get('/api/following/:orderBy', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/following/' + req.params.orderBy);
+  var userId = req.user.userId
+  var orderBy = orderFollowers(req.params.orderBy)
+  conn.query('SELECT a.username, a.profileName, a.profile_image_src FROM following INNER JOIN users AS a ON a.userId = following.followingUserId ' +
+  'WHERE followerUserId = ? ' + orderBy, [userId], function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send({following: result})
+    }
+  })
+})
+
 app.get('/api/notificationsDropdown/:unread', loggedIn, (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/notificationsDropdown/' + req.params.unread);
   var userId = req.user.userId
@@ -635,11 +685,11 @@ app.get('/api/notificationsDropdown/:unread', loggedIn, (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      conn.query('SELECT a.mediaId, null AS playlistId, c.title, c.imageUrl, a.activity, a.comment, b.username, b.profileName, b.profile_image_src, null AS isFollowing, a.dateTime FROM postsNotifications AS a ' +
+      conn.query('SELECT a.mediaId, null AS playlistId, c.title, c.imageUrl AS imageUrl, a.activity, a.comment, b.username, b.profileName, b.profile_image_src, null AS isFollowing, a.dateTime FROM postsNotifications AS a ' +
       'INNER JOIN users AS b ON b.userId = a.senderId INNER JOIN posts AS c ON c.mediaId = a.mediaId WHERE receiverId=? UNION ALL ' +
-      'SELECT null AS mediaId, a.playlistId AS playlistId, c.title, null, a.activity, a.comment, b.username, b.profileName, b.profile_image_src, null AS isFollowing, a.dateTime FROM playlistsNotifications AS a ' +
+      'SELECT null AS mediaId, a.playlistId AS playlistId, c.title, c.coverImageUrl AS imageUrl, a.activity, a.comment, b.username, b.profileName, b.profile_image_src, null AS isFollowing, a.dateTime FROM playlistsNotifications AS a ' +
       'INNER JOIN users AS b ON b.userId = a.senderId INNER JOIN playlists AS c ON c.playlistId = a.playlistId WHERE receiverId=? UNION ALL ' +
-      'SELECT null AS mediaId, null AS playlistId, null AS title, null, null, null AS comment, b.username, b.profileName, b.profile_image_src, (SELECT COUNT(*) FROM following WHERE followerUserId=? AND followingUserId = b.userId) > 0 AS isFollowing,  a.dateTime FROM followingNotifications AS a ' +
+      'SELECT null AS mediaId, null AS playlistId, null AS title, null AS imageUrl, null, null AS comment, b.username, b.profileName, b.profile_image_src, (SELECT COUNT(*) FROM following WHERE followerUserId=? AND followingUserId = b.userId) > 0 AS isFollowing,  a.dateTime FROM followingNotifications AS a ' +
       'INNER JOIN users AS b ON b.userId = a.senderId WHERE receiverId=? ' +
       'ORDER BY dateTime DESC LIMIT ?', [userId, userId, userId, userId, numUnreads], function(err, result) {
         if (err) {
@@ -682,16 +732,23 @@ app.get('/api/profileStats', loggedIn, (req, res) => {
   })
 })
 
-app.get('/api/postsStats', loggedIn, (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/postsStats');
+app.get('/api/postsStats/:timePeriod', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/postsStats/' + req.params.timePeriod);
   var userId = req.user.userId
   var now = new Date()
-  var weekAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+  var timePeriod = getTimePeriod(req.params.timePeriod)
+  var timePeriodQuery1 = ''
+  var timePeriodQuery2 = ''
+  if (timePeriod) {
+    timePeriodQuery1 = 'b.dateTime BETWEEN :timePeriod AND :now AND '
+    timePeriodQuery2 = 'a.dateTime BETWEEN :timePeriod AND :now AND '
+  }
+
   conn.query('SELECT SUM(CASE WHEN a.activity = 0 THEN 1 ELSE 0 END) AS likes, SUM(CASE WHEN a.activity = 1 THEN 1 ELSE 0 END) AS reposts, ' +
   'SUM(CASE WHEN a.activity = 2 THEN 1 ELSE 0 END) AS comments, views.postsViews AS postsViews, views.repostsViews AS repostsViews, views.playlistsViews AS playlistsViews FROM postsNotifications AS a INNER JOIN (SELECT ' +
-  'COUNT(*) AS postsViews, COUNT(b.reposterId) AS repostsViews, COUNT(b.playlistId) AS playlistsViews FROM views AS b WHERE b.dateTime BETWEEN :weekAgo AND :now AND b.receiverId = :userId) AS views ' +
-  'WHERE a.dateTime BETWEEN :weekAgo AND :now AND a.receiverId = :userId GROUP BY views.postsViews, views.repostsViews, views.playlistsViews',
-  {userId: userId, weekAgo: weekAgo.toISOString(), now: now.toISOString()}, function(err, result) {
+  'COUNT(*) AS postsViews, COUNT(b.reposterId) AS repostsViews, COUNT(b.playlistId) AS playlistsViews FROM views AS b WHERE ' + timePeriodQuery1 + 'b.receiverId = :userId) AS views ' +
+  'WHERE ' + timePeriodQuery2 + 'a.receiverId = :userId GROUP BY views.postsViews, views.repostsViews, views.playlistsViews',
+  {userId: userId, timePeriod: timePeriod.toISOString(), now: now.toISOString()}, function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -702,14 +759,19 @@ app.get('/api/postsStats', loggedIn, (req, res) => {
   })
 })
 
-app.get('/api/topPosts', loggedIn, (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/topPosts');
+app.get('/api/topPosts/:timePeriod', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/topPosts/' + req.params.timePeriod);
   var userId = req.user.userId
   var now = new Date()
-  var weekAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+  var timePeriod = getTimePeriod(req.params.timePeriod)
+  var timePeriodQuery = ''
+  if (timePeriod) {
+    timePeriodQuery = 'AND views.dateTime BETWEEN :timePeriod AND :now '
+  }
+
   conn.query('SELECT views.mediaId, posts.title, posts.imageUrl, COUNT(*) AS views FROM views ' +
-  'INNER JOIN posts ON posts.mediaId = views.mediaId WHERE receiverId = :userId AND views.dateTime BETWEEN :weekAgo AND :now ' +
-  'GROUP BY views.mediaId ORDER BY views LIMIT 3', {userId: userId, weekAgo: weekAgo.toISOString(), now: now.toISOString()}, function(err, result) {
+  'INNER JOIN posts ON posts.mediaId = views.mediaId WHERE receiverId = :userId ' + timePeriodQuery +
+  'GROUP BY views.mediaId ORDER BY views LIMIT 3', {userId: userId, timePeriod: timePeriod.toISOString(), now: now.toISOString()}, function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -719,14 +781,19 @@ app.get('/api/topPosts', loggedIn, (req, res) => {
   })
 })
 
-app.get('/api/topPostsViewers', loggedIn, (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/topPostsViewers');
+app.get('/api/topPostsViewers/:timePeriod', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/topPostsViewers/' + req.params.timePeriod);
   var userId = req.user.userId
   var now = new Date()
-  var weekAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+  var timePeriod = getTimePeriod(req.params.timePeriod)
+  var timePeriodQuery = ''
+  if (timePeriod) {
+    timePeriodQuery = 'AND views.dateTime BETWEEN :timePeriod AND :now '
+  }
+
   conn.query('SELECT views.viewerId, users.username, users.profileName, users.profile_image_src, COUNT(*) AS views FROM views ' +
-  'INNER JOIN users ON users.userId = views.viewerId WHERE receiverId = :userId AND views.dateTime BETWEEN :weekAgo AND :now ' +
-  'GROUP BY views.viewerId ORDER BY views LIMIT 3', {userId: userId, weekAgo: weekAgo.toISOString(), now: now.toISOString()}, function(err, result) {
+  'INNER JOIN users ON users.userId = views.viewerId WHERE receiverId = :userId ' + timePeriodQuery +
+  'GROUP BY views.viewerId ORDER BY views LIMIT 3', {userId: userId, timePeriod: timePeriod.toISOString(), now: now.toISOString()}, function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -736,19 +803,25 @@ app.get('/api/topPostsViewers', loggedIn, (req, res) => {
   })
 })
 
-app.get('/api/playlistsStats', loggedIn, (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/playlistsStats');
+app.get('/api/playlistsStats/:timePeriod', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/playlistsStats/' + req.params.timePeriod);
   var userId = req.user.userId
   var now = new Date()
-  var weekAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+  var timePeriod = getTimePeriod(req.params.timePeriod)
+  var timePeriodQuery1 = ''
+  var timePeriodQuery2 = ''
+  if (timePeriod) {
+    timePeriodQuery1 = 'b.dateTime BETWEEN :timePeriod AND :now AND '
+    timePeriodQuery2 = 'a.dateTime BETWEEN :timePeriod AND :now AND '
+  }
   conn.query('SELECT SUM(CASE WHEN a.activity = 0 THEN 1 ELSE 0 END) AS likes, SUM(CASE WHEN a.activity = 1 THEN 1 ELSE 0 END) AS reposts, ' +
   'SUM(CASE WHEN a.activity = 2 THEN 1 ELSE 0 END) AS comments, SUM(CASE WHEN a.activity = 3 THEN 1 ELSE 0 END) AS followers, ' +
   'views.playlistsViews AS playlistsViews, views.repostsViews AS repostsViews FROM playlistsNotifications AS a INNER JOIN (SELECT ' +
   'SUM(CASE WHEN b.playlistId IN (SELECT playlistId FROM playlists WHERE userId = :userId) THEN 1 ELSE 0 END) AS playlistsViews,  ' +
   'SUM(CASE WHEN b.playlistId IN (SELECT playlistId FROM playlists WHERE userId = :userId) AND b.reposterId IS NOT NULL THEN 1 ELSE 0 END) AS repostsViews FROM views AS b ' +
-  'WHERE b.dateTime BETWEEN :weekAgo AND :now AND b.receiverId = :userId) AS views ' +
-  'WHERE a.dateTime BETWEEN :weekAgo AND :now AND a.receiverId = :userId GROUP BY views.playlistsViews, views.repostsViews',
-  {userId: userId, weekAgo: weekAgo.toISOString(), now: now.toISOString()}, function(err, result) {
+  'WHERE ' + timePeriodQuery1 + 'b.receiverId = :userId) AS views ' +
+  'WHERE ' + timePeriodQuery2 + 'a.receiverId = :userId GROUP BY views.playlistsViews, views.repostsViews',
+  {userId: userId, timePeriod: timePeriod.toISOString(), now: now.toISOString()}, function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -759,14 +832,18 @@ app.get('/api/playlistsStats', loggedIn, (req, res) => {
   })
 })
 
-app.get('/api/topPlaylists', loggedIn, (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/topPlaylists');
+app.get('/api/topPlaylists/:timePeriod', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/topPlaylists/' + req.params.timePeriod);
   var userId = req.user.userId
   var now = new Date()
-  var weekAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
-  conn.query('SELECT views.playlistId, playlists.title, COUNT(*) AS views FROM views ' +
-  'INNER JOIN playlists ON playlists.playlistId = views.playlistId WHERE receiverId = :userId AND views.dateTime BETWEEN :weekAgo AND :now AND views.playlistId IS NOT NULL ' +
-  'GROUP BY views.playlistId ORDER BY views LIMIT 3', {userId: userId, weekAgo: weekAgo.toISOString(), now: now.toISOString()}, function(err, result) {
+  var timePeriod = getTimePeriod(req.params.timePeriod)
+  var timePeriodQuery = ''
+  if (timePeriod) {
+    timePeriodQuery = 'AND views.dateTime BETWEEN :timePeriod AND :now '
+  }
+  conn.query('SELECT views.playlistId, playlists.title, playlists.coverImageUrl, COUNT(*) AS views FROM views ' +
+  'INNER JOIN playlists ON playlists.playlistId = views.playlistId WHERE receiverId = :userId ' + timePeriodQuery + 'AND views.playlistId IS NOT NULL ' +
+  'GROUP BY views.playlistId ORDER BY views LIMIT 3', {userId: userId, timePeriod: timePeriod.toISOString(), now: now.toISOString()}, function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -776,14 +853,19 @@ app.get('/api/topPlaylists', loggedIn, (req, res) => {
   })
 })
 
-app.get('/api/topPlaylistsViewers', loggedIn, (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/topPlaylistsViewers');
+app.get('/api/topPlaylistsViewers/:timePeriod', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/topPlaylistsViewers/' + req.params.timePeriod);
   var userId = req.user.userId
   var now = new Date()
-  var weekAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+  var timePeriod = getTimePeriod(req.params.timePeriod)
+  var timePeriodQuery = ''
+  if (timePeriod) {
+    timePeriodQuery = 'AND views.dateTime BETWEEN :timePeriod AND :now '
+  }
+
   conn.query('SELECT views.viewerId, users.username, users.profileName, users.profile_image_src, COUNT(*) AS views FROM views ' +
-  'INNER JOIN users ON users.userId = views.viewerId WHERE receiverId = :userId AND views.dateTime BETWEEN :weekAgo AND :now AND views.playlistId IS NOT NULL ' +
-  'GROUP BY views.viewerId ORDER BY views LIMIT 3', {userId: userId, weekAgo: weekAgo.toISOString(), now: now.toISOString()}, function(err, result) {
+  'INNER JOIN users ON users.userId = views.viewerId WHERE receiverId = :userId ' + timePeriodQuery + 'AND views.playlistId IS NOT NULL ' +
+  'GROUP BY views.viewerId ORDER BY views LIMIT 3', {userId: userId, timePeriod: timePeriod.toISOString(), now: now.toISOString()}, function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -866,7 +948,7 @@ app.post('/api/newPlaylist', (req, res) => {
   var genre = req.body.genre
   var description = req.body.description
 
-  conn.query('INSERT IGNORE INTO playlists (userId, title, genre, public, description) VALUES (?, ?, ?, ?, ?)', [userId, title, genre, isPublic, description], function(err, result) {
+  conn.query('INSERT IGNORE INTO playlists (userId, title, genre, public, coverImageUrl, description) VALUES (?, ?, ?, ?, (SELECT imageUrl FROM posts WHERE mediaId = ?), ?)', [userId, title, genre, isPublic, mediaId, description], function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -1932,4 +2014,44 @@ function generateUsername(username) {
       }
     })
   })
+}
+
+function getTimePeriod(timePeriod) {
+  switch (timePeriod) {
+    //24 hours ago
+    case 0:
+      return new Date(Date.now() - (24 * 60 * 60 * 1000))
+      break;
+    //1 week ago
+    case 1:
+      return new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+      break;
+    //1 month ago
+    case 2:
+      return new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
+      break;
+    //1 year ago
+    case 3:
+      return new Date(Date.now() - (365 * 24 * 60 * 60 * 1000))
+      break;
+    //all time
+    case 4:
+      return null
+      break;
+    default:
+      return new Date(Date.now() - (7 * 24 * 60 * 60 * 1000))
+  }
+}
+
+function orderFollowers(sortBy) {
+  switch (sortBy) {
+    case 0:
+      return 'ORDER BY following.dateTime'
+      break;
+    case 1:
+      return 'ORDER BY a.followers'
+      break;
+    default:
+      return 'ORDER BY following.dateTime'
+  }
 }

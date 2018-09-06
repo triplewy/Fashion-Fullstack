@@ -1,6 +1,7 @@
 import React from 'react';
 import Tags from './Tags.jsx'
 import RepostHeader from './RepostHeader.jsx'
+import MediaHeader from './MediaHeader.jsx'
 import StatsHeader from './StatsHeader.jsx'
 import Comments from './Comments.jsx'
 import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
@@ -106,14 +107,7 @@ export default class Playlist extends React.Component {
           <li key={index} value={index} className={(this.state.playlistIndex === index) ? 'playlist_post_selected' : 'playlist_post'}
                 disabled={(this.state.playlistIndex === index)}>
             <div id="playlist_post_user_title_div" onClick={this.setPlaylistIndex.bind(this, index)}>
-              <div className="post_profile_link">
-                <Link to={"/" + item.username}>
-                  <p id="playlist_post_user">{item.profileName}</p>
-                </Link>
-                <DropdownProfile username={item.username} location={item.location}
-                  userFollowers={item.userFollowers} userFollowed={item.userFollowed} followsYou={item.followsYou}/>
-              </div>
-
+              <MediaHeader username={item.username} profileName={item.profileName} isPlaylist={false} />
               <p id="playlist_post_title">{item.title}</p>
             </div>
             {this.state.playlistIndex === index &&
@@ -130,27 +124,13 @@ export default class Playlist extends React.Component {
       return (
         <div className="post_wrapper" ref={this.myRef}>
           <div id="polaroid_div">
-            {this.props.repost_username ? <RepostHeader username={this.props.username} profileName={this.props.profileName}
-              location={this.props.location} userFollowers={this.props.userFollowers} userFollowed={this.props.userFollowed}
-              profile_image_src={this.props.profile_image_src} repost_username={this.props.repost_username}
-              repost_profileName={this.props.repost_profileName} repost_profile_image_src={this.props.repost_profile_image_src}
-              repost_location={this.props.repost_location} repost_userFollowers={this.props.repost_userFollowers}
-              repost_isFollowing={this.props.repost_isFollowing} genre={this.props.genre} repostDate={this.props.repostDate}
-              repost_userFollowed={this.props.repost_userFollowed} followsYou={this.props.followsYou} isPoster={this.props.isPoster} isReposter={this.props.isReposter}/> :
-              <div id="post_header">
-                <div className="post_profile_link">
-                  <Link to={"/" + this.props.username}>
-                    <div id="profile_image_div">
-                      <img id="profile_image" alt="" src={this.props.profile_image_src}></img>
-                    </div>
-                    <strong id="user_name">{this.props.profileName}</strong>
-                  </Link>
-                  <DropdownProfile username={this.props.username} location={this.props.location}
-                    userFollowers={this.props.userFollowers} userFollowed={this.props.userFollowed} followsYou={this.props.followsYou} isProfile={this.props.isPoster}/>
-                </div>
-                <p id="post_status">{"posted a playlist " + dateDiffInDays(new Date(this.props.uploadDate)) + " ago"}</p>
-                {this.props.genre && <button id="genre_button">{this.props.genre}</button>}
-              </div>
+            {this.props.repost_username ?
+              <RepostHeader username={this.props.username} profileName={this.props.profileName} profile_image_src={this.props.profile_image_src}
+                repost_username={this.props.repost_username} repost_profileName={this.props.repost_profileName} repost_profile_image_src={this.props.repost_profile_image_src}
+                genre={this.props.genre} repostDate={this.props.repostDate} />
+              :
+              <MediaHeader username={this.props.username} profileName={this.props.profileName} profile_image_src={this.props.profile_image_src}
+                genre={this.props.genre} uploadDate={this.props.uploadDate} isPlaylist={true} />
             }
             <Link to={{ pathname: '/' + currentPost.username + '/' + currentPost.mediaId, state: { post_data: currentPost} }}>
             <div id="image_wrapper">

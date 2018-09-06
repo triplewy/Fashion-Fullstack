@@ -11,8 +11,7 @@ export default class ViewsGraph extends React.Component {
     super(props);
 
     this.state = {
-      stats: {},
-      postOrPlaylist: this.props.postOrPlaylist
+      stats: {}
     };
 
     this.fetchPostsStats = this.fetchPostsStats.bind(this)
@@ -27,7 +26,14 @@ export default class ViewsGraph extends React.Component {
   componentDidUpdate(prevProps) {
     console.log("views graph did update");
     if (this.props.postOrPlaylist !== prevProps.postOrPlaylist) {
-      this.setState({postOrPlaylist: this.props.postOrPlaylist})
+      if (this.props.postOrPlaylist) {
+        this.fetchPlaylistssStats()
+      } else {
+        this.fetchPostsStats()
+      }
+    }
+
+    if (this.props.timePeriod !== prevProps.timePeriod) {
       if (this.props.postOrPlaylist) {
         this.fetchPlaylistssStats()
       } else {
@@ -37,7 +43,7 @@ export default class ViewsGraph extends React.Component {
   }
 
   fetchPostsStats() {
-    fetch('/api/postsStats', {
+    fetch('/api/postsStats/' + this.props.timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -53,7 +59,7 @@ export default class ViewsGraph extends React.Component {
   }
 
   fetchPlaylistssStats() {
-    fetch('/api/playlistsStats', {
+    fetch('/api/playlistsStats/' + this.props.timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -71,7 +77,7 @@ export default class ViewsGraph extends React.Component {
       return (
         <div id="views_graph_div">
           <div className="stats_portion_div">
-            <p className="stats_title">{this.state.postOrPlaylist ? "Playlists" : "Posts"} Stats</p>
+            <p className="stats_title">{this.props.postOrPlaylist ? "Playlists" : "Posts"} Stats</p>
             <img id="views_icon" alt="view icon" className="stats_icon" src={view_icon}></img>
             <p className="views_graph_stats_number" id="view_number">{this.state.stats.views}</p>
             <img id="like_icon" alt="like icon" className="stats_icon" src={like_icon}></img>
@@ -86,7 +92,7 @@ export default class ViewsGraph extends React.Component {
             <p>Total views are: {this.state.stats.postsViews}</p>
             <p>Reposts views are: {this.state.stats.repostsViews}</p>
             <p>Playlists views are: {this.state.stats.playlistsViews}</p>
-          </div>  
+          </div>
         </div>
       );
   }

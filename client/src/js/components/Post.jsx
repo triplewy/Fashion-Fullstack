@@ -2,11 +2,12 @@
 import React from 'react';
 import Tags from './Tags.jsx'
 import RepostHeader from './RepostHeader.jsx'
+import MediaHeader from './MediaHeader.jsx'
 import StatsHeader from './StatsHeader.jsx'
 import Comments from './Comments.jsx'
 import DropdownProfile from './DropdownProfile.jsx'
 import { Link } from 'react-router-dom';
-import {dateDiffInDays} from './DateHelper.js'
+import { dateDiffInDays } from './DateHelper.js'
 import Cookie from 'js-cookie'
 
 export default class Post extends React.Component {
@@ -15,11 +16,13 @@ export default class Post extends React.Component {
     this.state = {
       comments: this.props.comments,
       bottom: 0,
-      seen: false
+      seen: false,
+      loadHoverData: false
     };
 
     this.myRef = React.createRef()
     this.handleScroll = this.handleScroll.bind(this)
+    this.setLoadHoverData = this.setLoadHoverData.bind(this)
   }
 
 
@@ -89,32 +92,21 @@ export default class Post extends React.Component {
     this.setState({displayPlaylist: true})
   }
 
+  setLoadHoverData() {
+    this.setState({loadHoverData: true})
+  }
+
   render() {
     return (
         <div className="post_wrapper" ref={this.myRef}>
           <div id="polaroid_div">
-            {this.props.repost_username ? <RepostHeader username={this.props.username} profileName={this.props.profileName}
-              location={this.props.location} userFollowers={this.props.userFollowers} userFollowed={this.props.userFollowed}
-              profile_image_src={this.props.profile_image_src} repost_username={this.props.repost_username}
-              repost_profileName={this.props.repost_profileName} repost_profile_image_src={this.props.repost_profile_image_src}
-              repost_location={this.props.repost_location} repost_userFollowers={this.props.repost_userFollowers}
-              repost_isFollowing={this.props.repost_isFollowing} genre={this.props.genre} repostDate={this.props.repostDate}
-              repost_userFollowed={this.props.repost_userFollowed} followsYou={this.props.followsYou} isPoster={this.props.isPoster} isReposter={this.props.isReposter}/> :
-              <div id="post_header">
-                <div className="post_profile_link">
-                  <Link to={"/" + this.props.username}>
-                    <div id="profile_image_div">
-                      <img id="profile_image" alt="" src={this.props.profile_image_src}></img>
-                    </div>
-                    <strong id="user_name">{this.props.profileName}</strong>
-                  </Link>
-                  <DropdownProfile username={this.props.username} location={this.props.location}
-                    userFollowers={this.props.userFollowers} userFollowed={this.props.userFollowed} followsYou={this.props.followsYou}
-                    isProfile={this.props.isPoster}/>
-                </div>
-                <p id="post_status">{"posted a fit " + dateDiffInDays(new Date(this.props.uploadDate)) + " ago"}</p>
-                {this.props.genre && <button id="genre_button">{this.props.genre}</button>}
-              </div>
+            {this.props.repost_username ?
+              <RepostHeader username={this.props.username} profile_image_src={this.props.profile_image_src} profileName={this.props.profileName}
+                repost_username={this.props.repost_username} repost_profileName={this.props.repost_profileName} repost_profile_image_src={this.props.repost_profile_image_src}
+                genre={this.props.genre} repostDate={this.props.repostDate} isPlaylist={false} />
+              :
+              <MediaHeader username={this.props.username} profile_image_src={this.props.profile_image_src} profileName={this.props.profileName}
+                genre={this.props.genre} uploadDate={this.props.uploadDate} isPlaylist={false}/>
             }
             <Link to={{ pathname: '/' + this.props.username + '/' + this.props.mediaId, state: { post_data: this.props}}}>
             <div id="image_wrapper">

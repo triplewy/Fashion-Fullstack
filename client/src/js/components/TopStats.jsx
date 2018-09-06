@@ -7,8 +7,7 @@ export default class TopStats extends React.Component {
 
     this.state = {
       topMedia: {},
-      topViewers: {},
-      postOrPlaylist: this.props.postOrPlaylist
+      topViewers: {}
     };
 
     this.fetchTopPosts = this.fetchTopPosts.bind(this)
@@ -25,7 +24,16 @@ export default class TopStats extends React.Component {
   componentDidUpdate(prevProps) {
     console.log("views graph did update");
     if (this.props.postOrPlaylist !== prevProps.postOrPlaylist) {
-      this.setState({postOrPlaylist: this.props.postOrPlaylist})
+      if (this.props.postOrPlaylist) {
+        this.fetchTopPlaylists()
+        this.fetchTopPlaylistsViewers()
+      } else {
+        this.fetchTopPosts()
+        this.fetchTopPostsViewers()
+      }
+    }
+
+    if (this.props.timePeriod !== prevProps.timePeriod) {
       if (this.props.postOrPlaylist) {
         this.fetchTopPlaylists()
         this.fetchTopPlaylistsViewers()
@@ -37,7 +45,7 @@ export default class TopStats extends React.Component {
   }
 
   fetchTopPosts() {
-    fetch('/api/topPosts', {
+    fetch('/api/topPosts/' + this.props.timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -53,7 +61,7 @@ export default class TopStats extends React.Component {
   }
 
   fetchTopPostsViewers() {
-    fetch('/api/topPostsViewers', {
+    fetch('/api/topPostsViewers/' + this.props.timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -69,7 +77,7 @@ export default class TopStats extends React.Component {
   }
 
   fetchTopPlaylists() {
-    fetch('/api/topPlaylists', {
+    fetch('/api/topPlaylists/' + this.props.timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -85,7 +93,7 @@ export default class TopStats extends React.Component {
   }
 
   fetchTopPlaylistsViewers() {
-    fetch('/api/topPlaylistsViewers', {
+    fetch('/api/topPlaylistsViewers/' + this.props.timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())
