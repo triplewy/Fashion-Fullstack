@@ -2,20 +2,19 @@ import React from 'react';
 import TypeSelector from './TypeSelector.jsx'
 import ViewsGraph from './ViewsGraph.jsx';
 import TopStats from './TopStats.jsx'
-import {Dropdown} from 'react-bootstrap'
+import TimePeriod from './TimePeriod.jsx'
 
 export default class Stats extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      timePeriodArray: ["Last 24 Hours", "Last Week", "Last Month", "Last Year", "All Time"],
       type_selector_value: 0,
       timePeriod: 1,
     };
 
     this.toggle_type = this.toggle_type.bind(this);
-    this.toggle_time = this.toggle_time.bind(this);
+    this.toggleTime = this.toggleTime.bind(this);
   }
 
   toggle_type(e) {
@@ -26,7 +25,7 @@ export default class Stats extends React.Component {
     }
   }
 
-  toggle_time(e) {
+  toggleTime(e) {
     this.setState({timePeriod: e.target.value});
   }
 
@@ -34,19 +33,7 @@ export default class Stats extends React.Component {
     return (
       <div id="white_background_wrapper">
         <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["Posts", "Playlists"]}
-              type_selector_value={this.state.type_selector_value}/>
-        <Dropdown id="time period dropdown" className="time_period_dropdown">
-          <Dropdown.Toggle id="time_period_button" noCaret={true}>
-            <p>{this.state.timePeriodArray[this.state.timePeriod]}</p>
-          </Dropdown.Toggle>
-          <Dropdown.Menu id="time_period_list">
-            <li value='0' onClick={this.toggle_time}>Last 24 Hours</li>
-            <li value='1' onClick={this.toggle_time}>Last Week</li>
-            <li value='2' onClick={this.toggle_time}>Last Month</li>
-            <li value='3' onClick={this.toggle_time}>Last Year</li>
-            <li value='4' onClick={this.toggle_time}>All Time</li>
-          </Dropdown.Menu>
-        </Dropdown>
+              type_selector_value={this.state.type_selector_value} right={<TimePeriod toggleTime={this.toggleTime} />} />
         <ViewsGraph postOrPlaylist={this.state.type_selector_value} timePeriod={this.state.timePeriod}/>
         <TopStats postOrPlaylist={this.state.type_selector_value} timePeriod={this.state.timePeriod}/>
       </div>

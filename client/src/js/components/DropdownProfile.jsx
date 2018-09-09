@@ -16,10 +16,6 @@ export default class DropdownProfile extends React.Component {
     this.handleUnfollow = this.handleUnfollow.bind(this);
   }
 
-  componentDidMount() {
-
-  }
-
   componentDidUpdate(prevProps) {
     if (this.props.load !== prevProps.load) {
       this.fetchDropdownProfile()

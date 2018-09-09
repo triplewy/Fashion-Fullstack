@@ -3,11 +3,10 @@ import Tags from './Tags.jsx'
 import RepostHeader from './RepostHeader.jsx'
 import MediaHeader from './MediaHeader.jsx'
 import StatsHeader from './StatsHeader.jsx'
+import ProfileHover from './ProfileHover.jsx'
 import Comments from './Comments.jsx'
 import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
-import DropdownProfile from './DropdownProfile.jsx'
 import { Link } from 'react-router-dom';
-import {dateDiffInDays} from './DateHelper.js'
 import Cookie from 'js-cookie'
 
 export default class Playlist extends React.Component {
@@ -19,22 +18,22 @@ export default class Playlist extends React.Component {
     this.state = {
       playlistPosts: posts,
       playlistIndex: 0,
+      currentPost: {},
       bottom: 0,
       seen: new Array(posts.length).fill(false)
     };
 
     this.myRef = React.createRef()
+    this.fetchPlaylistPost = this.fetchPlaylistPost.bind(this)
     this.setPlaylistIndex = this.setPlaylistIndex.bind(this)
     this.handleScroll = this.handleScroll.bind(this)
   }
 
   componentDidMount() {
-    console.log(this.state.seen);
     console.log("playlist mounted");
+    this.fetchPlaylistPost(this.state.playlistPosts[0].mediaId)
     window.addEventListener('scroll', this.handleScroll);
     setTimeout(() => {
-      console.log("component height", this.myRef.current.clientHeight);
-      console.log("component bottom", this.myRef.current.offsetTop + this.myRef.current.clientHeight);
       this.setState({bottom: this.myRef.current.offsetTop + this.myRef.current.clientHeight - 80})
     }, 10);
   }
@@ -43,19 +42,35 @@ export default class Playlist extends React.Component {
     window.removeEventListener('scroll', this.handleScroll)
   }
 
+  fetchPlaylistPost(mediaId) {
+    fetch('/api/playlistPost/' + mediaId, {
+      credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data) {
+        this.setState({currentPost: data})
+      }
+    })
+    .catch(e => {
+      console.log(e);
+    })
+  }
+
   handleScroll() {
     if (window.scrollY + window.innerHeight >= this.state.bottom && !this.state.seen[this.state.playlistIndex]) {
       console.log("hit bottom");
       var now = new Date()
       var nowISOString = now.toISOString()
       var view = {}
+      var arr = []
       if (this.props.repost_username) {
         view = {playlistId: this.props.playlistId, mediaId: this.state.playlistPosts[this.state.playlistIndex].mediaId, reposter: this.props.repost_username, dateTime: nowISOString}
       } else {
         view = {playlistId: this.props.playlistId, mediaId: this.state.playlistPosts[this.state.playlistIndex].mediaId, dateTime: nowISOString}
       }
       if (Cookie.get('viewHistory')) {
-        var arr = JSON.parse(Cookie.get('viewHistory'));
+        arr = JSON.parse(Cookie.get('viewHistory'));
         arr.push(view)
         if (arr.length > 9) {
           fetch('/api/storeViews', {
@@ -84,10 +99,9 @@ export default class Playlist extends React.Component {
         }
         Cookie.set('viewHistory', arr)
       } else {
-        var arr = [view]
+        arr = [view]
         Cookie.set('viewHistory', JSON.stringify(arr))
       }
-      console.log("seen");
       var tempSeen = this.state.seen
       tempSeen[this.state.playlistIndex] = true
       this.setState({seen: tempSeen})
@@ -95,6 +109,7 @@ export default class Playlist extends React.Component {
   }
 
   setPlaylistIndex(index, e) {
+    this.fetchPlaylistPost(this.state.playlistsPosts[index].mediaId)
     this.setState({playlistIndex: index})
   }
 
@@ -107,7 +122,7 @@ export default class Playlist extends React.Component {
           <li key={index} value={index} className={(this.state.playlistIndex === index) ? 'playlist_post_selected' : 'playlist_post'}
                 disabled={(this.state.playlistIndex === index)}>
             <div id="playlist_post_user_title_div" onClick={this.setPlaylistIndex.bind(this, index)}>
-              <MediaHeader username={item.username} profileName={item.profileName} isPlaylist={false} />
+              <ProfileHover username={item.username} profileName={item.profileName} classStyle={"post_profile_link"}/>
               <p id="playlist_post_title">{item.title}</p>
             </div>
             {this.state.playlistIndex === index &&
@@ -127,10 +142,10 @@ export default class Playlist extends React.Component {
             {this.props.repost_username ?
               <RepostHeader username={this.props.username} profileName={this.props.profileName} profile_image_src={this.props.profile_image_src}
                 repost_username={this.props.repost_username} repost_profileName={this.props.repost_profileName} repost_profile_image_src={this.props.repost_profile_image_src}
-                genre={this.props.genre} repostDate={this.props.repostDate} />
+                genre={this.props.genre} repostDate={this.props.repostDate} classStyle={"post_profile_link"}/>
               :
               <MediaHeader username={this.props.username} profileName={this.props.profileName} profile_image_src={this.props.profile_image_src}
-                genre={this.props.genre} uploadDate={this.props.uploadDate} isPlaylist={true} />
+                genre={this.props.genre} uploadDate={this.props.uploadDate} isPlaylist={true} classStyle={"post_profile_link"}/>
             }
             <Link to={{ pathname: '/' + currentPost.username + '/' + currentPost.mediaId, state: { post_data: currentPost} }}>
             <div id="image_wrapper">
@@ -143,20 +158,20 @@ export default class Playlist extends React.Component {
           </div>
           </div>
             <div id="tags_div_wrapper">
-              <div id="title">
-                <p id="title_text">{this.props.title}</p>
-              </div>
-              <hr id="tag_title_hr"></hr>
-              <Tags tags={currentPost.tags}/>
-              <div id="description_wrapper">
-                <p id="description">{this.props.description}</p>
-              </div>
-              <Comments playlistId={this.props.playlistId} comments={this.state.comments} />
-              <ul id="playlist_posts_list">
-                {rendered_playlist_posts}
-              </ul>
+              <div id="tags_div_flexbox">
+                <div id="title">
+                  <p id="title_text">{this.props.title}</p>
+                </div>
+                <Tags tags={currentPost.tags}/>
+                <div id="description_wrapper">
+                  <p id="description">{this.props.description}</p>
+                </div>
+                <ul id="playlist_posts_list">
+                  {rendered_playlist_posts}
+                </ul>
+                <Comments playlistId={this.props.playlistId} username={this.props.username} comments={this.props.comments} />
+            </div>
           </div>
-          <hr id="post_hr"></hr>
         </div>
     );
   }

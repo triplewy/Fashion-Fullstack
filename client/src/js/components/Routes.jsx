@@ -26,6 +26,7 @@ import Stats from './Stats.jsx'
 import NotificationsPage from './NotificationsPage.jsx'
 import FollowersPage from './FollowersPage.jsx'
 import FollowingPage from './FollowingPage.jsx'
+import GenrePage from './GenrePage.jsx'
 
 
 export default class Routes extends React.Component {
@@ -159,6 +160,7 @@ export default class Routes extends React.Component {
               <Route exact path='/finder' component={Outfit_Finder}/>
               <Route exact path='/search' component={Search}/>
               <Route exact path='/signup' render={(props) => <Signup loggedIn={this.loggedIn} {...props}/>} />
+              <Route exact path='/genre/:genre' render={({match}) => <GenrePage genre={match.params.genre} />} />
               <Route exact path='/:profile' render={({match}) => <Profile profile={match.params.profile} />} />
               <Route exact path='/:profile/:mediaId' component={SinglePostPage}/>
               <Route exact path='/:profile/playlist/:playlistId' component={SinglePlaylistPage}/>

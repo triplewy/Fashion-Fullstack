@@ -23,8 +23,14 @@ export default class Tags extends React.Component {
 
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({tags: nextProps.tags})
+  componentDidMount() {
+    console.log(this.props.tags);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.tags !== prevProps.tags) {
+      this.setState({tags: this.props.tags})
+    }
   }
 
   renderClothingIcon(itemType) {
@@ -64,7 +70,7 @@ export default class Tags extends React.Component {
 
   render() {
     var renderedTags = [];
-    if (this.state.tags != null) {
+    if (this.state.tags) {
       renderedTags = this.state.tags.map((item, index) => {
           return (
             <li key={index} className="clothing_tag" id={item.itemType + "_tag"} onMouseEnter={this.showTagLocation.bind(this, index)}
@@ -91,7 +97,7 @@ export default class Tags extends React.Component {
                   </button>
                 </div>}
                 <div id="og_tag">
-                  {item.original !== 0 && <span>✔</span>}
+                  {item.original && <span>✔</span>}
                 </div>
             </li>
           )

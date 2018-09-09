@@ -107,6 +107,15 @@ textarea:focus {
   /* padding: 10px 10px; */
 }
 
+.carousel-control.left, .carousel-control.right {
+   background-image:none !important;
+   filter:none !important;
+}
+
+div.dropdown {
+  z-index: 2;
+}
+
 #app {
   padding:0 0;
   margin:0 0;
@@ -346,12 +355,13 @@ textarea:focus {
 }
 
 .post_wrapper {
-  display: inline-block;
+  display: flex;
   position: relative;
   width: 100%;
   list-style-type: none;
   list-style-position: inside;
   background-color: white;
+  margin-bottom: 160px;
 }
 
 #polaroid_div {
@@ -431,26 +441,35 @@ textarea:focus {
 .post_image {
   /* max-width: 100%; */
   /* max-width: 750px; */
-  max-width: 700px;
-  max-height: 875px;
+  max-width: 660px;
+  max-height: 880px;
   image-orientation: from-image;
   /* max-height: 776px; */
+  background-size: cover;
+  background-position: center;
   transition: max-width 0.2s ease-in;
+  transition: max-height 0.2s ease-in;
+
 }
 
 #tags_div_wrapper {
   padding: 0 20px;
-  display: inline-block;
-  vertical-align: top;
-  width: 350px;
-  /* max-width: 30%; */
+  width: 400px;
+}
+
+#tags_div_flexbox {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 350px;
+  height: 100%;
 }
 
 #title {
   padding-top: 30px;
   display: inline-block;
   height: 60px;
-  width: 90%;
+  width: 100%;
+  border-bottom: 1px solid #888888;
 }
 
 #title_text {
@@ -498,7 +517,8 @@ textarea:focus {
 }
 
 #og_tag {
-  display: inline-block;
+  float: right;
+  /* display: inline-block; */
   width: 30px;
   padding: 10px 10px;
   color: red;
@@ -1399,7 +1419,10 @@ textarea:focus {
 
 #playlist_post_title {
   display: inline-block;
-  font-size: 14px;
+  font-size: 12px;
+  margin-left: 10px;
+  font-weight: 400;
+  padding: 16px 0;
 }
 
 .playlist_post_stat {
@@ -1489,18 +1512,61 @@ textarea:focus {
   box-shadow: -2px 4px 12px 2px #888888;
 }
 
+.comments_list {
+  list-style: none;
+  margin: 0 0;
+  padding: 0 0;
+  max-height: 400px;
+  overflow-y: scroll;
+  font-size: 12px;
+}
+
+.comments_list li {
+  padding: 10px 0;
+  margin: 0 0;
+}
+
+.comments_list p {
+}
+
+#comments_toggle {
+  border-top: 1px solid #888888;
+  /* border-left: 1px solid #888888;
+  border-right: 1px solid #888888; */
+  padding: 10px 10px;
+  font-size: 12px;
+}
+
+#comments_toggle:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
+}
+
+#comments_toggle p {
+  display: inline-block;
+  font-size: 14px;
+  /* font-weight: 600; */
+}
+
+#comments_up_arrow {
+  float: right;
+}
+
 #comments_input_bar {
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  display: flex;
+  border: 1px solid #888888;
   padding: 0 10px;
 }
 
 #comments_input {
   border: none;
+  box-shadow: none;
+  font-size: 12px;
 }
 
 #comment_button {
   float: right;
+  color: #337ab7;
 }
 
 #comments {
@@ -1516,8 +1582,8 @@ textarea:focus {
 }
 
 .comment {
-  display: inline-block;
-  padding: 0 5px;
+  display: block;
+  padding: 10px 0;
 }
 
 .comment_time {
@@ -1539,7 +1605,7 @@ textarea:focus {
 }
 
 #comments_wrapper {
-  padding: 10px 0;
+  margin-top: auto;
 }
 
 #playlist_modal {
@@ -1743,6 +1809,24 @@ textarea:focus {
 
 .post_profile_link {
   display: inline-block;
+}
+
+.post_profile_link img {
+  display: inline-block;
+  vertical-align: middle;
+  height: 50px;
+  width: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #f1f1f1;
+}
+
+.post_profile_link strong {
+  display: inline-block;
+  margin-left: 5px;
+  font-size: 12px;
+  font-weight: 400;
+  padding: 16px 0;
 }
 
 .post_profile_link div.dropdown {
@@ -2000,7 +2084,6 @@ textarea:focus {
 .followers_profile {
   display: inline-block;
   text-align: center;
-  text-decoration: none;
   font-size: 18px;
 }
 
@@ -2010,6 +2093,76 @@ textarea:focus {
   object-fit: cover;
   border-radius: 50%;
   margin: 10px 0;
+}
+
+.followers_profile strong {
+  display: block;
+  text-decoration: none;
+}
+
+.followers_profile div.dropdown {
+  display: none;
+  position: absolute;
+  top: 10;
+  padding: 10px 15px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  -webkit-transition: opacity 0.15s ease-out;
+  transition: opacity 0.15s ease-out;
+}
+
+.followers_profile:hover div.dropdown {
+  display: block;
+  -webkit-transition: opacity 0.15s ease-in;
+  transition: opacity 0.15s ease-in;
+}
+
+#genre_title {
+  font-size: 24px;
+  font-weight: 600;
+  padding-top: 20px;
+}
+
+.image_tetris_wrapper {
+  width: 1100px;
+  margin: 0 auto;
+}
+
+.tetris_column {
+  display: inline-block;
+  width: 275px;
+  vertical-align: top;
+}
+
+.image_tetris_wrapper img {
+  display: inline-block;
+  width: 275px;
+  vertical-align: top;
+}
+
+.tetris_image {
+  display: inline-block;
+  width: 275px;
+  vertical-align: top;
+  background-size: cover;
+}
+
+.tetris_block_wrapper {
+  position: relative;
+}
+
+.block_profile {
+  position: absolute;
+  top: 0;
+  height: 60px;
+}
+
+.block_stats {
+  position: absolute;
+  bottom: 0;
+  height: 60px;
+  left: 0;
 }
 
 @media only screen and (max-width: 1300px) {

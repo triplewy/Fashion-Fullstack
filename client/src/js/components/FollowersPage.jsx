@@ -1,6 +1,7 @@
 import React from 'react';
-import { Link, Redirect } from 'react-router-dom';
 import TypeSelector from './TypeSelector.jsx'
+import ProfileHover from './ProfileHover.jsx'
+import { Link, Redirect } from 'react-router-dom';
 import { Dropdown } from 'react-bootstrap'
 
 export default class FollowersPage extends React.Component {
@@ -53,14 +54,8 @@ export default class FollowersPage extends React.Component {
     if (this.state.users) {
       renderedUsers = this.state.users.map((item, index) => {
         return (
-          <div className="followers_profile" key={index}>
-            <Link to={"/" + item.username}>
-              <div>
-                <img alt="" src={item.profile_image_src}></img>
-              </div>
-              <strong>{item.profileName}</strong>
-            </Link>
-          </div>
+          <ProfileHover classStyle="followers_profile" username={item.username} profileName={item.profileName}
+            profile_image_src={item.profile_image_src} />
         )
       });
     }

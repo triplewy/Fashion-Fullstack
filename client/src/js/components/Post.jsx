@@ -1,20 +1,17 @@
-// Create a new React component here!import React from 'react';
 import React from 'react';
 import Tags from './Tags.jsx'
 import RepostHeader from './RepostHeader.jsx'
 import MediaHeader from './MediaHeader.jsx'
 import StatsHeader from './StatsHeader.jsx'
 import Comments from './Comments.jsx'
-import DropdownProfile from './DropdownProfile.jsx'
-import { Link } from 'react-router-dom';
-import { dateDiffInDays } from './DateHelper.js'
+import { LinkContainer } from 'react-router-bootstrap'
+import { Carousel } from 'react-bootstrap'
 import Cookie from 'js-cookie'
 
 export default class Post extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      comments: this.props.comments,
       bottom: 0,
       seen: false,
       loadHoverData: false
@@ -23,6 +20,7 @@ export default class Post extends React.Component {
     this.myRef = React.createRef()
     this.handleScroll = this.handleScroll.bind(this)
     this.setLoadHoverData = this.setLoadHoverData.bind(this)
+    this.setAspectRatio = this.setAspectRatio.bind(this)
   }
 
 
@@ -30,8 +28,6 @@ export default class Post extends React.Component {
     console.log("post mounted");
     window.addEventListener('scroll', this.handleScroll);
     setTimeout(() => {
-      console.log("component height", this.myRef.current.clientHeight);
-      console.log("component bottom", this.myRef.current.offsetTop + this.myRef.current.clientHeight);
       this.setState({bottom: this.myRef.current.offsetTop + this.myRef.current.clientHeight - 80})
     }, 10);
   }
@@ -96,43 +92,83 @@ export default class Post extends React.Component {
     this.setState({loadHoverData: true})
   }
 
+  setAspectRatio(width, height) {
+    var aspectRatio = width/height
+    if (aspectRatio > 0.75 && width > 660) {
+      aspectRatio = width/660
+      return [660, height/aspectRatio]
+    } else if (aspectRatio <= 0.75 && height > 880) {
+      aspectRatio = height/880
+      return [width/aspectRatio, 880]
+    } else {
+      return [width, height]
+    }
+  }
+
   render() {
+
+    var renderedImages = [];
+    if (this.props.imageUrls) {
+      var height = 0;
+      var width = 0
+      if (this.props.imageUrls.length === 1) {
+        [width, height] = this.setAspectRatio(this.props.imageUrls[0].width, this.props.imageUrls[0].height)
+        renderedImages = (<div className="post_image" style={{backgroundImage: 'url(' + this.props.imageUrls[0].imageUrl + ')',
+        width: width, height: height}} />)
+      } else {
+        renderedImages = this.props.imageUrls.map((item, index) => {
+          [width, height] = this.setAspectRatio(item.width, item.height)
+          return (
+            <Carousel.Item key={index}>
+              <div className="post_image" style={{backgroundImage: 'url(' + item.imageUrl + ')', width: width, height: height}} />
+            </Carousel.Item>
+          )
+        })
+      }
+    }
+
     return (
         <div className="post_wrapper" ref={this.myRef}>
           <div id="polaroid_div">
             {this.props.repost_username ?
               <RepostHeader username={this.props.username} profile_image_src={this.props.profile_image_src} profileName={this.props.profileName}
                 repost_username={this.props.repost_username} repost_profileName={this.props.repost_profileName} repost_profile_image_src={this.props.repost_profile_image_src}
-                genre={this.props.genre} repostDate={this.props.repostDate} isPlaylist={false} />
+                genre={this.props.genre} repostDate={this.props.repostDate} isPlaylist={false} classStyle={"post_profile_link"}/>
               :
               <MediaHeader username={this.props.username} profile_image_src={this.props.profile_image_src} profileName={this.props.profileName}
-                genre={this.props.genre} uploadDate={this.props.uploadDate} isPlaylist={false}/>
+                genre={this.props.genre} uploadDate={this.props.uploadDate} isPlaylist={false} classStyle={"post_profile_link"}/>
             }
-            <Link to={{ pathname: '/' + this.props.username + '/' + this.props.mediaId, state: { post_data: this.props}}}>
+            <LinkContainer to={{ pathname: '/' + this.props.username + '/' + this.props.mediaId, state: { post_data: this.props}}}>
             <div id="image_wrapper">
-              <img className="post_image" alt="" src={this.props.post_image_src}></img>
+              {this.props.imageUrls.length > 1 ?
+                <Carousel interval={null}>
+                  {renderedImages}
+                </Carousel>
+                :
+                renderedImages
+              }
             </div>
-          </Link>
+          </LinkContainer>
           <div id="stats_wrapper">
             <StatsHeader mediaId={this.props.mediaId} views={this.props.views} likes={this.props.likes} reposts={this.props.reposts}
               reposted={this.props.reposted} liked={this.props.liked} isPoster={this.props.isPoster}/>
           </div>
         </div>
         <div id="tags_div_wrapper">
-          <div id="title">
-            <p id="title_text">{this.props.title}</p>
+          <div id="tags_div_flexbox">
+            <div id="title">
+              <p id="title_text">{this.props.title}</p>
+              <div id="og_tag">
+                {this.props.original !== 0 && <span>✔</span>}
+              </div>
+            </div>
+            <Tags tags={this.props.tags} modify={false}/>
+            <div id="description_wrapper">
+              <p id="description">{this.props.description}</p>
+            </div>
+            <Comments mediaId={this.props.mediaId} username={this.props.username} comments={this.props.comments} />
           </div>
-          <div id="og_tag">
-            {this.props.original !== 0 && <span>✔</span>}
-          </div>
-          <hr id="tag_title_hr"></hr>
-          <Tags tags={this.props.tags} modify={false}/>
-          <div id="description_wrapper">
-            <p id="description">{this.props.description}</p>
-          </div>
-          <Comments mediaId={this.props.mediaId} username={this.props.username} comments={this.state.comments} />
         </div>
-        <hr id="post_hr"></hr>
       </div>
     );
   }
