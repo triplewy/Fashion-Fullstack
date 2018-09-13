@@ -6,7 +6,9 @@ import StatsHeader from './StatsHeader.jsx'
 import ProfileHover from './ProfileHover.jsx'
 import Comments from './Comments.jsx'
 import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
+import CarouselImages from './CarouselImages.jsx'
 import { Link } from 'react-router-dom';
+import { LinkContainer } from 'react-router-bootstrap'
 import Cookie from 'js-cookie'
 
 export default class Playlist extends React.Component {
@@ -14,11 +16,12 @@ export default class Playlist extends React.Component {
     super(props);
 
     var posts = JSON.parse(this.props.posts)
+    console.log(posts);
 
     this.state = {
       playlistPosts: posts,
       playlistIndex: 0,
-      currentPost: {},
+      currentPost: null,
       bottom: 0,
       seen: new Array(posts.length).fill(false)
     };
@@ -49,6 +52,7 @@ export default class Playlist extends React.Component {
     .then(res => res.json())
     .then(data => {
       if (data) {
+        console.log(data);
         this.setState({currentPost: data})
       }
     })
@@ -109,7 +113,7 @@ export default class Playlist extends React.Component {
   }
 
   setPlaylistIndex(index, e) {
-    this.fetchPlaylistPost(this.state.playlistsPosts[index].mediaId)
+    this.fetchPlaylistPost(this.state.playlistPosts[index].mediaId)
     this.setState({playlistIndex: index})
   }
 
@@ -125,10 +129,11 @@ export default class Playlist extends React.Component {
               <ProfileHover username={item.username} profileName={item.profileName} classStyle={"post_profile_link"}/>
               <p id="playlist_post_title">{item.title}</p>
             </div>
-            {this.state.playlistIndex === index &&
+            {(this.state.playlistIndex === index && this.state.currentPost) &&
               <div id="stats_wrapper">
-                <StatsHeader mediaId={item.mediaId} views={item.views} likes={item.likes} reposts={item.reposts} comments={item.comments}
-                  reposted={item.reposted} liked={item.liked}/>
+                <StatsHeader mediaId={this.state.currentPost.mediaId} views={this.state.currentPost.views} likes={this.state.currentPost.likes}
+                  reposts={this.state.currentPost.reposts} comments={this.state.currentPost.comments} reposted={this.state.currentPost.reposted}
+                  liked={this.state.currentPost.liked}/>
               </div>
             }
           </li>
@@ -147,11 +152,13 @@ export default class Playlist extends React.Component {
               <MediaHeader username={this.props.username} profileName={this.props.profileName} profile_image_src={this.props.profile_image_src}
                 genre={this.props.genre} uploadDate={this.props.uploadDate} isPlaylist={true} classStyle={"post_profile_link"}/>
             }
-            <Link to={{ pathname: '/' + currentPost.username + '/' + currentPost.mediaId, state: { post_data: currentPost} }}>
+            <LinkContainer to={{ pathname: '/' + currentPost.username + '/' + currentPost.mediaId, state: { post_data: currentPost} }}>
             <div id="image_wrapper">
-              <img className="post_image" alt="" src={currentPost.imageUrl}></img>
+              {this.state.currentPost &&
+                <CarouselImages imageUrls={this.state.currentPost.imageUrls} />
+              }
             </div>
-          </Link>
+          </LinkContainer>
           <div id="stats_wrapper">
             <PlaylistStatsHeader playlistId={this.props.playlistId} likes={this.props.likes} reposts={this.props.reposts} followers={this.props.followers}
             reposted={this.props.reposted} liked={this.props.liked} followed={this.props.followed} isPoster={this.props.isPoster}/>

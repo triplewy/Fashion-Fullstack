@@ -1,7 +1,10 @@
 import React from 'react';
 import InputTag from './InputTag.jsx';
 import Tags from './Tags.jsx'
+import UploadImages from './UploadImages.jsx'
+import CarouselImages from './CarouselImages.jsx'
 import * as loadImage from 'blueimp-load-image'
+import { Carousel } from 'react-bootstrap'
 
 export default class Upload extends React.Component {
   constructor(props) {
@@ -9,7 +12,7 @@ export default class Upload extends React.Component {
     console.log("props are", props);
     this.state = {
       file: this.props.location.state,
-      imagePreviewUrl: '',
+      files: [],
       title: '',
       genre: '',
       description: '',
@@ -22,10 +25,9 @@ export default class Upload extends React.Component {
       displayTagInput: 'none',
       editTagIndex: -1,
       editTag: {itemType:'shirt', itemBrand: '', itemName: '', original: false},
-      imageUploaded: false
+      continue: false
     };
 
-    this.readImageFile = this.readImageFile.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleClick = this.handleClick.bind(this)
@@ -33,39 +35,6 @@ export default class Upload extends React.Component {
     this.handleTagCancel = this.handleTagCancel.bind(this)
     this.handleTagDelete = this.handleTagDelete.bind(this)
     this.handleTagEdit = this.handleTagEdit.bind(this)
-  }
-
-  componentDidMount() {
-    if (this.state.file) {
-      // var reader = new FileReader();
-      var file = this.state.file[0];
-
-      const loadImageOptions = { canvas: true, maxWidth: 850 }
-      loadImage.parseMetaData(file, (data) => {
-        if (data.exif) {
-          loadImageOptions.orientation = data.exif.get('Orientation')
-          console.log("loadImageOptions are", loadImageOptions);
-        }
-        loadImage(file, (canvas) => {
-          console.log("file is", file);
-          file.preview = canvas.toDataURL(file.type)
-          this.setState({
-            file: file,
-            imagePreviewUrl: file.preview,
-            imageUploaded: true
-          })
-        }, loadImageOptions)
-      })
-
-
-      //
-      // reader.onloadend = () => {
-      //   this.setState({imagePreviewUrl: reader.result, imageUploaded: true});
-      // }
-      // reader.readAsDataURL(file);
-    } else {
-      this.setState({imageUploaded: false})
-    }
   }
 
   handleChange(e) {
@@ -84,7 +53,6 @@ export default class Upload extends React.Component {
         break;
       }
     }
-
     var formData = new FormData();
     formData.append('image', this.state.file);
     formData.append('title', this.state.title);
@@ -112,40 +80,6 @@ export default class Upload extends React.Component {
 
       }
     })
-  }
-
-  readImageFile(e) {
-    e.preventDefault();
-    var file = e.target.files[0];
-
-    const loadImageOptions = { canvas: true, maxWidth: 850 }
-    loadImage.parseMetaData(file, (data) => {
-      if (data.exif) {
-        loadImageOptions.orientation = data.exif.get('Orientation')
-        console.log("loadImageOptions are", loadImageOptions);
-      }
-      loadImage(file, (canvas) => {
-        console.log("file is", file);
-        file.preview = canvas.toDataURL(file.type)
-        this.setState({
-          file: file,
-          imagePreviewUrl: file.preview,
-          imageUploaded: true
-        })
-      }, loadImageOptions)
-    })
-
-    // var reader = new FileReader();
-    // reader.onloadend = () => {
-    //   console.log(reader.result);
-    //   console.log("file is", file);
-    //   this.setState({
-    //     file: file,
-    //     imagePreviewUrl: reader.result,
-    //     imageUploaded: true
-    //   });
-    // }
-    // reader.readAsDataURL(file);
   }
 
   handleClick(e) {
@@ -205,61 +139,72 @@ export default class Upload extends React.Component {
     })
   }
 
+  setContinue(e) {
+    if (!this.state.continue) {
+      this.setState({continue: true})
+    } else {
+      this.setState({continue: false})
+    }
+  }
+
   render() {
-    return (
-      <div>
-      <InputTag left={this.state.currentTagScreenX} top={this.state.currentTagScreenY}
-        display={this.state.displayTagInput} handleTagSave={this.handleTagSave} handleTagCancel={this.handleTagCancel}
-        index={this.state.editTagIndex} tag={this.state.editTag}/>
-      <div id="white_background_wrapper">
-        {this.state.imageUploaded ?
+    console.log("imagePreviewUrls are", this.state.imagePreviewUrls);
+    if (this.state.continue) {
+      return (
         <div>
-          <div id="single_post_polaroid_div">
-            <div id="tag_click_div_wrapper">
-              <div id="tag_click_div" onClick={this.handleClick}>
-                <div id="single_post_image_wrapper">
-                      <img id="upload_post_image" alt="" src={this.state.imagePreviewUrl}></img>
+          <InputTag left={this.state.currentTagScreenX} top={this.state.currentTagScreenY}
+            display={this.state.displayTagInput} handleTagSave={this.handleTagSave} handleTagCancel={this.handleTagCancel}
+            index={this.state.editTagIndex} tag={this.state.editTag}/>
+          <div id="white_background_wrapper">
+            <div id="single_post_polaroid_div">
+              <div id="tag_click_div_wrapper">
+                <div id="tag_click_div" onClick={this.handleClick}>
+                  <div id="post_wrapper">
+                  {this.state.imagePreviewUrl.length === 1 ?
+                    <img id="post_image" alt="" src={this.state.imagePreviewUrls[0]}></img>
+                    :
+                    <Carousel>
+                      <Carousel.Item>
+                        <img id="post_image" alt="" src={this.state.imagePreviewUrls[0]}></img>
+                      </Carousel.Item>
+                      <Carousel.Item>
+                        <img id="post_image" alt="" src={this.state.imagePreviewUrls[1]}></img>
+                      </Carousel.Item>
+                    </Carousel>
+                  }
+                </div>
+
                 </div>
               </div>
-            </div>
 
-            </div>
-            <div id="input_div">
-              <p className="form_input_text" id="tags_input"><span>Post Info</span></p>
-              <input type="text" autocomplete="off" placeholder="Title"
-                name="title" onChange={this.handleChange} value={this.state.title}></input>
-              <input type="text" autocomplete="off" placeholder="Genre"
-                name="genre" onChange={this.handleChange} value={this.state.genre}></input>
-              <textarea type="text" autocomplete="off" placeholder="Description"
-                name="description" onChange={this.handleChange} value={this.state.description}></textarea>
-              <p className="form_input_text" id="tags_input"><span>Tags</span></p>
-              <div id="input_tag_header_div">
-                <button id="add_tag_button" type="button" onClick={this.showInputBox}>Add Tag</button>
               </div>
-              <Tags tags={this.state.inputTags} modify={true} handleTagDelete={this.handleTagDelete}
-                handleTagEdit={this.handleTagEdit}/>
-              <label htmlFor="input_image_button" id="image_upload_label">
-                Change image
-              </label>
-              <input id="input_image_button" type="file" name="post_pic" accept="image/*"
-                onChange={this.readImageFile}></input>
-              <input id="form_submit" type="button" onClick={this.handleSubmit} value="Submit" disabled={!this.state.title}></input>
+              <div id="input_div">
+                <p className="form_input_text" id="tags_input"><span>Post Info</span></p>
+                <input type="text" autoComplete="off" placeholder="Title"
+                  name="title" onChange={this.handleChange} value={this.state.title}></input>
+                <input type="text" autoComplete="off" placeholder="Genre"
+                  name="genre" onChange={this.handleChange} value={this.state.genre}></input>
+                <textarea type="text" autoComplete="off" placeholder="Description"
+                  name="description" onChange={this.handleChange} value={this.state.description}></textarea>
+                <p className="form_input_text" id="tags_input"><span>Tags</span></p>
+                <div id="input_tag_header_div">
+                  <button id="add_tag_button" type="button" onClick={this.showInputBox}>Add Tag</button>
+                </div>
+                <Tags tags={this.state.inputTags} modify={true} handleTagDelete={this.handleTagDelete}
+                  handleTagEdit={this.handleTagEdit}/>
+                <label htmlFor="input_image_button" id="image_upload_label">
+                  Change image
+                </label>
+                <input id="input_image_button" type="file" name="post_pic" accept="image/*" onChange={this.readImageFile} multiple></input>
+                <input id="form_submit" type="button" onClick={this.handleSubmit} value="Submit" disabled={!this.state.title}></input>
+            </div>
           </div>
         </div>
-         :
-        <div id="input_box">
-          <p id="input_box_title">Upload to this website</p>
-          <div id="image_upload_wrapper">
-            <label htmlFor="input_image_button" id="image_upload_label">
-              Upload an image
-            </label>
-            <input id="input_image_button" type="file" name="post_pic" accept="image/*"
-              onChange={this.readImageFile}></input>
-          </div>
-        </div>
-      }
-      </div>
-    </div>
-    );
+      )
+    } else {
+      return (
+        <UploadImages files={this.state.files} setContinue={this.setContinue}/>
+      )
+    }
   }
 }

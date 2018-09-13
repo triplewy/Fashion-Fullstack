@@ -110,6 +110,8 @@ textarea:focus {
 .carousel-control.left, .carousel-control.right {
    background-image:none !important;
    filter:none !important;
+   top: 50%;
+   bottom: 50%;
 }
 
 div.dropdown {
@@ -1728,8 +1730,7 @@ div.dropdown {
 
 #input_box {
   display: block;
-  height: 400px;
-  width: 600px;
+  width: 500px;
   border: 1px solid #ccc;
   margin: 80px auto;
 }
@@ -1744,6 +1745,7 @@ div.dropdown {
 
 #image_upload_wrapper {
   margin: 0 auto;
+  margin-bottom: 80px;
   text-align: center;
 }
 
@@ -2163,6 +2165,81 @@ div.dropdown {
   bottom: 0;
   height: 60px;
   left: 0;
+}
+
+#upload_images_wrapper {
+  padding: 40px 0;
+}
+
+#edit_image_wrapper {
+  display: inline-block;
+}
+
+#edit_image_wrapper img {
+}
+
+#image_list_wrapper {
+  float: right;
+}
+
+#upload_image_list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  max-height: 500px;
+  overflow-y: scroll;
+  padding: 0 0;
+  margin: 0 0;
+  background-color: #f1f1f1;
+  border-radius: 8px;
+}
+
+#upload_image_list li {
+  margin: 10px 20px;
+}
+
+#upload_image_list div {
+  display: inline-block;
+  position: relative;
+}
+
+#upload_image_list img {
+  max-height: 200px;
+  max-width: 150px;
+  border-radius: 4px;
+}
+
+#add_image_button {
+  width: 150px;
+  margin: 0;
+  background-color: #888888;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 20px 0;
+}
+
+.remove_image_button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  background-size: cover;
+  background-position: center;
+}
+
+.continue_button {
+  width: 190px;
+  margin: 20px 0;
+  padding: 10px 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  background-color: green;
+  border-radius: 4px;
 }
 
 @media only screen and (max-width: 1300px) {

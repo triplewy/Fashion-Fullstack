@@ -21,6 +21,7 @@ var fs = require('fs')
 var validator = require('validator');
 var nodemailer = require('nodemailer')
 var randomstring = require('randomstring')
+var sizeOf = require('image-size');
 var cors = require('cors')
 var socketIO = require('socket.io')
 var passportSocketIo = require('passport.socketio');
@@ -218,7 +219,7 @@ conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER AUTO_INCREMENT PRIM
 conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, network TEXT, networkId TEXT, accessToken TEXT, username VARCHAR(255) NOT NULL UNIQUE, email VARCHAR(255) UNIQUE, passwordText TEXT, passwordSalt TEXT, ' +
 'passwordHash CHAR(60), verificationHash CHAR(60), verified BOOLEAN NOT NULL DEFAULT FALSE, FOREIGN KEY (userId) REFERENCES users(userId));')
 
-conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, title VARCHAR(255) NOT NULL, genre TEXT, imageUrl VARCHAR(255) NOT NULL UNIQUE, original BOOLEAN, ' +
+conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, title VARCHAR(255) NOT NULL, genre TEXT, original BOOLEAN, ' +
 'views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (userId) REFERENCES users(userId));')
 
 conn.query('CREATE TABLE IF NOT EXISTS postsImages (imageId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, imageUrl VARCHAR(255) NOT NULL UNIQUE, imageIndex INTEGER NOT NULL, width INTEGER NOT NULL, height INTEGER NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId));')
@@ -438,7 +439,7 @@ var storage =  multer.memoryStorage()
 
 var upload = multer({
   storage: storage,
-  limits: {fileSize: 10000000, files: 1},
+  limits: {fileSize: 10000000, files: 5},
   fileFilter: function(request, file, callback) {
      var ext = path.extname(file.originalname)
      console.log("ext is", ext);
@@ -447,7 +448,7 @@ var upload = multer({
       }
       callback(null, true)
   }
-}).single('image');
+}).array('image', 5);
 
 var smtpTransport = nodemailer.createTransport({
     host: 'smtp.gmail.com',
@@ -482,9 +483,9 @@ bcrypt.hash('password', 10, function(err, hash) {
   })
 })
 
-insertQuery = [1, "Shanghai", "techwear", "/images/image-1527760266767.jpg", 1, "Jbin in Shanghai"];
-insertSQL = 'INSERT INTO posts (userId, title, genre, imageUrl, original, description) ' +
-  'VALUES (?, ?, ?, ?, ?, ?)';
+insertQuery = [1, "Shanghai", "techwear", 1, "Jbin in Shanghai"];
+insertSQL = 'INSERT INTO posts (userId, title, genre, original, description) ' +
+  'VALUES (?, ?, ?, ?, ?)';
 
 conn.query(insertSQL, insertQuery, function(err, result) {
   if (err) {
@@ -552,9 +553,9 @@ conn.query('INSERT INTO comments (mediaId, userId, comment) VALUES (?, ?, ?)', [
     })
   })
 
-  insertQuery = [2, "Laundromat", "streetwear", "/images/image-1529571492908.jpg", 0, "filler"];
-  insertSQL = 'INSERT INTO posts (userId, title, genre, imageUrl, original, description)' +
-    'VALUES (?, ?, ?, ?, ?, ?)';
+  insertQuery = [2, "Laundromat", "streetwear", 0, "filler"];
+  insertSQL = 'INSERT INTO posts (userId, title, genre, original, description)' +
+    'VALUES (?, ?, ?, ?, ?)';
 
   conn.query(insertSQL, insertQuery, function(err, result) {
       if (err) {
@@ -966,7 +967,7 @@ app.get('/api/playlistPost/:mediaId', (req, res) => {
   var userId = req.user.userId;
   var mediaId = req.params.mediaId
   conn.query('SELECT (SELECT COUNT(*) FROM views WHERE mediaId = a.mediaId) AS views, a.likes, a.reposts, ' +
-  'JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', b.imageUrl, \'width\', b.width, \'height\', b.height, \'imageIndex\', b.imageIndex)) AS imageUrls ' +
+  'JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', b.imageUrl, \'width\', b.width, \'height\', b.height, \'imageIndex\', b.imageIndex)) AS imageUrls, ' +
   '((SELECT COUNT(*) FROM reposts WHERE userId=:userId AND mediaId = a.mediaId) > 0) AS reposted, ' +
   '((SELECT COUNT(*) FROM likes WHERE userId=:userId AND mediaId = a.mediaId) > 0) AS liked, ' +
   '(a.userId = :userId) AS isPoster ' +
@@ -975,7 +976,7 @@ app.get('/api/playlistPost/:mediaId', (req, res) => {
       console.log(err);
     } else {
       var row = result[0]
-      res.send({views: views, likes: row.likes, reposts: row.reposts, liked: row.liked, reposted: row.reposted,
+      res.send({views: row.views, likes: row.likes, reposts: row.reposts, liked: row.liked, reposted: row.reposted,
         isPoster: row.isPoster, imageUrls: JSON.parse(row.imageUrls)})
     }
   })
@@ -1575,47 +1576,17 @@ app.post('/api/upload', loggedIn, function(req, res) {
       console.log(err);
       res.send({message: err.message})
     } else {
-      var filename = "/images/" + req.file.fieldname + '-' + Date.now() +'.jpg'
-      if (req.file.mimetype == 'image/png') {
-        fs.writeFile("public" + filename, req.file.buffer, function(err) {
-          if (err) {
-            console.log(err)
-            res.send({message: 'fail'})
-          } else {
-            Promise.all([uploadImageMetadata(req, filename)])
-            .then(function(allData) {
-              console.log("Records added successfully");
-              res.send({message: 'success'})
-            }).catch(e => {
-              console.log(e);
-              res.send({message: 'fail'})
-            })
-          }
+      storeImages(req.files).then(imageMetadata => {
+        console.log("imageMetadata is", imageMetadata);
+        Promise.all([uploadImageMetadata(req, imageMetadata)])
+        .then(function(allData) {
+          console.log("Records added successfully");
+          res.send({message: 'success'})
+        }).catch(e => {
+          console.log(e);
+          res.send({message: 'fail'})
         })
-      } else {
-        jo.rotate(req.file.buffer, {}, function(error, buffer) {
-          if (error && error.code !== jo.errors.no_orientation && error.code !== jo.errors.correct_orientation) {
-            console.log('An error occurred when rotating the file: ' + error.message)
-            res.send({message: 'fail'})
-          } else {
-            fs.writeFile("public" + filename, buffer, function(err) {
-              if (err) {
-                console.log(err)
-                res.send({message: 'fail'})
-              } else {
-                Promise.all([uploadImageMetadata(req, filename)])
-                .then(function(allData) {
-                  console.log("Records added successfully");
-                  res.send({message: 'success'})
-                }).catch(e => {
-                  console.log(e);
-                  res.send({message: 'fail'})
-                })
-              }
-            })
-          }
-        })
-      }
+      })
     }
   })
 });
@@ -1816,7 +1787,26 @@ function postTagsFromUploadRevised(mediaId, inputTags) {
       question_query += '(?, ?, ?, ?, ?, ?, ?),';
     }
     question_query = question_query.slice(0, -1);
-    conn.query('INSERT INTO tags (mediaId, itemType, itemName, itemBrand, original, x, y) VALUES ' + question_query, insertQuery, function(err, reuslt) {
+    conn.query('INSERT INTO tags (mediaId, itemType, itemName, itemBrand, original, x, y) VALUES ' + question_query, insertQuery, function(err, result) {
+      if (err) {
+        return reject(err);
+      } else {
+        return resolve({message: 'success'})
+      }
+    })
+  });
+}
+
+function insertPostImages(mediaId, imageMetadata) {
+  return new Promise(function(resolve, reject) {
+    var question_query = ''
+    var insertQuery = [];
+    for (var i = 0; i < imageMetadata.length; i++) {
+      insertQuery.push(mediaId, imageMetadata[i].filename, imageMetadata[i].height, imageMetadata[i].width, imageMetadata[i].order);
+      question_query += '(?, ?, ?, ?, ?),';
+    }
+    question_query = question_query.slice(0, -1);
+    conn.query('INSERT INTO postsImages (mediaId, imageUrl, height, width, imageIndex) VALUES ' + question_query, insertQuery, function(err, result) {
       if (err) {
         return reject(err);
       } else {
@@ -2028,26 +2018,28 @@ function removeFromCollection(req, table, idType) {
   })
 }
 
-function uploadImageMetadata(req, filename) {
+function uploadImageMetadata(req, imageMetadata) {
   return new Promise(function(resolve, reject) {
-    var insertQuery = [req.user.userId, req.body.title, req.body.genre, filename,
-      req.body.original, 0, 0, 0, 0, req.body.description];
-    conn.query('INSERT INTO posts (userId, title, genre, imageUrl, ' +
-    'original, views, likes, reposts, comments, description) ' +
-    'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', insertQuery, function(err, result) {
+    var insertQuery = [req.user.userId, req.body.title, req.body.genre, req.body.original, req.body.description];
+    conn.query('INSERT INTO posts (userId, title, genre, original, description) VALUES (?, ?, ?, ?, ?)', insertQuery, function(err, result) {
       if (err) {
         console.log("upload error");
         return reject(err);
       } else {
         if (JSON.parse(req.body.inputTags).length > 0) {
-          Promise.all([postTagsFromUploadRevised(result.insertId, JSON.parse(req.body.inputTags))])
+          Promise.all([postTagsFromUploadRevised(result.insertId, JSON.parse(req.body.inputTags)), insertPostImages(result.insertId, imageMetadata)])
           .then(function(allData) {
             return resolve({message: 'success'})
           }).catch(e => {
             return reject(e);
           })
         } else {
-          return resolve({message: 'success'})
+          Promise.all([insertPostImages(result.insertId, imageMetadata)])
+          .then(function(allData) {
+            return resolve({message: 'success'})
+          }).catch(e => {
+            return reject(e);
+          })
         }
       }
     })
@@ -2146,4 +2138,45 @@ function orderFollowers(sortBy) {
     default:
       return 'ORDER BY following.dateTime'
   }
+}
+
+async function storeImages(files) {
+  var imageMetadata = []
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i]
+    var filename = "/images/" + file.fieldname + '-' + Date.now() +'.jpg'
+    var metadata = await storeImagesHelper(file, filename, i)
+    imageMetadata.push(metadata)
+  }
+  return imageMetadata
+}
+
+function storeImagesHelper(file, filename, index) {
+  return new Promise(function(resolve, reject) {
+    var dimensions = sizeOf(file.buffer);
+    if (file.mimetype == 'image/png') {
+      fs.writeFile("public" + filename, file.buffer, function(err) {
+        if (err) {
+          return reject(err);
+        } else {
+          return resolve({filename: filename, height: dimensions.height, width: dimensions.width, order: index})
+        }
+      })
+    } else {
+      jo.rotate(file.buffer, {}, function(error, buffer) {
+        if (error && error.code !== jo.errors.no_orientation && error.code !== jo.errors.correct_orientation) {
+          console.log('An error occurred when rotating the file: ' + error.message)
+          return reject(error)
+        } else {
+          fs.writeFile("public" + filename, buffer, function(err) {
+            if (err) {
+              return reject(err)
+            } else {
+              return resolve({filename: filename, height: dimensions.height, width: dimensions.width, order: index})
+            }
+          })
+        }
+      })
+    }
+  })
 }

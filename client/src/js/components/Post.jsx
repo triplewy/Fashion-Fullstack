@@ -4,6 +4,7 @@ import RepostHeader from './RepostHeader.jsx'
 import MediaHeader from './MediaHeader.jsx'
 import StatsHeader from './StatsHeader.jsx'
 import Comments from './Comments.jsx'
+import CarouselImages from './CarouselImages.jsx'
 import { LinkContainer } from 'react-router-bootstrap'
 import { Carousel } from 'react-bootstrap'
 import Cookie from 'js-cookie'
@@ -13,14 +14,11 @@ export default class Post extends React.Component {
     super(props);
     this.state = {
       bottom: 0,
-      seen: false,
-      loadHoverData: false
+      seen: false
     };
 
     this.myRef = React.createRef()
     this.handleScroll = this.handleScroll.bind(this)
-    this.setLoadHoverData = this.setLoadHoverData.bind(this)
-    this.setAspectRatio = this.setAspectRatio.bind(this)
   }
 
 
@@ -84,49 +82,7 @@ export default class Post extends React.Component {
     }
   }
 
-  addNewPlaylist(e) {
-    this.setState({displayPlaylist: true})
-  }
-
-  setLoadHoverData() {
-    this.setState({loadHoverData: true})
-  }
-
-  setAspectRatio(width, height) {
-    var aspectRatio = width/height
-    if (aspectRatio > 0.75 && width > 660) {
-      aspectRatio = width/660
-      return [660, height/aspectRatio]
-    } else if (aspectRatio <= 0.75 && height > 880) {
-      aspectRatio = height/880
-      return [width/aspectRatio, 880]
-    } else {
-      return [width, height]
-    }
-  }
-
   render() {
-
-    var renderedImages = [];
-    if (this.props.imageUrls) {
-      var height = 0;
-      var width = 0
-      if (this.props.imageUrls.length === 1) {
-        [width, height] = this.setAspectRatio(this.props.imageUrls[0].width, this.props.imageUrls[0].height)
-        renderedImages = (<div className="post_image" style={{backgroundImage: 'url(' + this.props.imageUrls[0].imageUrl + ')',
-        width: width, height: height}} />)
-      } else {
-        renderedImages = this.props.imageUrls.map((item, index) => {
-          [width, height] = this.setAspectRatio(item.width, item.height)
-          return (
-            <Carousel.Item key={index}>
-              <div className="post_image" style={{backgroundImage: 'url(' + item.imageUrl + ')', width: width, height: height}} />
-            </Carousel.Item>
-          )
-        })
-      }
-    }
-
     return (
         <div className="post_wrapper" ref={this.myRef}>
           <div id="polaroid_div">
@@ -140,13 +96,7 @@ export default class Post extends React.Component {
             }
             <LinkContainer to={{ pathname: '/' + this.props.username + '/' + this.props.mediaId, state: { post_data: this.props}}}>
             <div id="image_wrapper">
-              {this.props.imageUrls.length > 1 ?
-                <Carousel interval={null}>
-                  {renderedImages}
-                </Carousel>
-                :
-                renderedImages
-              }
+              <CarouselImages imageUrls={this.props.imageUrls} />
             </div>
           </LinkContainer>
           <div id="stats_wrapper">
