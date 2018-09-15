@@ -47,6 +47,47 @@ input[type="file"] {
   display: none;
 }
 
+ul {
+  margin: 0 0;
+  padding: 0 0;
+  list-style: none;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 15px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+input[type="range"]:hover {
+    opacity: 1;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #4CAF50;
+    cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #4CAF50;
+    cursor: pointer;
+}
+
 .valid_field {
   display: block;
   background-color: transparent;
@@ -369,12 +410,16 @@ div.dropdown {
 #polaroid_div {
   display: inline-block;
   border: 1px solid #f1f1f1;
-  -webkit-transition: box-shadow 0.2s;
-  transition: box-shadow 0.2s;
+  border-radius: 8px;
+  /* -webkit-transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s; */
+  -webkit-transition: width 0.2s, height 0.2s, border-color 0.2s;
+  transition: width 0.2s, height 0.2s, border-color 0.2s;
 }
 
 #polaroid_div:hover {
-  box-shadow: 5px 10px 8px #888888;
+  /* box-shadow: 5px 10px 8px #888888; */
+  border-color: #337ab7;
 }
 
 #post_header {
@@ -445,12 +490,15 @@ div.dropdown {
   /* max-width: 750px; */
   max-width: 660px;
   max-height: 880px;
+  min-width: 480px;
+  min-height: 300px;
   image-orientation: from-image;
   /* max-height: 776px; */
-  background-size: cover;
-  background-position: center;
-  transition: max-width 0.2s ease-in;
-  transition: max-height 0.2s ease-in;
+  /* background-size: cover; */
+  background-repeat: no-repeat;
+  /* background-position: 50% 50%; */
+  transition: width 0.5s ease-in, height 0.5s ease-in;
+  -webkit-transition: width 0.5s ease-in, height 0.5s ease-in;
 
 }
 
@@ -958,9 +1006,10 @@ div.dropdown {
 
 #input_div {
   display: inline-block;
+  flex-grow: 1;
   vertical-align: top;
-  width: 350px;
-  padding: 20px 10px;
+  width: 400px;
+  padding: 0 30px;
 }
 
 .input_box {
@@ -1094,11 +1143,15 @@ div.dropdown {
   list-style: none;
   padding: 0 0;
   margin: 0 0;
-  cursor: pointer;
+}
+
+#upload_tags_div li {
+  -webkit-transition: color 0.2s ease-in;
+  transition: color 0.2s ease-in;
 }
 
 #upload_tags_div li:hover {
-  background-color: #f1f1f1;
+  color: #337ab7;
 }
 
 #tag_original_input {
@@ -2167,12 +2220,59 @@ div.dropdown {
   left: 0;
 }
 
+#upload_title {
+  font-size: 32px;
+  font-weight: 600;
+  margin-top: 10px;
+  padding: 10px 0;
+  border-bottom: 2px solid #888888;
+}
+
 #upload_images_wrapper {
+  display: flex;
   padding: 40px 0;
+}
+
+#edit_tools_wrapper {
+  display: inline-block;
+  vertical-align: top;
+}
+
+#edit_tools {
+  border: 1px solid #ccc;
+  border-left: none;
+}
+
+#edit_tools li {
+  padding: 40px 40px;
+  text-align: center;
+  cursor: pointer;
+}
+
+#edit_tools li.active {
+  background-color: #f1f1f1;
+  cursor: default;
+}
+
+#edit_tools li:hover {
+  background-color: #f1f1f1;
+}
+
+.slidecontainer {
+  position: absolute;
+  bottom: 10%;
+  left: 30%;
+  width: 300px
+}
+
+.slidecontainer input {
+  box-shadow: none;
 }
 
 #edit_image_wrapper {
   display: inline-block;
+  position: relative;
+  border: 1px solid #337ab7;
 }
 
 #edit_image_wrapper img {
@@ -2194,31 +2294,42 @@ div.dropdown {
   border-radius: 8px;
 }
 
-#upload_image_list li {
-  margin: 10px 20px;
+.upload_image_list_item {
+  padding: 10px 20px;
+}
+
+#upload_image_list li.active {
+  background-color: #ccc;
 }
 
 #upload_image_list div {
   display: inline-block;
-  position: relative;
-}
-
-#upload_image_list img {
-  max-height: 200px;
-  max-width: 150px;
-  border-radius: 4px;
 }
 
 #add_image_button {
+  display: block;
   width: 150px;
-  margin: 0;
+  margin: 10px auto;
   background-color: #888888;
+  color: white;
   text-align: center;
   font-size: 18px;
   font-weight: 600;
   border-radius: 4px;
   cursor: pointer;
   padding: 20px 0;
+  transition: background-color 0.5s;
+  -webkit-transition: background-color 0.5s;
+
+}
+
+#add_image_button:hover {
+  background-color: #ccc;
+}
+
+#input_image_button:disabled+label {
+  cursor: default;
+  background-color: #ccc;
 }
 
 .remove_image_button {
@@ -2240,6 +2351,14 @@ div.dropdown {
   color: white;
   background-color: green;
   border-radius: 4px;
+}
+
+#back_button {
+  color: #337ab7;
+}
+
+#back_button:hover {
+  color: #23527c;
 }
 
 @media only screen and (max-width: 1300px) {

@@ -19,6 +19,7 @@ import SinglePostPage from './SinglePostPage.jsx'
 import SinglePlaylistPage from './SinglePlaylistPage.jsx'
 import Collections from './Collections.jsx'
 import Upload from './Upload.jsx'
+import UploadImages from './UploadImages.jsx'
 import Outfit_Finder from './OutfitFinder.jsx'
 import Search from './Search.jsx'
 import Playlist from './Playlist.jsx'
@@ -63,8 +64,10 @@ export default class Routes extends React.Component {
 
   onDrop(accepted, rejected) {
     console.log("files dropped", accepted);
-    if (accepted) {
+    if (accepted.length > 0) {
       this.setState({files: accepted, dropzoneActive: false, redirect: true});
+    } else {
+      this.setState({dropzoneActive: false})
     }
   }
 
@@ -133,16 +136,16 @@ export default class Routes extends React.Component {
               disableClick
               accept={['image/jpg', 'image/png', 'image/jpeg']}
               style={{position: "absolute", width: '100%'}}
-              multiple={false}
+              multiple={true}
               onDrop={this.onDrop}
               onDragEnter={this.onDragEnter}
           >
             <Modal show={this.state.dropzoneActive} onDragLeave={this.onDragLeave} style={{'pointerEvents': 'none', 'width': '90%', 'height': '90%'}}>
               <Modal.Header closeButton>
-                <Modal.Title>Modal heading</Modal.Title>
+                <Modal.Title>Drag Files Here</Modal.Title>
               </Modal.Header>
               <Modal.Body>
-                <div>Modal content here </div>
+                <div>Drag Here</div>
               </Modal.Body>
             </Modal>
             {this.state.redirect && <Redirect to={{pathname: '/upload', state: {files: this.state.files}}} />}
@@ -150,7 +153,7 @@ export default class Routes extends React.Component {
             <Navbar loggedIn={this.state.loggedIn} handleLogin={this.handleLogin} handleLogout={this.handleLogout}/>
             <Switch>
               <Route exact path='/' component={this.state.loggedIn ? Stream : Home}/>
-              <PrivateRoute exact path='/upload' component={Upload} />}/>
+              <PrivateRoute exact path='/upload' component={UploadImages} />}/>
               <PrivateRoute exact path='/you/collections' component={Collections} />
               <PrivateRoute exact path='/you/stats' component={Stats} />
               <PrivateRoute exact path='/you/notifications' component={NotificationsPage} />

@@ -2,6 +2,7 @@ import React from 'react';
 import InputTag from './InputTag.jsx';
 import Tags from './Tags.jsx'
 import CarouselImages from './CarouselImages.jsx'
+import UploadImages from './UploadImages.jsx'
 import { Carousel } from 'react-bootstrap'
 
 export default class UploadMetadata extends React.Component {
@@ -21,7 +22,7 @@ export default class UploadMetadata extends React.Component {
       editTagIndex: -1,
       editTag: {itemType:'shirt', itemBrand: '', itemName: '', original: false},
       carouselIndex: 0,
-      goBack: false
+      back: false
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -33,6 +34,7 @@ export default class UploadMetadata extends React.Component {
     this.handleTagEdit = this.handleTagEdit.bind(this)
     this.subtractCarouselIndex = this.subtractCarouselIndex.bind(this)
     this.addCarouselIndex = this.addCarouselIndex.bind(this)
+    this.goBack = this.goBack.bind(this)
   }
 
   componentDidMount() {
@@ -56,14 +58,17 @@ export default class UploadMetadata extends React.Component {
       }
     }
     var formData = new FormData();
+    console.log("files are", this.props.files);
     for (var i = 0; i < this.props.files.length; i++) {
-      formData.append('image', this.props.files[i], this.props.files[i].name)
+      formData.append('image', this.props.files[i].file, this.props.files[i].file.name)
     }
     formData.append('title', this.state.title);
     formData.append('genre', this.state.genre);
     formData.append('description', this.state.description);
     formData.append('original', original);
     formData.append('inputTags', JSON.stringify(this.state.inputTags));
+    formData.append('dimensions', JSON.stringify(this.props.dimensions))
+
 
     fetch('/api/upload', {
       method: 'POST',
@@ -145,7 +150,7 @@ export default class UploadMetadata extends React.Component {
 
   subtractCarouselIndex(e) {
     e.stopPropagation()
-    var length = this.props.imagePreviewUrls.length
+    var length = this.props.files.length
     var index = this.state.carouselIndex
     index -= 1
     if (index < 0) {
@@ -157,7 +162,7 @@ export default class UploadMetadata extends React.Component {
 
   addCarouselIndex(e) {
     e.stopPropagation()
-    var length = this.props.imagePreviewUrls.length
+    var length = this.props.files.length
     var index = this.state.carouselIndex
     index += 1
     if (index >= length) {
@@ -167,15 +172,22 @@ export default class UploadMetadata extends React.Component {
     }
   }
 
+  goBack(e) {
+    this.setState({back: true})
+  }
+
   render() {
     var renderedCarousel = [];
     var renderedCarouslIndicators = []
-    var length = this.props.imagePreviewUrls.length
+    var length = this.props.files.length
     if (length > 0) {
-      for (var i = 0; i < this.props.imagePreviewUrls.length; i++) {
+      for (var i = 0; i < this.props.files.length; i++) {
+        var width = this.props.dimensions[i].display.width
+        var height = this.props.dimensions[i].display.height
         renderedCarousel.push(
           <div className={i === this.state.carouselIndex ? "item active" : "item"} key={i}>
-            <img id="post_image" src={this.props.imagePreviewUrls[i]}></img>
+            <div className="post_image" style={{backgroundImage: 'url(' + this.props.files[i].preview + ')',
+              backgroundSize: (width + "px " + height + "px"), width: width, height: height}} />
           </div>
         )
         renderedCarouslIndicators.push(
@@ -183,59 +195,71 @@ export default class UploadMetadata extends React.Component {
         )
       }
     }
-    return (
-      <div>
-        <InputTag left={this.state.currentTagScreenX} top={this.state.currentTagScreenY}
-          display={this.state.displayTagInput} handleTagSave={this.handleTagSave} handleTagCancel={this.handleTagCancel}
-          index={this.state.editTagIndex} tag={this.state.editTag}/>
-        <div id="white_background_wrapper">
-          <div id="single_post_polaroid_div">
-            <div id="tag_click_div_wrapper">
-              <div id="tag_click_div" onClick={this.handleClick}>
-                <div id="post_wrapper">
-                {this.props.imagePreviewUrls.length === 1 ?
-                  <img id="post_image" alt="" src={this.props.imagePreviewUrls[0]}></img>
-                  :
-                  <div className="carousel slide">
-                    <ol className="carousel-indicators">
-                      {renderedCarouslIndicators}
-                     </ol>
-                     <div className="carousel-inner">
-                       {renderedCarousel}
-                    </div>
-                     <a className="carousel-control left" role="button" href="#">
-                       <span className="glyphicon glyphicon-chevron-left" onClick={this.subtractCarouselIndex}>
-                       </span>
-                       <span className="sr-only">Previous</span>
-                     </a>
-                     <a className="carousel-control right" role="button" href="#">
-                       <span className="glyphicon glyphicon-chevron-right" onClick={this.addCarouselIndex}>
-                       </span>
-                       <span className="sr-only">Next</span>
-                     </a>
+    if (this.state.back) {
+      return (
+        <UploadImages files={this.props.files} dimensions={this.props.dimensions}/>
+      )
+    } else {
+      return (
+        <div>
+          <InputTag left={this.state.currentTagScreenX} top={this.state.currentTagScreenY}
+            display={this.state.displayTagInput} handleTagSave={this.handleTagSave} handleTagCancel={this.handleTagCancel}
+            index={this.state.editTagIndex} tag={this.state.editTag}/>
+          <div id="white_background_wrapper">
+            <p id="upload_title">Upload</p>
+            <div id="upload_images_wrapper">
+              <div id="single_post_polaroid_div">
+                <div id="tag_click_div_wrapper">
+                  <div id="tag_click_div" onClick={this.handleClick}>
+                    <div id="post_wrapper">
+                    {this.props.files.length === 1 ?
+                      <div className="post_image" style={{backgroundImage: 'url(' + this.props.files[0].preview + ')',
+                        backgroundSize: (this.props.dimensions[0].display.width + "px " + this.props.dimensions[0].display.height + "px"),
+                        width: this.props.dimensions[0].display.width, height: this.props.dimensions[0].display.height}} />
+                      :
+                      <div className="carousel slide">
+                        <ol className="carousel-indicators">
+                          {renderedCarouslIndicators}
+                         </ol>
+                         <div className="carousel-inner">
+                           {renderedCarousel}
+                        </div>
+                         <a className="carousel-control left" role="button" href="#">
+                           <span className="glyphicon glyphicon-chevron-left" onClick={this.subtractCarouselIndex}>
+                           </span>
+                           <span className="sr-only">Previous</span>
+                         </a>
+                         <a className="carousel-control right" role="button" href="#">
+                           <span className="glyphicon glyphicon-chevron-right" onClick={this.addCarouselIndex}>
+                           </span>
+                           <span className="sr-only">Next</span>
+                         </a>
+                      </div>
+                    }
                   </div>
-                }
-              </div>
 
+                  </div>
+                </div>
+
+                </div>
+                <div id="input_div">
+                  <button id="back_button" onClick={this.goBack}>Back</button>
+                  <p className="form_input_text" id="tags_input"><span>Post</span></p>
+                  <input type="text" autoComplete="off" placeholder="Title"
+                    name="title" onChange={this.handleChange} value={this.state.title}></input>
+                  <input type="text" autoComplete="off" placeholder="Genre"
+                    name="genre" onChange={this.handleChange} value={this.state.genre}></input>
+                  <textarea type="text" autoComplete="off" placeholder="Description"
+                    name="description" onChange={this.handleChange} value={this.state.description}></textarea>
+                  <p className="form_input_text" id="tags_input"><span>Tags</span></p>
+                  <Tags tags={this.state.inputTags} modify={true} handleTagDelete={this.handleTagDelete}
+                    handleTagEdit={this.handleTagEdit}/>
+                  <input id="form_submit" type="button" onClick={this.handleSubmit} value="Submit" disabled={!this.state.title}></input>
               </div>
             </div>
-
-            </div>
-            <div id="input_div">
-              <p className="form_input_text" id="tags_input"><span>Post</span></p>
-              <input type="text" autoComplete="off" placeholder="Title"
-                name="title" onChange={this.handleChange} value={this.state.title}></input>
-              <input type="text" autoComplete="off" placeholder="Genre"
-                name="genre" onChange={this.handleChange} value={this.state.genre}></input>
-              <textarea type="text" autoComplete="off" placeholder="Description"
-                name="description" onChange={this.handleChange} value={this.state.description}></textarea>
-              <p className="form_input_text" id="tags_input"><span>Tags</span></p>
-              <Tags tags={this.state.inputTags} modify={true} handleTagDelete={this.handleTagDelete}
-                handleTagEdit={this.handleTagEdit}/>
-              <input id="form_submit" type="button" onClick={this.handleSubmit} value="Submit" disabled={!this.state.title}></input>
           </div>
         </div>
-      </div>
-    )
+      )
+    }
   }
 }

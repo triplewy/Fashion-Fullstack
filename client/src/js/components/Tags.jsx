@@ -97,7 +97,7 @@ export default class Tags extends React.Component {
                   </button>
                 </div>}
                 <div id="og_tag">
-                  {item.original && <span>✔</span>}
+                  {item.original ? <span>✔</span> : null}
                 </div>
             </li>
           )
