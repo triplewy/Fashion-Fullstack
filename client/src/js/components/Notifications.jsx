@@ -101,14 +101,14 @@ export default class Notifications extends React.Component {
     }
 
     return (
-      <Dropdown id="notifications_dropdown" onToggle={this.getNotifications}>
+      <Dropdown id="notifications_dropdown" onToggle={this.getNotifications} pullRight={true}>
         <Dropdown.Toggle className="banner_button" noCaret={true}>
           <img id="notifications_icon" alt="notifications icon" src={notification_icon}></img>
           <div className={this.state.unread ? 'notification_cirlce_show' : 'notification_cirlce_hide'}>
             {this.state.unread}
           </div>
         </Dropdown.Toggle>
-        <Dropdown.Menu style={{left: '-150px'}}>
+        <Dropdown.Menu>
           <ul className="notifications_list">
             {renderedNotifications}
             <Link to="/you/notifications">

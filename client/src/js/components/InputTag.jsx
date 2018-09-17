@@ -5,9 +5,11 @@ export default class InputTag extends React.Component {
     super(props);
 
     this.state = {
+      topBrands: [],
       itemType: 'shirt',
       itemBrand: '',
       itemName: '',
+      itemLink: '',
       original: false,
       index: -1
     }
@@ -17,14 +19,31 @@ export default class InputTag extends React.Component {
     this.cancelTag = this.cancelTag.bind(this);
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({
-      itemType: nextProps.tag.itemType,
-      itemBrand: nextProps.tag.itemBrand,
-      itemName: nextProps.tag.itemName,
-      original: nextProps.tag.original,
-      index: nextProps.tag.index,
+  componentDidMount() {
+    fetch('/api/topBrands', {
+      credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      this.setState({topBrands: data});
+    })
+    .catch((error) => {
+      console.error(error);
     });
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.tag !== prevProps.tag) {
+      this.setState({
+        itemType: this.props.tag.itemType,
+        itemBrand: this.props.tag.itemBrand,
+        itemName: this.props.tag.itemName,
+        original: this.props.tag.original,
+        link: this.props.tag.link,
+        index: this.props.tag.index,
+      });
+    }
   }
 
   cancelTag(e) {
@@ -41,38 +60,36 @@ export default class InputTag extends React.Component {
   }
 
   saveTag(e) {
-    this.props.handleTagSave(this.state.itemType, this.state.itemBrand, this.state.itemName, this.state.original);
+    this.props.handleTagSave(this.state.itemType, this.state.itemBrand, this.state.itemName, this.state.itemLink, this.state.original);
     this.setState({itemType: 'shirt', itemBrand: '', itemName: '', original: false, index: -1});
   }
 
   render() {
       return (
-        <div id="tags_input_box" style={{'left': this.props.left, 'top': this.props.top,
-          'display': this.props.display}}>
+        <div id="tags_input_box" style={{'left': this.props.left, 'top': this.props.top, 'display': this.props.display}}>
           <div id="input_tag_div">
-            <p className="form_tags_input_text" id="tag_brand_input">Clothing Item:</p>
-            <select id="item_dropdown" name="itemType"
-              value={this.state.itemType} onChange={this.handleChange}>
-              <option value="shirt">shirt</option>
-              <option value="shorts">shorts</option>
-              <option value="shoes">shoes</option>
-              <option value="jacket">jacket</option>
-              <option value="jacket">sweater</option>
-              <option value="jacket">pants</option>
+            <div id="input_tag_position"/>
+            <div>
+              <p id="tag_type_input">Type</p>
+              <input name="original" type="checkbox" checked={this.state.original} onChange={this.handleChange}></input>
+              <p id="tag_original_input">Original</p>
+            </div>
+            <select name="itemType" value={this.state.itemType} onChange={this.handleChange}>
+              <option value="shirt">Shirt</option>
+              <option value="shorts">Shorts</option>
+              <option value="shoes">Shoes</option>
+              <option value="jacket">Jacket</option>
+              <option value="sweater">Sweater</option>
+              <option value="pants">Pants</option>
             </select>
-            <p className="form_tags_input_text" id="tag_brand_input">Clothing Brand:</p>
-            <input className="input_box" type="text" name="itemBrand"
-              value={this.state.itemBrand} onChange={this.handleChange}></input>
-            <p className="form_tags_input_text" id="tag_name_input">Clothing Name:</p>
-            <input className="input_box" type="text" name="itemName"
-              value={this.state.itemName} onChange={this.handleChange}></input>
-            <p className="form_tags_input_text" id="tag_original_input">Original:</p>
-            <input name="original" type="checkbox" checked={this.state.original}
-              onChange={this.handleChange}></input>
-            <br />
+            <p id="tag_brand_input">Brand</p>
+            <input type="text" name="itemBrand" value={this.state.itemBrand} onChange={this.handleChange}></input>
+            <p id="tag_name_input">Name</p>
+            <input type="text" name="itemName" value={this.state.itemName} onChange={this.handleChange}></input>
+            <p id="tag_name_input">Link</p>
+            <input type="text" name="itemLink" value={this.state.itemLink} onChange={this.handleChange}></input>
             <button id="form_cancel" type="button" onClick={this.cancelTag}>Cancel</button>
-            <button id="save_tag_button" type="button"
-              onClick={this.saveTag}>Save</button>
+            <button id="save_tag_button" type="button" onClick={this.saveTag}>Save</button>
           </div>
         </div>
       );

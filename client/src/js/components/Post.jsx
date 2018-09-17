@@ -6,19 +6,20 @@ import StatsHeader from './StatsHeader.jsx'
 import Comments from './Comments.jsx'
 import CarouselImages from './CarouselImages.jsx'
 import { LinkContainer } from 'react-router-bootstrap'
-import { Carousel } from 'react-bootstrap'
 import Cookie from 'js-cookie'
 
 export default class Post extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      carouselIndex: 0,
       bottom: 0,
       seen: false
     };
 
     this.myRef = React.createRef()
     this.handleScroll = this.handleScroll.bind(this)
+    this.setCarouselIndex = this.setCarouselIndex.bind(this)
   }
 
 
@@ -82,6 +83,10 @@ export default class Post extends React.Component {
     }
   }
 
+  setCarouselIndex(index) {
+    this.setState({carouselIndex: index})
+  }
+
   render() {
     return (
         <div className="post_wrapper" ref={this.myRef}>
@@ -94,9 +99,9 @@ export default class Post extends React.Component {
               <MediaHeader username={this.props.username} profile_image_src={this.props.profile_image_src} profileName={this.props.profileName}
                 genre={this.props.genre} uploadDate={this.props.uploadDate} isPlaylist={false} classStyle={"post_profile_link"}/>
             }
-            <LinkContainer to={{ pathname: '/' + this.props.username + '/' + this.props.mediaId, state: { post_data: this.props}}}>
-            <div id="image_wrapper">
-              <CarouselImages imageUrls={this.props.imageUrls} />
+          <LinkContainer to={{ pathname: '/' + this.props.username + '/' + this.props.url, state: { post_data: this.props}}}>
+            <div className="image_wrapper">
+              <CarouselImages imageUrls={this.props.imageUrls} carouselIndex={this.state.carouselIndex}/>
             </div>
           </LinkContainer>
           <div id="stats_wrapper">
@@ -112,7 +117,7 @@ export default class Post extends React.Component {
                 {this.props.original !== 0 && <span>✔</span>}
               </div>
             </div>
-            <Tags tags={this.props.tags} modify={false}/>
+            <Tags tags={this.props.tags} modify={false} setCarouselIndex={this.setCarouselIndex}/>
             <div id="description_wrapper">
               <p id="description">{this.props.description}</p>
             </div>

@@ -2,8 +2,6 @@ import React from 'react';
 import InputTag from './InputTag.jsx';
 import Tags from './Tags.jsx'
 import UploadImages from './UploadImages.jsx'
-import CarouselImages from './CarouselImages.jsx'
-import * as loadImage from 'blueimp-load-image'
 import { Carousel } from 'react-bootstrap'
 
 export default class Upload extends React.Component {

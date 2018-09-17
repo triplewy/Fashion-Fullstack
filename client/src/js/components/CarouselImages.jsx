@@ -6,11 +6,25 @@ export default class CarouselImages extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      index: this.props.carouselIndex,
+      direction: null
     };
 
+    this.handleSelect = this.handleSelect.bind(this);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.carouselIndex !== prevProps.carouselIndex) {
+      this.setState({index: this.props.carouselIndex})
+    }
+  }
+
+  handleSelect(selectedIndex, e) {
+    this.setState({index: selectedIndex, direction: e.direction});
   }
 
   render() {
+    const { index, direction } = this.state;
     var renderedImages = [];
     if (this.props.imageUrls) {
       var width = 0
@@ -32,7 +46,12 @@ export default class CarouselImages extends React.Component {
           )
         })
         return (
-          <Carousel interval={null}>
+          <Carousel
+            interval={null}
+            activeIndex={index}
+            direction={direction}
+            onSelect={this.handleSelect}
+          >
             {renderedImages}
           </Carousel>
         )

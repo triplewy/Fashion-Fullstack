@@ -153,11 +153,11 @@ export default class Playlist extends React.Component {
                 genre={this.props.genre} uploadDate={this.props.uploadDate} isPlaylist={true} classStyle={"post_profile_link"}/>
             }
             <LinkContainer to={{ pathname: '/' + currentPost.username + '/' + currentPost.mediaId, state: { post_data: currentPost} }}>
-            <div id="image_wrapper">
-              {this.state.currentPost &&
-                <CarouselImages imageUrls={this.state.currentPost.imageUrls} />
-              }
-            </div>
+              <div className="image_wrapper">
+                {this.state.currentPost &&
+                  <CarouselImages imageUrls={this.state.currentPost.imageUrls} />
+                }
+              </div>
           </LinkContainer>
           <div id="stats_wrapper">
             <PlaylistStatsHeader playlistId={this.props.playlistId} likes={this.props.likes} reposts={this.props.reposts} followers={this.props.followers}

@@ -219,7 +219,7 @@ conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER AUTO_INCREMENT PRIM
 conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, network TEXT, networkId TEXT, accessToken TEXT, username VARCHAR(255) NOT NULL UNIQUE, email VARCHAR(255) UNIQUE, passwordText TEXT, passwordSalt TEXT, ' +
 'passwordHash CHAR(60), verificationHash CHAR(60), verified BOOLEAN NOT NULL DEFAULT FALSE, FOREIGN KEY (userId) REFERENCES users(userId));')
 
-conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, title VARCHAR(255) NOT NULL, genre TEXT, original BOOLEAN, ' +
+conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, title VARCHAR(255) NOT NULL, url VARCHAR(255) NOT NULL, genre TEXT, original BOOLEAN, ' +
 'views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (userId) REFERENCES users(userId));')
 
 conn.query('CREATE TABLE IF NOT EXISTS postsImages (imageId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, imageUrl VARCHAR(255) NOT NULL UNIQUE, imageIndex INTEGER NOT NULL, width INTEGER NOT NULL, height INTEGER NOT NULL, displayWidth INTEGER, displayHeight INTEGER, FOREIGN KEY (mediaId) REFERENCES posts(mediaId));')
@@ -236,7 +236,7 @@ conn.query('CREATE TABLE IF NOT EXISTS postsNotifications (notificationId INTEGE
 conn.query('CREATE TABLE IF NOT EXISTS playlistsNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, playlistId INTEGER NOT NULL, activity INTEGER NOT NULL, comment TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
 'FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId), FOREIGN KEY (playlistId) REFERENCES playlists(playlistId))')
 
-conn.query('CREATE TABLE IF NOT EXISTS tags (tagId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, itemType TEXT, itemName TEXT, itemBrand TEXT, original BOOLEAN NOT NULL DEFAULT FALSE, x INTEGER, y INTEGER, FOREIGN KEY (mediaId) REFERENCES posts(mediaId))');
+conn.query('CREATE TABLE IF NOT EXISTS tags (tagId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, itemType TEXT NOT NULL, itemName TEXT, itemBrand TEXT, original BOOLEAN NOT NULL DEFAULT FALSE, x INTEGER NOT NULL, y INTEGER NOT NULL, link VARCHAR(255), imageIndex INTEGER NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS reposts (repostId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
 
@@ -487,9 +487,9 @@ bcrypt.hash('password', 10, function(err, hash) {
   })
 })
 
-insertQuery = [1, "Shanghai", "techwear", 1, "Jbin in Shanghai"];
-insertSQL = 'INSERT INTO posts (userId, title, genre, original, description) ' +
-  'VALUES (?, ?, ?, ?, ?)';
+insertQuery = [1, "Shanghai", "shanghai", "techwear", 1, "Jbin in Shanghai"];
+insertSQL = 'INSERT INTO posts (userId, title, url, genre, original, description) ' +
+  'VALUES (?, ?, ?, ?, ?, ?)';
 
 conn.query(insertSQL, insertQuery, function(err, result) {
   if (err) {
@@ -559,9 +559,9 @@ conn.query('INSERT INTO comments (mediaId, userId, comment) VALUES (?, ?, ?)', [
     })
   })
 
-  insertQuery = [2, "Laundromat", "streetwear", 0, "filler"];
-  insertSQL = 'INSERT INTO posts (userId, title, genre, original, description)' +
-    'VALUES (?, ?, ?, ?, ?)';
+  insertQuery = [2, "Laundromat", "laundromat", "streetwear", 0, "filler"];
+  insertSQL = 'INSERT INTO posts (userId, title, url, genre, original, description)' +
+    'VALUES (?, ?, ?, ?, ?, ?)';
 
   conn.query(insertSQL, insertQuery, function(err, result) {
       if (err) {
@@ -928,6 +928,41 @@ app.get('/api/homeOriginal', loggedIn, (req, res) => {
     res.send(allData[0])
   }).catch(err => {
     console.log(err);
+  })
+})
+
+app.get('/api/urlAvailable/:url', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/urlAvailable/' + req.params.url);
+  const userId = req.user.userId
+  conn.query('SELECT 1 FROM posts WHERE userId=? AND url=?', [userId, req.params.url], function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(result);
+      res.send(result)
+    }
+  })
+})
+
+app.get('/api/topBrands', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/topBrands');
+  conn.query('SELECT itemBrand FROM tags GROUP BY itemBrand ORDER BY COUNT(*) DESC LIMIT 50', [], function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(result)
+    }
+  })
+})
+
+app.get('/api/topGenres', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/topGenres');
+  conn.query('SELECT genre FROM posts GROUP BY genre ORDER BY COUNT(*) DESC LIMIT 50', [], function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(result)
+    }
   })
 })
 
@@ -1790,11 +1825,12 @@ function postTagsFromUploadRevised(mediaId, inputTags) {
     var question_query = ''
     var insertQuery = [];
     for (var i = 0; i < inputTags.length; i++) {
-      insertQuery.push(mediaId, inputTags[i].itemType, inputTags[i].itemName, inputTags[i].itemBrand, inputTags[i].original, inputTags[i].x, inputTags[i].y);
-      question_query += '(?, ?, ?, ?, ?, ?, ?),';
+      insertQuery.push(mediaId, inputTags[i].itemType, inputTags[i].itemName, inputTags[i].itemBrand,
+        inputTags[i].original, inputTags[i].x, inputTags[i].y, inputTags[i].link, inputTags[i].imageIndex);
+      question_query += '(?, ?, ?, ?, ?, ?, ?, ?, ?),';
     }
     question_query = question_query.slice(0, -1);
-    conn.query('INSERT INTO tags (mediaId, itemType, itemName, itemBrand, original, x, y) VALUES ' + question_query, insertQuery, function(err, result) {
+    conn.query('INSERT INTO tags (mediaId, itemType, itemName, itemBrand, original, x, y, link, imageIndex) VALUES ' + question_query, insertQuery, function(err, result) {
       if (err) {
         return reject(err);
       } else {
@@ -1845,7 +1881,7 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
       originalToggle2 = 'AND a.original = 1'
     }
 
-    var userPlaylistReposts = 'SELECT null as mediaId, a.playlistId, a.title, a.genre, a.public, null as original, null as imageUrls, ' +
+    var userPlaylistReposts = 'SELECT null as mediaId, a.playlistId, a.title, null AS url, a.genre, a.public, null as original, null as imageUrls, ' +
     'null AS views, a.likes, a.reposts, a.comments, a.followers AS playlistFollowers, a.description, a.dateTime AS uploadDate, playlistsReposts.dateTime as orderTime, ' +
     'b.username AS repost_username, b.profileName AS repost_profileName, b.profile_image_src AS repost_profile_image_src, ' +
     'c.username AS username, c.profileName AS profileName, c.profile_image_src AS profile_image_src, ' +
@@ -1856,7 +1892,7 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     'FROM playlistsReposts INNER JOIN playlists AS a ON a.playlistId = playlistsReposts.playlistId INNER JOIN users AS c ON c.userId = a.userId INNER JOIN users AS b ON b.userId = playlistsReposts.userId LEFT JOIN playlistsPosts AS e ON e.playlistId = playlistsReposts.playlistId LEFT JOIN posts AS f ON f.mediaId = e.mediaId LEFT JOIN users AS g ON g.userId = f.userId ' +
     'WHERE ' + profileToggle1 + 'playlistsReposts.userId=:userId GROUP BY playlistsReposts.repostId'
 
-    var userPlaylistPosts = 'SELECT null as mediaId, a.playlistId, a.title, a.genre, a.public, null as original, null as imageUrls, ' +
+    var userPlaylistPosts = 'SELECT null as mediaId, a.playlistId, a.title, null AS url, a.genre, a.public, null as original, null as imageUrls, ' +
     'null AS views, a.likes, a.reposts, a.comments, a.followers AS playlistFollowers, a.description, a.dateTime AS uploadDate, a.dateTime as orderTime, ' +
     'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, ' +
     'b.username AS username, b.profileName AS profileName, b.profile_image_src AS profile_image_src, ' +
@@ -1866,22 +1902,22 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     '(a.userId = :cookieUser) AS isPoster ' +
     'FROM playlists AS a INNER JOIN users AS b ON b.userId = a.userId LEFT JOIN playlistsPosts ON playlistsPosts.playlistId = a.playlistId LEFT JOIN posts ON posts.mediaId = playlistsPosts.mediaId LEFT JOIN users AS c ON c.userId = posts.userId WHERE ' + profileToggle2 + 'a.userId=:userId GROUP BY a.playlistId'
 
-    var userReposts = 'SELECT a.mediaId, null as playlistId, a.title, a.genre, null, a.original, JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', e.imageUrl, \'width\', e.width, \'height\', e.height, \'imageIndex\', e.imageIndex)) AS imageUrls, a.views, ' +
+    var userReposts = 'SELECT a.mediaId, null as playlistId, a.title, a.url, a.genre, null, a.original, JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', e.imageUrl, \'width\', e.width, \'height\', e.height, \'imageIndex\', e.imageIndex)) AS imageUrls, a.views, ' +
     'a.likes, a.reposts, a.comments, null as playlistFollowers, a.description, a.dateTime AS uploadDate, reposts.dateTime as orderTime, ' +
     'b.username as repost_username, b.profileName as repost_profileName, b.profile_image_src AS repost_profile_image_src, ' +
     'c.username AS username, c.profileName as profileName, c.profile_image_src AS profile_image_src, d.postTags AS postTags, null AS playlistPosts, ' +
     '((SELECT COUNT(*) FROM reposts WHERE userId=:cookieUser AND mediaId = a.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=:cookieUser AND mediaId = a.mediaId) > 0) AS liked, null AS followed, (a.userId = :cookieUser) AS isPoster ' +
     'FROM reposts INNER JOIN posts AS a ON a.mediaId = reposts.mediaId INNER JOIN users AS c ON c.userId = a.userId INNER JOIN users AS b ON b.userId = reposts.userId ' +
-    'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'itemType\', itemType, \'itemName\', itemName, \'itemBrand\', itemBrand, \'original\', original, \'itemX\', x, \'itemY\', y)) AS postTags FROM tags GROUP BY mediaId) d ON d.mediaId = reposts.mediaId INNER JOIN postsImages AS e ON e.mediaId = reposts.mediaId ' +
+    'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'itemType\', itemType, \'itemName\', itemName, \'itemBrand\', itemBrand, \'original\', original, \'itemX\', x, \'itemY\', y, \'imageIndex\', imageIndex)) AS postTags FROM tags GROUP BY mediaId) d ON d.mediaId = reposts.mediaId INNER JOIN postsImages AS e ON e.mediaId = reposts.mediaId ' +
     'WHERE (' + profileToggle3 + 'reposts.userId=:userId) ' + originalToggle2 + ' GROUP BY reposts.repostId'
 
-    var userPosts = 'SELECT posts.mediaId, null as playlistId, title, genre, null, posts.original, JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', e.imageUrl, \'width\', e.width, \'height\', e.height, \'imageIndex\', e.imageIndex)) AS imageUrls, views, likes, reposts, comments, ' +
+    var userPosts = 'SELECT posts.mediaId, null as playlistId, title, url, genre, null, posts.original, JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', e.imageUrl, \'width\', e.width, \'height\', e.height, \'imageIndex\', e.imageIndex)) AS imageUrls, views, likes, reposts, comments, ' +
     'null as playlistFollowers, posts.description, posts.dateTime AS uploadDate, posts.dateTime as orderTime, ' +
     'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, ' +
     'username AS username, profileName AS profileName, profile_image_src AS profile_image_src, tags.postTags AS postTags, null AS playlistPosts, ' +
     '((SELECT COUNT(*) FROM reposts WHERE userId=:cookieUser AND mediaId = posts.mediaId) > 0) AS reposted, ((SELECT COUNT(*) FROM likes WHERE userId=:cookieUser AND mediaId = posts.mediaId) > 0) AS liked, null AS followed, (posts.userId = :cookieUser) AS isPoster ' +
     'FROM posts INNER JOIN users ON users.userId = posts.userId ' +
-    'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'itemType\', itemType, \'itemName\', itemName, \'itemBrand\', itemBrand, \'original\', original, \'itemX\', x, \'itemY\', y)) AS postTags FROM tags GROUP BY mediaId) tags ON tags.mediaId = posts.mediaId LEFT JOIN postsImages AS e ON e.mediaId = posts.mediaId WHERE (' + profileToggle4 + 'posts.userId=:userId) ' + originalToggle1 + ' GROUP BY posts.mediaId'
+    'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'itemType\', itemType, \'itemName\', itemName, \'itemBrand\', itemBrand, \'original\', original, \'itemX\', x, \'itemY\', y, \'imageIndex\', imageIndex)) AS postTags FROM tags GROUP BY mediaId) tags ON tags.mediaId = posts.mediaId LEFT JOIN postsImages AS e ON e.mediaId = posts.mediaId WHERE (' + profileToggle4 + 'posts.userId=:userId) ' + originalToggle1 + ' GROUP BY posts.mediaId'
 
     var orderBy = ' ORDER BY orderTime DESC LIMIT 20'
 
@@ -1902,7 +1938,6 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
       if (err) {
         return reject(err)
       } else {
-        console.log(result);
         var stream = []
         for (var i = 0; i < result.length; i++) {
           var row = result[i]
@@ -1915,7 +1950,7 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
           if (mediaId) {
               var post = {mediaId:row.mediaId, views:row.views, likes:row.likes,
               reposts:row.reposts, comments:row.comments, imageUrls: JSON.parse(row.imageUrls),
-              title:row.title, genre:row.genre, description:row.description,
+              title:row.title, url: row.url, genre:row.genre, description:row.description,
               date:row.dateTime, original: row.original, username: row.username,
               profileName: row.profileName, profile_image_src: row.profile_image_src,
               tags: postTags, uploadDate: row.uploadDate,
@@ -2026,8 +2061,8 @@ function removeFromCollection(req, table, idType) {
 
 function uploadImageMetadata(req, imageMetadata) {
   return new Promise(function(resolve, reject) {
-    var insertQuery = [req.user.userId, req.body.title, req.body.genre.toLowerCase(), req.body.original, req.body.description];
-    conn.query('INSERT INTO posts (userId, title, genre, original, description) VALUES (?, ?, ?, ?, ?)', insertQuery, function(err, result) {
+    var insertQuery = [req.user.userId, req.body.title, req.body.url, req.body.genre.toLowerCase(), req.body.original, req.body.description];
+    conn.query('INSERT INTO posts (userId, title, url, genre, original, description) VALUES (?, ?, ?, ?, ?, ?)', insertQuery, function(err, result) {
       if (err) {
         console.log("upload error");
         return reject(err);

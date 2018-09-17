@@ -33,8 +33,8 @@ input {
   padding: 8px 0;
   border: 0;
   box-shadow: 0 1px 0px 0px #ebebeb;
-  -webkit-transition: box-shadow 0.5s;
-  transition: box-shadow 0.5s;
+  -webkit-transition: box-shadow 0.5s, color 0.5s;
+  transition: box-shadow 0.5s, color 0.5s;
 }
 
 input:focus {
@@ -54,16 +54,16 @@ ul {
 }
 
 input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 15px;
-    border-radius: 5px;
-    background: #d3d3d3;
-    outline: none;
-    opacity: 0.7;
-    -webkit-transition: .2s;
-    transition: opacity .2s;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 15px;
+  border-radius: 5px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
 }
 
 input[type="range"]:hover {
@@ -88,6 +88,47 @@ input[type="range"]::-moz-range-thumb {
     cursor: pointer;
 }
 
+.react-autosuggest__container {
+  position: relative;
+}
+
+.react-autosuggest__suggestions-container {
+  display: none;
+  width: 100%;
+
+}
+
+.react-autosuggest__suggestions-container--open {
+  display: block;
+  position: absolute;
+  top: 37px;
+  width: 100%;
+  border: 1px solid #4EA6EA;
+  border-top: none;
+  background-color: #fff;
+  font-family: Helvetica, sans-serif;
+  font-weight: 300;
+  font-size: 16px;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  z-index: 2;
+}
+
+.react-autosuggest__suggestions-list {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.react-autosuggest__suggestion {
+  cursor: pointer;
+  padding: 10px 20px;
+}
+
+.react-autosuggest__suggestion--highlighted {
+  background-color: #ddd;
+}
+
 .valid_field {
   display: block;
   background-color: transparent;
@@ -110,6 +151,7 @@ textarea {
   width: 100%;
   padding: 8px 8px;
   border: 1px solid #ebebeb;
+  border-radius: 4px;
   -webkit-transition: border-color 0.5s;
   transition: border-color 0.5s;
   resize: none;
@@ -338,7 +380,7 @@ div.dropdown {
   min-height: 706px;
   /* margin: 0 auto; */
   padding: 0 10%;
-  margin-top: 70px;
+  margin: 70px 0;
   background-color: white;
 }
 
@@ -413,8 +455,8 @@ div.dropdown {
   border-radius: 8px;
   /* -webkit-transition: box-shadow 0.2s;
   transition: box-shadow 0.2s; */
-  -webkit-transition: width 0.2s, height 0.2s, border-color 0.2s;
-  transition: width 0.2s, height 0.2s, border-color 0.2s;
+  transition: width 0.5s ease-in, height 0.5s ease-in, border-color 0.2s;
+  -webkit-transition: width 0.5s ease-in, height 0.5s ease-in, border-color 0.2s;
 }
 
 #polaroid_div:hover {
@@ -480,9 +522,8 @@ div.dropdown {
   border: 1px solid #f1f1f1;
 }
 
-#image_wrapper {
-  display: inline-block;
-  width: 100%;
+.image_wrapper {
+  cursor: pointer;
 }
 
 .post_image {
@@ -494,9 +535,7 @@ div.dropdown {
   min-height: 300px;
   image-orientation: from-image;
   /* max-height: 776px; */
-  /* background-size: cover; */
   background-repeat: no-repeat;
-  /* background-position: 50% 50%; */
   transition: width 0.5s ease-in, height 0.5s ease-in;
   -webkit-transition: width 0.5s ease-in, height 0.5s ease-in;
 
@@ -539,10 +578,6 @@ div.dropdown {
 #tags_div {
   padding: 0 0;
   font-size: 13px;
-}
-
-.clothing_tag {
-  padding: 10px 0;
 }
 
 .tag_image {
@@ -904,11 +939,6 @@ div.dropdown {
   max-width: 80px;
 }
 
-#single_post_polaroid_div {
-  display: inline-block;
-  max-width: 850px;
-}
-
 #single_post_image_wrapper {
   display: inline-block;
 }
@@ -1012,14 +1042,33 @@ div.dropdown {
   padding: 0 30px;
 }
 
-.input_box {
-  width: 100%;
-  padding: 4px 10px;
-  margin: 8px 0;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
+#input_div label {
+  display: block;
+  margin: 0 0;
+  font-weight: 400;
+  color: #888888;
+}
+
+#input_div label.required:after {
+  display: inline;
+  color: #e32;
+  content: ' *';
+}
+
+#input_div div.url_div {
+  display: flex;
+  margin-bottom: 40px;
+  color: #888888;
+}
+
+#input_div p.url_head {
+  display: inline-block;
+}
+
+#input_div input.url {
+  display: inline-block;
+  margin: 0 0;
+  padding: 0 0;
 }
 
 #add_tag_button {
@@ -1048,10 +1097,75 @@ div.dropdown {
 
 #input_tag_div {
   display: inline-block;
-  padding: 5px 5px;
+  position: relative;
+  padding: 10px 10px;
   width: 200px;
-  border: 1px solid #ccc;
   border-radius: 8px;
+  box-shadow: 0 0 0 2px white;
+  -webkit-transition: box-shadow 0.3s, color 0.3s;
+  transition: box-shadow 0.3s, color 0.3s;
+}
+
+#input_tag_div select {
+  padding: 4px 10px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px white;
+  background-color: transparent;
+  color: white;
+}
+
+#input_tag_div input[type="text"] {
+  width: 100%;
+  padding: 4px 10px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px white;
+  color: white;
+}
+
+#input_tag_div input[type="text"]:focus {
+  box-shadow: 0 0 0 2px #4EA6EA;
+}
+
+#input_tag_div input[type="checkbox"] {
+  margin-left: 5px;
+  width: 20px;
+  box-shadow: none;
+  float: right;
+}
+
+#input_tag_div p {
+  color: white;
+}
+
+#input_tag_div button {
+  padding: 5px 8px;
+  margin-top: 10px;
+  border-radius: 4px;
+  background-color: transparent;
+  color: white;
+  box-shadow: 0 0 0 2px white;
+  -webkit-transition: box-shadow 0.3s, color 0.3s;
+  transition: box-shadow 0.3s, color 0.3s;
+}
+
+#tag_type_input {
+  display: inline-block;
+}
+
+#input_tag_position {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  box-shadow: 0 0 0 2px white;
+  background-color: rgba(0,0,0,0.4);
+
 }
 
 #input_hr {
@@ -1061,11 +1175,11 @@ div.dropdown {
 }
 
 #form_cancel {
-  padding: 5px 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: white;
-  color: black;
+}
+
+#form_cancel:hover {
+  color: #D34C63;
+  box-shadow: 0 0 0 2px #D34C63;
 }
 
 #form_submit {
@@ -1129,11 +1243,11 @@ div.dropdown {
 
 #save_tag_button {
   float: right;
-  padding: 5px 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: white;
-  color: black;
+}
+
+#save_tag_button:hover {
+  color: #80D58F;
+  box-shadow: 0 0 0 2px #80D58F;
 }
 
 #upload_tags_div {
@@ -1146,8 +1260,16 @@ div.dropdown {
 }
 
 #upload_tags_div li {
+  color: black;
+  padding: 10px 0;
+  cursor: pointer;
   -webkit-transition: color 0.2s ease-in;
   transition: color 0.2s ease-in;
+}
+
+#upload_tags_div li.active {
+  color: #337ab7;
+  cursor: default;
 }
 
 #upload_tags_div li:hover {
@@ -1155,8 +1277,7 @@ div.dropdown {
 }
 
 #tag_original_input {
-  display: inline-block;
-  padding-right: 5px;
+  float: right;
 }
 
 #related_outfits_div {
@@ -1756,59 +1877,56 @@ div.dropdown {
 
 #tag_click_div_wrapper {
   display: inline-block;
+  align-self: flex-start;
   border: 2px solid #f1f1f1;
   border-radius: 4px;
-  width: 100%;
-  height: 100%;
   padding: 10px 10px;
-  margin: 0 0;
+  cursor: pointer;
+  transition: border-color 0.5s;
+  -webkit-transition: border-color 0.5s;
+
 }
 
 #tag_click_div_wrapper:hover {
-  border: 2px solid #337ab7;
-}
-
-#tag_click_div {
-  display: inline-block;
-  cursor: pointer;
+  border-color: #337ab7;
 }
 
 #tags_input_box {
   position: absolute;
   z-index: 3;
-  background-color: rgba(255,255,255,0.4);
+  background-color: rgba(0,0,0,0.4);
   border-radius: 8px;
-  cursor: grab;
 }
 
 #input_box {
   display: block;
-  width: 500px;
+  width: 50%;
   border: 1px solid #ccc;
-  margin: 80px auto;
+  margin: 120px auto;
+  border-radius: 8px;
+  text-align: center;
 }
 
 #input_box_title {
   display: block;
-  font-size: 24px;
-  font-weight: 600;
-  text-align: center;
-  padding: 60px 0;
+  margin: 0 0;
+  font-size: 28px;
+  font-weight: 400;
+  color: #888888;
+  padding: 80px;
 }
 
-#image_upload_wrapper {
-  margin: 0 auto;
-  margin-bottom: 80px;
-  text-align: center;
+#input_box p {
+  display: inline-block;
+  padding-bottom: 80px;
+  color: #888888;
 }
 
 #image_upload_label {
-  background-color: #337ab7;
+  display: inline-block;
+  padding: 0 3px;
   cursor: pointer;
-  padding: 20px 20px;
-  border-radius: 4px;
-  color: white;
-  margin: 0 auto;
+  color: #337ab7;
 }
 
 #tag_modifiers_div {
@@ -2222,10 +2340,16 @@ div.dropdown {
 
 #upload_title {
   font-size: 32px;
-  font-weight: 600;
+  font-weight: 400;
   margin-top: 10px;
   padding: 10px 0;
-  border-bottom: 2px solid #888888;
+  border-bottom: 1px solid #888888;
+  color: #888888;
+}
+
+#upload_disclaimer {
+  padding: 50px 0;
+  text-align: center;
 }
 
 #upload_images_wrapper {
@@ -2236,11 +2360,13 @@ div.dropdown {
 #edit_tools_wrapper {
   display: inline-block;
   vertical-align: top;
+  flex: 1;
 }
 
 #edit_tools {
   border: 1px solid #ccc;
   border-left: none;
+  width: 150px;
 }
 
 #edit_tools li {
@@ -2272,6 +2398,7 @@ div.dropdown {
 #edit_image_wrapper {
   display: inline-block;
   position: relative;
+  align-self: flex-start;
   border: 1px solid #337ab7;
 }
 

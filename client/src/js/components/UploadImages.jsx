@@ -1,4 +1,5 @@
 import React from 'react';
+import UploadDropzone from './UploadDropzone.jsx'
 import UploadMetadata from './UploadMetadata.jsx'
 import { setAspectRatio, setAspectRatioImageList } from './aspectRatio.js'
 import * as loadImage from 'blueimp-load-image'
@@ -8,6 +9,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 export default class UploadImages extends React.Component {
   constructor(props) {
     super(props);
+
     this.state = {
       files: this.props.files ? this.props.files : [],
       dimensions: this.props.dimensions ? this.props.dimensions : [],
@@ -34,6 +36,12 @@ export default class UploadImages extends React.Component {
     this.getBetween = this.getBetween.bind(this)
     this.onDragEnd = this.onDragEnd.bind(this);
     this.reorder = this.reorder.bind(this)
+  }
+
+  componentDidMount() {
+    if (this.props.droppedFiles) {
+      this.previewImages(this.props.droppedFiles)
+    }
   }
 
   readImageFiles(e) {
@@ -63,6 +71,7 @@ export default class UploadImages extends React.Component {
         };
       img.src = reader.result;
     }
+    console.log("file is", file);
     reader.readAsDataURL(file);
     const loadImageOptions = { canvas: true }
     loadImage.parseMetaData(file, (data) => {
@@ -196,10 +205,12 @@ export default class UploadImages extends React.Component {
                 )}
               </Draggable>
             )
+          } else {
+            return null
           }
         })
         renderedList.push(
-          <div>
+          <div key={length}>
             <input id="input_image_button" type="file" name="post_pic" accept="image/*" multiple
             onChange={this.readImageFiles} disabled={(this.state.files.length > 4) ? "disabled" : ""}></input>
             <label htmlFor="input_image_button" id="add_image_button">Add image</label>
@@ -214,13 +225,8 @@ export default class UploadImages extends React.Component {
           </div>
         )
       }
-
       if (this.state.files.length > 0) {
         var index = this.state.currentImageIndex
-        console.log("currentImageIndex is", index);
-        console.log("dimensions are", this.state.dimensions);
-        console.log("files are", this.state.files);
-        console.log("renderedList is", renderedList);
         var file = this.state.files[index]
         var dimensions = this.state.dimensions[index]
         return (
@@ -272,17 +278,7 @@ export default class UploadImages extends React.Component {
         )
       } else {
         return (
-          <div id="white_background_wrapper">
-            <div id="input_box">
-              <p id="input_box_title">Upload to this website</p>
-              <div id="image_upload_wrapper">
-                <label htmlFor="input_image_button" id="image_upload_label">
-                  Upload an image/images
-                </label>
-                <input id="input_image_button" type="file" name="post_pic" accept="image/*" onChange={this.readImageFiles} multiple></input>
-              </div>
-            </div>
-          </div>
+          <UploadDropzone />
         )
       }
     }

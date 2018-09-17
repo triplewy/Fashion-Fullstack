@@ -46,13 +46,13 @@ export default class Profile extends React.Component {
   }
 
   toggle_type(e) {
-    if (e.target.name === 1) {
+    if (e.target.name == 1) {
       this.getOriginalStream()
-    } else if (e.target.name === 2) {
+    } else if (e.target.name == 2) {
       this.getPostStream()
-    } else if (e.target.name === 3) {
+    } else if (e.target.name == 3) {
       this.getPlaylistStream()
-    } else if (e.target.name === 4) {
+    } else if (e.target.name == 4) {
       this.getRepostStream()
     } else {
       this.getStream()

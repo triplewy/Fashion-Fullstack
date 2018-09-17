@@ -13,7 +13,8 @@ export default class Tags extends React.Component {
     this.state = {
       tags: this.props.tags,
       displayTagLocation: -1,
-      displayClickTagLocation: -2
+      displayClickTagLocation: -2,
+      selectedTagIndex: -1
     };
 
     this.renderClothingIcon = this.renderClothingIcon.bind(this);
@@ -56,9 +57,9 @@ export default class Tags extends React.Component {
 
   showClickTagLocation(index) {
     if (this.state.displayClickTagLocation === index) {
-      this.setState({displayClickTagLocation: -2})
+      this.setState({displayClickTagLocation: -2, selectedTagIndex: index})
     } else {
-      this.setState({displayClickTagLocation: index})
+      this.setState({displayClickTagLocation: index, selectedTagIndex: index})
     }
   }
 
@@ -68,21 +69,28 @@ export default class Tags extends React.Component {
     this.setState({tags: tempArray})
   }
 
+  setCarouselIndex(index) {
+    this.setState({selectedTagIndex: index})
+    this.props.setCarouselIndex(index)
+  }
+
   render() {
     var renderedTags = [];
     if (this.state.tags) {
       renderedTags = this.state.tags.map((item, index) => {
           return (
-            <li key={index} className="clothing_tag" id={item.itemType + "_tag"} onMouseEnter={this.showTagLocation.bind(this, index)}
-              onMouseLeave={this.showTagLocation.bind(this, -1)} onClick={this.showClickTagLocation.bind(this, index)}
-              style={{'backgroundColor': this.state.displayClickTagLocation === index ? '#f1f1f1' : null}}>
-              <div id="tag_location" style={{'left': item.x, 'top': item.y,
+            <li key={index} className={this.state.selectedTagIndex === index ? "active" : ""}
+              onMouseEnter={this.showTagLocation.bind(this, index)}
+              onMouseLeave={this.showTagLocation.bind(this, -1)}
+              onClick={this.setCarouselIndex.bind(this, item.imageIndex)}
+            >
+              {/* <div id="tag_location" style={{'left': item.x, 'top': item.y,
                 'display': this.state.displayTagLocation === index ? 'block' : 'none'}}>
               </div>
               <div id="click_tag_location" style={{'left': item.x, 'top': item.y,
                 'display': this.state.displayClickTagLocation === index ? 'block' : 'none'}}>
                   <div id="inner_circle"></div>
-              </div>
+              </div> */}
               <img className="tag_image" alt="clothing item" src={this.renderClothingIcon(item.itemType)}></img>
                 <div className="tags_text_div">
                   <p className="tag_brand">{item.itemBrand}</p>

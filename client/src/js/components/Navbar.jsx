@@ -124,24 +124,16 @@ export default class Navbar extends React.Component {
           <div id="banner_right" className="banner_section">
             {this.state.loggedIn ?
               <div id="banner_user_div">
-              <Link to="/finder">
-                <button id="outfit_finder_button" className="banner_button">Explore</button>
-              </Link>
-              <Link to="/upload">
-                <button id="upload_button" className="banner_button">Upload</button>
-              </Link>
-              <NavbarProfile username={this.state.username} profile_image_src={this.state.profile_image_src} profileName={this.state.profileName}
-                handleLogout={this.props.handleLogout}/>
-              <Notifications />
-              <div className="btn-group">
-                <button className="dropdown-toggle" type="button" data-toggle="dropdown">Messages</button>
-                <ul className="dropdown-menu">
-                  <li className="form-group">
-                    Yo
-                  </li>
-                </ul>
+                <Link to="/finder">
+                  <button id="outfit_finder_button" className="banner_button">Explore</button>
+                </Link>
+                <Link to="/upload">
+                  <button id="upload_button" className="banner_button">Upload</button>
+                </Link>
+                <NavbarProfile username={this.state.username} profile_image_src={this.state.profile_image_src} profileName={this.state.profileName}
+                  handleLogout={this.props.handleLogout}/>
+                <Notifications />
               </div>
-            </div>
             :
             <div id="banner_user_div">
               <button id="banner_login_button" onClick={this.showLoginModal}>Login</button>
