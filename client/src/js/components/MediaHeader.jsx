@@ -19,7 +19,7 @@ export default class MediaHeader extends React.Component {
           <p id="post_status">{(this.props.isPlaylist ? "posted a playlist " : "posted a fit ") + dateDiffInDays(new Date(this.props.uploadDate)) + " ago"}</p>
         }
         {this.props.genre &&
-          <Link to={"/genre/" + this.props.genre} id="genre_button">{this.props.genre}</Link>}
+          <Link to={"/explore/" + this.props.genre} id="genre_button">{this.props.genre}</Link>}
       </div>
     );
   }

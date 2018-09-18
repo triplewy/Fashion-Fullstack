@@ -2,6 +2,10 @@ import React from 'react';
 import UploadImages from './UploadImages.jsx'
 import Dropzone from 'react-dropzone'
 import {Modal} from 'react-bootstrap';
+import shirt from 'images/shirt-icon.png'
+import jacket from 'images/jacket-icon.png'
+import shorts from 'images/shorts-icon.png'
+import shoes from 'images/shoes-icon.png'
 
 export default class UploadDropzone extends React.Component {
   constructor(props) {
@@ -52,14 +56,16 @@ export default class UploadDropzone extends React.Component {
   }
 
   render() {
-    if (this.state.files.length > 0) {
+    const files = this.state.files
+    const dropzoneActive = this.state.dropzoneActive
+    if (files.length > 0) {
       return (
-        <UploadImages droppedFiles={this.state.files} />
+        <UploadImages droppedFiles={files} />
       )
     } else {
       return (
         <div id="white_background_wrapper">
-          <div id="input_box" style={{border: (this.state.dropzoneActive ? '1px solid #337ab7' : "1px solid #ccc")}}>
+          <div id="input_box" style={{border: (dropzoneActive ? '2px solid #337ab7' : "2px solid #ccc")}}>
             <Dropzone
                 disableClick
                 accept={['image/jpg', 'image/png', 'image/jpeg']}
@@ -69,7 +75,12 @@ export default class UploadDropzone extends React.Component {
                 onDragEnter={this.onDragEnter}
                 onDragLeave={this.onDragLeave}
             >
-            <h1 id="input_box_title">Upload your fit(s)</h1>
+            <h1 id="input_box_title" style={{color: (dropzoneActive ? '#337ab7' : "#888888")}}>Upload your fit(s)</h1>
+            <div className="input_box_icons">
+              <div className={dropzoneActive ? "active" : ""} style={{backgroundImage: 'url(' + shorts + ')'}}></div>
+              <div className={dropzoneActive ? "active" : ""} style={{backgroundImage: 'url(' + shirt + ')'}}></div>
+              <div className={dropzoneActive ? "active" : ""} style={{backgroundImage: 'url(' + shoes + ')'}}></div>
+            </div>
             <p>Drag your files here or</p>
             <label htmlFor="input_image_button" id="image_upload_label">
               browse

@@ -1,4 +1,28 @@
 import React from 'react';
+import Autosuggest from 'react-autosuggest';
+
+function escapeRegexCharacters(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function getSuggestions(value, list) {
+  const escapedValue = escapeRegexCharacters(value.trim());
+  if (escapedValue === '') {
+    return [];
+  }
+  const regex = new RegExp('^' + escapedValue, 'i');
+  return list.filter(item => regex.test(item.itemBrand));
+}
+
+function getSuggestionValue(suggestion) {
+  return suggestion.itemBrand;
+}
+
+function renderSuggestion(suggestion) {
+  return (
+    <span>{suggestion.itemBrand}</span>
+  );
+}
 
 export default class InputTag extends React.Component {
   constructor(props) {
@@ -6,6 +30,7 @@ export default class InputTag extends React.Component {
 
     this.state = {
       topBrands: [],
+      brandSuggestions: [],
       itemType: 'shirt',
       itemBrand: '',
       itemName: '',
@@ -39,8 +64,8 @@ export default class InputTag extends React.Component {
         itemType: this.props.tag.itemType,
         itemBrand: this.props.tag.itemBrand,
         itemName: this.props.tag.itemName,
+        itemLink: this.props.tag.itemLink,
         original: this.props.tag.original,
-        link: this.props.tag.link,
         index: this.props.tag.index,
       });
     }
@@ -61,10 +86,26 @@ export default class InputTag extends React.Component {
 
   saveTag(e) {
     this.props.handleTagSave(this.state.itemType, this.state.itemBrand, this.state.itemName, this.state.itemLink, this.state.original);
-    this.setState({itemType: 'shirt', itemBrand: '', itemName: '', original: false, index: -1});
+    this.setState({itemType: 'shirt', itemBrand: '', itemName: '', itemLink: '', original: false, index: -1});
   }
 
+  onChange = (event, { newValue, method }) => {
+    this.setState({
+      itemBrand: newValue
+    });
+  };
+
+  onSuggestionsFetchRequested = ({ value }) => {
+   this.setState({brandSuggestions: getSuggestions(value, this.state.topBrands)});
+  };
+
+  onSuggestionsClearRequested = () => {
+   this.setState({brandSuggestions: []});
+  };
+
   render() {
+    const value = this.state.itemBrand
+    const inputProps = {value, onChange: this.onChange}
       return (
         <div id="tags_input_box" style={{'left': this.props.left, 'top': this.props.top, 'display': this.props.display}}>
           <div id="input_tag_div">
@@ -83,7 +124,15 @@ export default class InputTag extends React.Component {
               <option value="pants">Pants</option>
             </select>
             <p id="tag_brand_input">Brand</p>
-            <input type="text" name="itemBrand" value={this.state.itemBrand} onChange={this.handleChange}></input>
+            <Autosuggest
+              suggestions={this.state.brandSuggestions}
+              onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+              onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+              getSuggestionValue={getSuggestionValue}
+              renderSuggestion={renderSuggestion}
+              inputProps={inputProps}
+            />
+            {/* <input type="text" name="itemBrand" value={this.state.itemBrand} onChange={this.handleChange}></input> */}
             <p id="tag_name_input">Name</p>
             <input type="text" name="itemName" value={this.state.itemName} onChange={this.handleChange}></input>
             <p id="tag_name_input">Link</p>

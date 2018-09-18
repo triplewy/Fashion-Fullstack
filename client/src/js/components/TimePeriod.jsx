@@ -20,7 +20,7 @@ export default class Stats extends React.Component {
 
   render() {
     return (
-      <Dropdown id="time period dropdown" className="time_period_dropdown">
+      <Dropdown id="time period dropdown" className="time_period_dropdown" pullRight={true}>
         <Dropdown.Toggle id="time_period_button" noCaret={true}>
           <p>{this.state.timePeriodArray[this.state.timePeriod]}</p>
         </Dropdown.Toggle>

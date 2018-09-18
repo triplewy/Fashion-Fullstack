@@ -14,12 +14,7 @@ export default class ImageTetris extends React.Component {
     super(props);
 
     this.state = {
-      imageUrls1: [{imageUrl: image1, mediaId: 1}, {imageUrl: image7, mediaId: 2}],
-      imageUrls2: [{imageUrl: image2, mediaId: 1}, {imageUrl: image5, mediaId: 2}],
-      imageUrls3: [{imageUrl: image3, mediaId: 1}, {imageUrl: image4, mediaId: 2}],
-      imageUrls4: [{imageUrl: image6, mediaId: 1}]
     };
-
   }
 
   componentDidMount() {
@@ -27,51 +22,27 @@ export default class ImageTetris extends React.Component {
   }
 
   render() {
-    var renderedCol1 = [];
-    var renderedCol2 = [];
-    var renderedCol3 = [];
-    var renderedCol4 = [];
-    if (this.state.imageUrls1 != null) {
-      renderedCol1 = this.state.imageUrls1.map((item, index) => {
-        return (
-          <ImageTetrisBlock key={item.mediaId} mediaId={item.mediaId} imageUrl={item.imageUrl} />
-        )
-      })
-    }
-    if (this.state.imageUrls2 != null) {
-      renderedCol2 = this.state.imageUrls2.map((item, index) => {
-        return (
-          <ImageTetrisBlock key={item.mediaId} mediaId={item.mediaId} imageUrl={item.imageUrl} />
-        )
-      })
-    }
-    if (this.state.imageUrls3 != null) {
-      renderedCol3 = this.state.imageUrls3.map((item, index) => {
-        return (
-          <ImageTetrisBlock key={item.mediaId} mediaId={item.mediaId} imageUrl={item.imageUrl} />
-        )
-      })
-    }
-    if (this.state.imageUrls4 != null) {
-      renderedCol4 = this.state.imageUrls4.map((item, index) => {
-        return (
-          <ImageTetrisBlock key={item.mediaId} mediaId={item.mediaId} imageUrl={item.imageUrl} />
-        )
-      })
+    var renderedColumns = []
+    const posts = this.props.posts
+    if (posts.length > 0) {
+      for (var i = 0; i < posts.length; i++) {
+        if (i < 3) {
+          renderedColumns.push([<ImageTetrisBlock key={posts[i].mediaId} post={posts[i]} />])
+        } else {
+          renderedColumns[i%3].push(<ImageTetrisBlock key={posts[i].mediaId} post={posts[i]} />)
+        }
+      }
     }
     return (
       <div className="image_tetris_wrapper">
         <div className="tetris_column">
-          {renderedCol1}
+          {renderedColumns[0]}
         </div>
         <div className="tetris_column">
-          {renderedCol2}
+          {renderedColumns[1]}
         </div>
         <div className="tetris_column">
-          {renderedCol3}
-        </div>
-        <div className="tetris_column">
-          {renderedCol4}
+          {renderedColumns[2]}
         </div>
       </div>
     );

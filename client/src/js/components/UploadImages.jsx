@@ -235,12 +235,14 @@ export default class UploadImages extends React.Component {
             <div id="upload_images_wrapper">
               <div id="edit_image_wrapper">
                 {renderedEditTool}
-                {(dimensions && file) &&
+                {(dimensions && file) ?
                   <div className="post_image" style={{backgroundImage: 'url(' + file.preview + ')',
                     backgroundSize: (dimensions.display.width + "px " + dimensions.display.height + "px"),
                     width: dimensions.display.width, height: dimensions.display.height,
                     cursor: "move", backgroundPosition: (this.state.shift.x + "px " + this.state.shift.y + "px")}}
                     onMouseDown={this.handleMouseDown} onMouseUp={this.handleMouseUp} onMouseMove={this.handleMouseMove}/>
+                    :
+                  <div className="post_image" style={{width: 660, height: 660}}/>
                   }
               </div>
               <div id="edit_tools_wrapper">

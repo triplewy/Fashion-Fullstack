@@ -21,7 +21,7 @@ export default class ProfileHover extends React.Component {
       <div className={this.props.classStyle}>
         <Link to={"/" + this.props.username} onMouseEnter={this.setLoadHoverData}>
           {this.props.profile_image_src &&
-            <img alt="" src={this.props.profile_image_src}></img>
+            <div className="profile_image" alt="" style={{backgroundImage: 'url(' + this.props.profile_image_src + ')'}} />
           }
           <strong>{this.props.profileName}</strong>
         </Link>

@@ -17,7 +17,7 @@ import SinglePostPage from './SinglePostPage.jsx'
 import SinglePlaylistPage from './SinglePlaylistPage.jsx'
 import Collections from './Collections.jsx'
 import UploadDropzone from './UploadDropzone.jsx'
-import Outfit_Finder from './OutfitFinder.jsx'
+import Explore from './Explore.jsx'
 import Search from './Search.jsx'
 import Playlist from './Playlist.jsx'
 import Stats from './Stats.jsx'
@@ -109,7 +109,8 @@ export default class Routes extends React.Component {
             <PrivateRoute exact path='/you/followers' component={FollowersPage} />
             <PrivateRoute exact path='/you/following' component={FollowingPage} />
             <Route path='/verify' component={Verify} />
-            <Route exact path='/finder' component={Outfit_Finder}/>
+            <Route exact path='/explore' component={Explore}/>
+            <Route exact path='/explore/:genre' render={({match}) => <Explore genre={match.params.genre} />} />
             <Route exact path='/search' component={Search}/>
             <Route exact path='/signup' render={(props) => <Signup loggedIn={this.loggedIn} {...props}/>} />
             <Route exact path='/genre/:genre' render={({match}) => <GenrePage genre={match.params.genre} />} />

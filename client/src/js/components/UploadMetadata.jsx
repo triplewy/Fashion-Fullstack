@@ -88,7 +88,7 @@ export default class UploadMetadata extends React.Component {
 
   handleTagSave(itemType, itemBrand, itemName, link, original) {
     var tempInputTags = this.state.inputTags
-    var saveTag = {itemType: itemType, itemBrand: itemBrand, itemName: itemName, link: link, original: original,
+    var saveTag = {itemType: itemType, itemBrand: itemBrand, itemName: itemName, itemLink: link, original: original,
       x: this.state.tagX, y: this.state.tagY, imageIndex: this.state.carouselIndex}
     if (this.state.editTagIndex >= 0) {
       tempInputTags[this.state.editTagIndex] = saveTag
@@ -219,7 +219,8 @@ export default class UploadMetadata extends React.Component {
               </div>
             </div>
             <UploadPostMetadata tags={this.state.inputTags} modify={true} handleTagDelete={this.handleTagDelete}
-              handleTagEdit={this.handleTagEdit} goBack={this.goBack} handleSubmit={this.handleSubmit} setCarouselIndex={this.setCarouselIndex}/>
+              handleTagEdit={this.handleTagEdit} goBack={this.goBack} handleSubmit={this.handleSubmit}
+              carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
           </div>
           <div id="upload_disclaimer">
             <p>Descriptive info and stuff to make the page slightly longer vertically</p>

@@ -23,3 +23,23 @@ export function setAspectRatioImageList(width, height) {
     return [width, height]
   }
 }
+
+export function setAspectRatioImageTetrisBlock(width, height) {
+  var aspectRatio = width/height
+  if (width > 384) {
+    aspectRatio = width/384
+    return [384, height/aspectRatio]
+  }
+  // if (aspectRatio >= 0.75 && width > 384) {
+  //   aspectRatio = width/384
+  //   return [384, height/aspectRatio]
+  // }
+  // else if (aspectRatio < 0.75 && height > 512) {
+  //   console.log("yopooooooooo");
+  //   aspectRatio = height/512
+  //   return [width/aspectRatio, 512]
+  // }
+  else {
+    return [width, height]
+  }
+}

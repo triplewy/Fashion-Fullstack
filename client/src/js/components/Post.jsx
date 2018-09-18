@@ -101,7 +101,7 @@ export default class Post extends React.Component {
             }
           <LinkContainer to={{ pathname: '/' + this.props.username + '/' + this.props.url, state: { post_data: this.props}}}>
             <div className="image_wrapper">
-              <CarouselImages imageUrls={this.props.imageUrls} carouselIndex={this.state.carouselIndex}/>
+              <CarouselImages imageUrls={this.props.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
             </div>
           </LinkContainer>
           <div id="stats_wrapper">
@@ -113,11 +113,11 @@ export default class Post extends React.Component {
           <div id="tags_div_flexbox">
             <div id="title">
               <p id="title_text">{this.props.title}</p>
-              <div id="og_tag">
+              <div className="title_og_tag">
                 {this.props.original !== 0 && <span>✔</span>}
               </div>
             </div>
-            <Tags tags={this.props.tags} modify={false} setCarouselIndex={this.setCarouselIndex}/>
+            <Tags tags={this.props.tags} modify={false} setCarouselIndex={this.setCarouselIndex} carouselIndex={this.state.carouselIndex}/>
             <div id="description_wrapper">
               <p id="description">{this.props.description}</p>
             </div>

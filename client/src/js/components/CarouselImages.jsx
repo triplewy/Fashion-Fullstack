@@ -1,43 +1,52 @@
 import React from 'react';
 import { Carousel } from 'react-bootstrap'
-import { setAspectRatio } from './aspectRatio.js'
+import { setAspectRatio, setAspectRatioImageTetrisBlock } from './aspectRatio.js'
 
 export default class CarouselImages extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      index: this.props.carouselIndex,
       direction: null
     };
 
     this.handleSelect = this.handleSelect.bind(this);
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.props.carouselIndex !== prevProps.carouselIndex) {
-      this.setState({index: this.props.carouselIndex})
-    }
-  }
+  // componentDidUpdate(prevProps) {
+  //   if (this.props.carouselIndex !== prevProps.carouselIndex) {
+  //     console.log("index is", this.props.carouselIndex);
+  //     this.setState({index: this.props.carouselIndex})
+  //   }
+  // }
 
   handleSelect(selectedIndex, e) {
-    this.setState({index: selectedIndex, direction: e.direction});
+    this.setState({direction: e.direction});
+    this.props.setCarouselIndex(selectedIndex)
   }
 
   render() {
-    const { index, direction } = this.state;
+    const { direction } = this.state;
     var renderedImages = [];
     if (this.props.imageUrls) {
       var width = 0
       var height = 0;
       if (this.props.imageUrls.length === 1) {
-        [width, height] = setAspectRatio(this.props.imageUrls[0].width, this.props.imageUrls[0].height)
+        if (this.props.explore) {
+          [width, height] = setAspectRatioImageTetrisBlock(this.props.imageUrls[0].width, this.props.imageUrls[0].height)
+        } else {
+          [width, height] = setAspectRatio(this.props.imageUrls[0].width, this.props.imageUrls[0].height)
+        }
         return (
           <div className="post_image" style={{backgroundImage: 'url(' + this.props.imageUrls[0].imageUrl + ')',
             backgroundSize: width + "px " + height + "px", width: width, height: height}} />
         )
       } else {
         renderedImages = this.props.imageUrls.map((item, index) => {
-          [width, height] = setAspectRatio(item.width, item.height)
+          if (this.props.explore) {
+            [width, height] = setAspectRatioImageTetrisBlock(item.width, item.height)
+          } else {
+            [width, height] = setAspectRatio(item.width, item.height)
+          }
           return (
             <Carousel.Item key={index}>
               <div className="post_image" style={{backgroundImage: 'url(' + item.imageUrl + ')',
@@ -48,7 +57,7 @@ export default class CarouselImages extends React.Component {
         return (
           <Carousel
             interval={null}
-            activeIndex={index}
+            activeIndex={this.props.carouselIndex}
             direction={direction}
             onSelect={this.handleSelect}
           >

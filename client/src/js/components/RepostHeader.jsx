@@ -18,7 +18,7 @@ export default class RepostHeader extends React.Component {
         <p id="post_status">{"reposted " + dateDiffInDays(new Date(this.props.repostDate)) + " ago"}</p>
         <ProfileHover classStyle="post_profile_link" username={this.props.repost_username} profileName={this.props.repost_profileName}
           profile_image_src={this.props.repost_profile_image_src} />
-        {this.props.genre && <Link to={"/genre/" + this.props.genre} id="genre_button">{this.props.genre}</Link>}
+        {this.props.genre && <Link to={"/explore/" + this.props.genre} id="genre_button">{this.props.genre}</Link>}
       </div>
     );
   }
