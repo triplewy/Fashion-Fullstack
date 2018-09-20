@@ -115,9 +115,8 @@ export default class Routes extends React.Component {
             <Route exact path='/signup' render={(props) => <Signup loggedIn={this.loggedIn} {...props}/>} />
             <Route exact path='/genre/:genre' render={({match}) => <GenrePage genre={match.params.genre} />} />
             <Route exact path='/:profile' render={({match}) => <Profile profile={match.params.profile} />} />
-            <Route exact path='/:profile/:mediaId' component={SinglePostPage}/>
-            <Route exact path='/:profile/playlist/:playlistId' component={SinglePlaylistPage}/>
-            <Route exact path='/:profile/playlists/:playlistId' component={Playlist}/>
+            <Route exact path='/:profile/:url' component={SinglePostPage}/>
+            <Route exact path='/:profile/album/:url' component={SinglePlaylistPage}/>
           </Switch>
         </div>
       </BrowserRouter>

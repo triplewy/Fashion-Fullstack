@@ -6,12 +6,7 @@ export default class RenderedPosts extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      scrollY: 0
     };
-  }
-
-  componentDidMount() {
-    console.log("rendered posts mounted");
   }
 
   render() {
@@ -33,7 +28,7 @@ export default class RenderedPosts extends React.Component {
         } else if (item.playlistId) {
           return (
             <Playlist key={index} index={index} playlistId={item.playlistId} genre={item.genre} username={item.username}
-                  profileName={item.profileName} profile_image_src={item.profile_image_src}
+                  profileName={item.profileName} profile_image_src={item.profile_image_src} url={item.url}
                   playlist_image_srcs={item.playlist_image_srcs} likes={item.likes}
                   reposts={item.reposts} comments={item.comments} title={item.title}
                   description={item.description} uploadDate={item.uploadDate} followers={item.followers}

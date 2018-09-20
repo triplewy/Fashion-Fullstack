@@ -19,6 +19,7 @@ export default class Playlist extends React.Component {
     console.log(posts);
 
     this.state = {
+      carouselIndex: 0,
       playlistPosts: posts,
       playlistIndex: 0,
       currentPost: null,
@@ -30,6 +31,7 @@ export default class Playlist extends React.Component {
     this.fetchPlaylistPost = this.fetchPlaylistPost.bind(this)
     this.setPlaylistIndex = this.setPlaylistIndex.bind(this)
     this.handleScroll = this.handleScroll.bind(this)
+    this.setCarouselIndex = this.setCarouselIndex.bind(this)
   }
 
   componentDidMount() {
@@ -114,7 +116,11 @@ export default class Playlist extends React.Component {
 
   setPlaylistIndex(index, e) {
     this.fetchPlaylistPost(this.state.playlistPosts[index].mediaId)
-    this.setState({playlistIndex: index})
+    this.setState({playlistIndex: index, carouselIndex: 0})
+  }
+
+  setCarouselIndex(index) {
+    this.setState({carouselIndex: index})
   }
 
   render() {
@@ -125,9 +131,9 @@ export default class Playlist extends React.Component {
         return (
           <li key={index} value={index} className={(this.state.playlistIndex === index) ? 'playlist_post_selected' : 'playlist_post'}
                 disabled={(this.state.playlistIndex === index)}>
-            <div id="playlist_post_user_title_div" onClick={this.setPlaylistIndex.bind(this, index)}>
+            <div id="playlist_post_user_title_div">
               <ProfileHover username={item.username} profileName={item.profileName} classStyle={"post_profile_link"}/>
-              <p id="playlist_post_title">{item.title}</p>
+              <p id="playlist_post_title" onClick={this.setPlaylistIndex.bind(this, index)}>{item.title}</p>
             </div>
             {(this.state.playlistIndex === index && this.state.currentPost) &&
               <div id="stats_wrapper">
@@ -152,10 +158,10 @@ export default class Playlist extends React.Component {
               <MediaHeader username={this.props.username} profileName={this.props.profileName} profile_image_src={this.props.profile_image_src}
                 genre={this.props.genre} uploadDate={this.props.uploadDate} isPlaylist={true} classStyle={"post_profile_link"}/>
             }
-            <LinkContainer to={{ pathname: '/' + currentPost.username + '/' + currentPost.mediaId, state: { post_data: currentPost} }}>
+            <LinkContainer to={{ pathname: '/' + this.props.username + '/album/' + this.props.url, state: { playlistData: this.props} }}>
               <div className="image_wrapper">
                 {this.state.currentPost &&
-                  <CarouselImages imageUrls={this.state.currentPost.imageUrls} />
+                  <CarouselImages imageUrls={this.state.currentPost.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
                 }
               </div>
           </LinkContainer>

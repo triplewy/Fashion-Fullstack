@@ -4,6 +4,7 @@ import TypeSelector from './TypeSelector.jsx'
 import EditProfileModal from './EditProfileModal.jsx'
 import ProfileInfo from './ProfileInfo.jsx'
 import memoize from 'memoize-one'
+import Cookie from 'js-cookie'
 import * as loadImage from 'blueimp-load-image'
 
 // style={{backgroundImage: `url(${flower_background})`}}
@@ -11,6 +12,7 @@ import * as loadImage from 'blueimp-load-image'
 export default class Profile extends React.Component {
   constructor(props) {
     super(props);
+    console.log(props);
     this.state = {
       streamData: [],
       profileInfo: {},
@@ -34,6 +36,31 @@ export default class Profile extends React.Component {
     this.editProfile = this.editProfile.bind(this)
     this.closeEditProfile = this.closeEditProfile.bind(this)
     this.readImageFile = this.readImageFile.bind(this)
+  }
+
+  componentDidMount() {
+    if (Cookie.get('username') !== this.props.profile) {
+      fetch('/api/profileVisit', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          username: this.props.profile,
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    } else {
+      console.log("same user");
+    }
   }
 
   changeProfile = memoize((url) => {

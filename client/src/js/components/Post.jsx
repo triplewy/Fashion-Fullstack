@@ -99,7 +99,7 @@ export default class Post extends React.Component {
               <MediaHeader username={this.props.username} profile_image_src={this.props.profile_image_src} profileName={this.props.profileName}
                 genre={this.props.genre} uploadDate={this.props.uploadDate} isPlaylist={false} classStyle={"post_profile_link"}/>
             }
-          <LinkContainer to={{ pathname: '/' + this.props.username + '/' + this.props.url, state: { post_data: this.props}}}>
+          <LinkContainer to={{ pathname: '/' + this.props.username + '/' + this.props.url, state: { postData: this.props}}}>
             <div className="image_wrapper">
               <CarouselImages imageUrls={this.props.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
             </div>
@@ -117,9 +117,11 @@ export default class Post extends React.Component {
                 {this.props.original !== 0 && <span>✔</span>}
               </div>
             </div>
-            <Tags tags={this.props.tags} modify={false} setCarouselIndex={this.setCarouselIndex} carouselIndex={this.state.carouselIndex}/>
+            <Tags mediaId={this.props.mediaId} tags={this.props.tags} modify={false} setCarouselIndex={this.setCarouselIndex} carouselIndex={this.state.carouselIndex}/>
             <div id="description_wrapper">
-              <p id="description">{this.props.description}</p>
+              <p id="description">{this.props.description.split('\n').map((item, key) => {
+                return <span key={key}>{item}<br/></span>})}
+              </p>
             </div>
             <Comments mediaId={this.props.mediaId} username={this.props.username} comments={this.props.comments} />
           </div>

@@ -21,6 +21,7 @@ export default class Tags extends React.Component {
     this.renderClothingIcon = this.renderClothingIcon.bind(this);
     this.showTagLocation = this.showTagLocation.bind(this)
     this.showClickTagLocation = this.showClickTagLocation.bind(this)
+    this.clickLink = this.clickLink.bind(this)
   }
 
   renderClothingIcon(itemType) {
@@ -57,6 +58,27 @@ export default class Tags extends React.Component {
     this.props.setCarouselIndex(imageIndex)
   }
 
+  clickLink() {
+    fetch('/api/linkClick', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        mediaId: this.props.mediaId,
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
   render() {
     var renderedTags = [];
     if (this.props.tags) {
@@ -81,7 +103,7 @@ export default class Tags extends React.Component {
               <div className="tag_link_wrapper">
                 <div className="tag_link" style={{backgroundImage: 'url(' + link_icon + ')'}}/>
                 <div className="dropdown">
-                  <a className="dropdown_text" href={"http://" + item.itemLink} target="_blank">{item.itemLink}</a>
+                  <a className="dropdown_text" href={"http://" + item.itemLink} target="_blank" onClick={this.clickLink}>{item.itemLink}</a>
                 </div>
               </div>
               }

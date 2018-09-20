@@ -61,6 +61,7 @@ export default class Navbar extends React.Component {
     var currentScrollY = window.scrollY
 
     if (currentScrollY < 136) {
+      this.setState({showNavbar: true, lastScrollY: currentScrollY})
     } else if (this.state.showNavbar && currentScrollY > lastScrollY) {
       this.setState({showNavbar: false, lastScrollY: currentScrollY})
     } else if (!this.state.showNavbar && currentScrollY < lastScrollY) {

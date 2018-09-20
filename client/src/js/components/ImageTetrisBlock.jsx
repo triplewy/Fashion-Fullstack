@@ -96,16 +96,18 @@ export default class ImageTetris extends React.Component {
 
   render() {
     const post = this.props.post
-    const postImages = JSON.parse(post.images)
+    const postImages = this.props.post.imageUrls
     const [width, height] = setAspectRatioImageTetrisBlock(postImages[0].width, postImages[0].height)
     return (
       <div className="tetris_block_wrapper" onMouseEnter={this.setEntered} onMouseLeave={this.setLeft} ref={this.myRef}>
         {postImages.length > 1 ?
-          <LinkContainer to={"/" + post.username + "/" + post.url}>
-            <CarouselImages imageUrls={postImages} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex} explore={true}/>
+          <LinkContainer to={{ pathname: '/' + post.username + '/' + post.url, state: { postData: post}}}>
+            <div className="image_wrapper">
+              <CarouselImages imageUrls={postImages} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex} explore={true}/>
+            </div>
           </LinkContainer>
         :
-          <Link to={"/" + post.username + "/" + post.url}>
+          <Link to={{ pathname: '/' + post.username + '/' + post.url, state: { postData: post}}}>
             <div className="tetris_image" style={{backgroundImage: 'url(' + postImages[0].imageUrl + ')',
               width: width, height: height, backgroundSize: width + "px " + height + "px"}} />
           </Link>

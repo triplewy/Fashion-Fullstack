@@ -23,7 +23,9 @@ export default class ProfileHover extends React.Component {
           {this.props.profile_image_src &&
             <div className="profile_image" alt="" style={{backgroundImage: 'url(' + this.props.profile_image_src + ')'}} />
           }
-          <strong>{this.props.profileName}</strong>
+          <div>
+            <strong>{this.props.profileName}</strong>
+          </div>
         </Link>
         <DropdownProfile username={this.props.username} load={this.state.loadHoverData}/>
       </div>

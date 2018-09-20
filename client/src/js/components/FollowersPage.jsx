@@ -54,7 +54,7 @@ export default class FollowersPage extends React.Component {
     if (this.state.users) {
       renderedUsers = this.state.users.map((item, index) => {
         return (
-          <ProfileHover classStyle="followers_profile" username={item.username} profileName={item.profileName}
+          <ProfileHover key={index} classStyle="followers_profile" username={item.username} profileName={item.profileName}
             profile_image_src={item.profile_image_src} />
         )
       });
@@ -68,7 +68,7 @@ export default class FollowersPage extends React.Component {
       <div id="white_background_wrapper">
         <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["Followers", "Following"]}
         type_selector_value={0} right={
-          <Dropdown id="followers dropdown" className="time_period_dropdown">
+          <Dropdown id="followers dropdown" className="time_period_dropdown" pullRight={true}>
             <Dropdown.Toggle id="time_period_button" noCaret={true}>
               <p>{this.state.orderByArray[this.state.orderBy]}</p>
             </Dropdown.Toggle>

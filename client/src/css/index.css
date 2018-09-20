@@ -20,6 +20,7 @@ button:disabled:hover {
 
 p {
   margin: 0 0;
+  /* font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; */
 }
 
 a:hover {
@@ -86,6 +87,10 @@ input[type="range"]::-moz-range-thumb {
     border-radius: 50%;
     background: #4CAF50;
     cursor: pointer;
+}
+
+label {
+  margin: 0 0;
 }
 
 .react-autosuggest__container {
@@ -420,6 +425,7 @@ div.dropdown {
 .type_selector_button {
   display: inline-block;
   margin-right: 40px;
+  padding: 5px 0;
 }
 
 .type_selector_button:hover {
@@ -430,8 +436,8 @@ div.dropdown {
   display: inline-block;
   margin-right: 40px;
   color: red;
-  border-bottom: 1px solid red;
-  padding-bottom: 1%;
+  box-shadow: 0 1px 0px 0px red;
+  padding: 5px 0;
 }
 
 .type_selector_button_selected:hover {
@@ -468,8 +474,45 @@ div.dropdown {
 }
 
 #post_header {
+  display: flex;
   height: 60px;
   padding: 5px 5px;
+}
+
+#post_header div.post_status {
+  display: inline-flex;
+  flex-direction: column;
+  margin-right: 5px;
+}
+
+#post_header div.post_status p {
+  margin: auto 0;
+  color: gray;
+  font-weight: 300;
+  font-size: 12px;
+}
+
+#post_header div.genre {
+  display: inline-flex;
+  flex-direction: column;
+  margin-left: auto;
+  padding: 0 10px;
+}
+
+#post_header div.genre a {
+  margin: auto 0;
+  background-color: gray;
+  color: white;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-weight: 400;
+  font-size: 12px;
+  transition: background-color 0.2s ease-in;
+  -webkit-transition: background-color 0.2s ease-in;
+}
+
+#post_header div.genre a:hover {
+  background-color: #ccc;
 }
 
 #user_name {
@@ -480,23 +523,13 @@ div.dropdown {
   padding: 16px 0;
 }
 
-#post_status {
-  display: inline-block;
-  padding: 0 5px;
-  color: gray;
-  font-weight: 200;
-  font-size: 12px;
-}
-
 #genre_button {
-  float: right;
   text-align: center;
   background-color: gray;
   color: white;
   border-radius: 20px;
   font-size: 12px;
   padding: 2px 10px;
-  margin: 15px 15px;
 }
 
 #genre_button:hover {
@@ -1021,18 +1054,75 @@ div.dropdown {
   margin: 0 0;
 }
 
-#single_post_title_div {
-  padding-top: 10px;
-  display: inline-block;
-  height: 35px;
-  width: 100%;
+.single_post_title_div {
+  display: flex;
+  height: 100px;
+  padding: 10px 0;
+  font-weight: 300;
 }
 
-#single_post_title_text {
-  display: inline-block;
+.single_post_title_div div.title {
+  display: inline-flex;
+  flex-direction: column;
+  padding: 0 10px;
+  flex: 1;
   font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 0;
+  font-weight: 300;
+}
+
+.single_post_title_div div.title p {
+  margin: auto 0;
+}
+
+.single_post_title_div div.right {
+  display: inline-flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.single_post_title_div div.right div {
+  margin: auto 0;
+}
+
+.single_post_title_div div.right a {
+  display: inline-block;
+  background-color: gray;
+  color: white;
+  border-radius: 20px;
+  padding: 4px 10px;
+  margin-right: 20px;
+  transition: background-color 0.2s ease-in;
+  -webkit-transition: background-color 0.2s ease-in;
+}
+
+.single_post_title_div div.right a:hover {
+  background-color: #ccc;
+}
+
+.single_post_title_div div.right p {
+  display: inline-block;
+}
+
+.single_post_wrapper {
+  display: flex;
+}
+
+.single_post_wrapper div.center {
+  margin: 0 auto;
+}
+
+.single_post_bottom {
+  display: flex;
+  padding-bottom: 20px;
+}
+
+.single_post_bottom div.left_bottom, div.right_bottom {
+  display: inline-block;
+  flex: 50%;
+}
+
+.single_post_bottom div.left_bottom p {
+  text-align: center;
 }
 
 #single_post_stats_header {
@@ -1639,6 +1729,7 @@ div.dropdown {
   margin-left: 10px;
   font-weight: 400;
   padding: 16px 0;
+  cursor: pointer;
 }
 
 .playlist_post_stat {
@@ -1652,18 +1743,18 @@ div.dropdown {
 
 .playlist_post {
   padding: 10px 0;
-  color: gray;
+  color: black;
   -webkit-transition: color 0.15s ease-in;
   transition: color 0.15s ease-in;
 }
 
 .playlist_post:hover {
-  cursor: pointer;
-  color: black;
+  color: gray;
 }
 
 .playlist_post_selected {
   padding-top: 10px;
+  color: gray;
 }
 
 #follow_button {
@@ -1799,7 +1890,7 @@ div.dropdown {
 
 .comment {
   display: block;
-  padding: 10px 0;
+  padding-top: 5px;
 }
 
 .comment_time {
@@ -2048,24 +2139,33 @@ div.dropdown {
 
 .post_profile_link {
   display: inline-block;
+  height: 100%;
+}
+
+.post_profile_link a {
+  display: inline-flex;
+  height: 100%;
+}
+
+.post_profile_link div {
+  display: inline-flex;
+  flex-direction: column;
+  margin-right: 5px;
 }
 
 .post_profile_link div.profile_image {
   display: inline-block;
-  vertical-align: middle;
   height: 50px;
   width: 50px;
   background-size: cover;
   border-radius: 50%;
-  border: 1px solid #f1f1f1;
 }
 
 .post_profile_link strong {
   display: inline-block;
-  margin-left: 5px;
   font-size: 12px;
-  font-weight: 400;
-  padding: 16px 0;
+  font-weight: 300;
+  margin: auto 0;
 }
 
 .post_profile_link div.dropdown {
@@ -2086,6 +2186,52 @@ div.dropdown {
   transition: opacity 0.15s ease-in;
 }
 
+.single_post_profile_link {
+  display: inline-block;
+  height: 100%;
+}
+
+.single_post_profile_link a {
+  display: flex;
+  height: 100%;
+}
+
+.single_post_profile_link div {
+  display: inline-flex;
+  flex-direction: column;
+  margin-right: 10px;
+}
+
+.single_post_profile_link div.profile_image {
+  height: 80px;
+  width: 80px;
+  background-size: cover;
+  border-radius: 50%;
+}
+
+.single_post_profile_link strong {
+  margin: auto 0;
+  font-size: 16px;
+  font-weight: 300;
+}
+
+.single_post_profile_link div.dropdown {
+  display: none;
+  position: absolute;
+  top: 10;
+  padding: 10px 15px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  -webkit-transition: opacity 0.15s ease-out;
+  transition: opacity 0.15s ease-out;
+}
+
+.single_post_profile_link:hover div.dropdown {
+  display: block;
+  -webkit-transition: opacity 0.15s ease-in;
+  transition: opacity 0.15s ease-in;
+}
 #dropdown_follow {
   display: block;
   margin: 0 auto;
@@ -2326,10 +2472,10 @@ div.dropdown {
   font-size: 18px;
 }
 
-.followers_profile img {
+.followers_profile div.profile_image {
   width: 175px;
   height: 175px;
-  object-fit: cover;
+  background-size: cover;
   border-radius: 50%;
   margin: 10px 0;
 }
@@ -2550,6 +2696,28 @@ div.dropdown {
 
 #back_button:hover {
   color: #23527c;
+}
+
+.explore_right {
+  float: right;
+}
+
+.explore_right label {
+  display: inline-block;
+  font-weight: 400;
+  margin-right: 5px;
+}
+
+.explore_right input {
+  display: inline-block;
+  width: auto;
+  padding: 5px 0;
+}
+
+.explore_right button {
+  font-size: 14px;
+  font-weight: 400;
+  color: #337ab7;
 }
 
 @media only screen and (max-width: 1300px) {

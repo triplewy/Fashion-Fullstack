@@ -12,14 +12,10 @@ import ImageTetrisBlock from './ImageTetrisBlock.jsx'
 export default class ImageTetris extends React.Component {
   constructor(props) {
     super(props);
-
     this.state = {
     };
   }
 
-  componentDidMount() {
-
-  }
 
   render() {
     var renderedColumns = []
@@ -27,9 +23,9 @@ export default class ImageTetris extends React.Component {
     if (posts.length > 0) {
       for (var i = 0; i < posts.length; i++) {
         if (i < 3) {
-          renderedColumns.push([<ImageTetrisBlock key={posts[i].mediaId} post={posts[i]} />])
+          renderedColumns.push([<ImageTetrisBlock key={i} post={posts[i]} />])
         } else {
-          renderedColumns[i%3].push(<ImageTetrisBlock key={posts[i].mediaId} post={posts[i]} />)
+          renderedColumns[i%3].push(<ImageTetrisBlock key={i} post={posts[i]} />)
         }
       }
     }

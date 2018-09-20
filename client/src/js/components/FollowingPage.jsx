@@ -74,7 +74,7 @@ export default class FollowersPage extends React.Component {
       <div id="white_background_wrapper">
         <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["Followers", "Following"]}
         type_selector_value={1} right={
-          <Dropdown id="followers dropdown" className="time_period_dropdown">
+          <Dropdown id="followers dropdown" className="time_period_dropdown" pullRight={true}>
             <Dropdown.Toggle id="time_period_button" noCaret={true}>
               <p>{this.state.orderByArray[this.state.orderBy]}</p>
             </Dropdown.Toggle>

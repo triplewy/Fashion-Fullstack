@@ -30,6 +30,7 @@ export default class UploadMetadata extends React.Component {
   }
 
   handleSubmit(title, url, genre, description) {
+    console.log("description is", description);
     var original = 0
     for (var i = 0; i < this.state.inputTags.length; i++) {
       if (this.state.inputTags[i].original) {
