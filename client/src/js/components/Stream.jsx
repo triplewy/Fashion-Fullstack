@@ -20,14 +20,12 @@ export default class Stream extends React.Component {
   }
 
   componentDidMount() {
-    console.log("stream mounted");
-    this.getStream()
     window.scrollTo(0, 0)
+    this.getStream()
   }
 
   toggle_type(e) {
     if (e.target.name == 1) {
-      console.log("og");
       this.getOriginalStream()
     } else {
       this.getStream()

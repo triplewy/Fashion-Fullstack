@@ -24,7 +24,6 @@ export default class Post extends React.Component {
 
 
   componentDidMount() {
-    console.log("post mounted");
     window.addEventListener('scroll', this.handleScroll);
     setTimeout(() => {
       this.setState({bottom: this.myRef.current.offsetTop + this.myRef.current.clientHeight - 80})
@@ -36,15 +35,16 @@ export default class Post extends React.Component {
   }
 
   handleScroll() {
+    const post = this.props.post
     if (window.scrollY + window.innerHeight >= this.state.bottom && !this.state.seen) {
       console.log("hit bottom");
       var now = new Date()
       var nowISOString = now.toISOString()
       var view = {}
-      if (this.props.repost_username) {
-        view = {mediaId: this.props.mediaId, reposter:this.props.repost_username, dateTime: nowISOString}
+      if (post.repost_username) {
+        view = {mediaId: post.mediaId, reposter:post.repost_username, dateTime: nowISOString}
       } else {
-        view = {mediaId: this.props.mediaId, dateTime: nowISOString}
+        view = {mediaId: post.mediaId, dateTime: nowISOString}
       }
       if (Cookie.get('viewHistory')) {
         var arr = JSON.parse(Cookie.get('viewHistory'));
@@ -88,42 +88,45 @@ export default class Post extends React.Component {
   }
 
   render() {
+    const post = this.props.post
     return (
         <div className="post_wrapper" ref={this.myRef}>
           <div id="polaroid_div">
-            {this.props.repost_username ?
-              <RepostHeader username={this.props.username} profile_image_src={this.props.profile_image_src} profileName={this.props.profileName}
-                repost_username={this.props.repost_username} repost_profileName={this.props.repost_profileName} repost_profile_image_src={this.props.repost_profile_image_src}
-                genre={this.props.genre} repostDate={this.props.repostDate} isPlaylist={false} classStyle={"post_profile_link"}/>
+            {post.repost_username ?
+              <RepostHeader username={post.username} profile_image_src={post.profile_image_src} profileName={post.profileName}
+                repost_username={post.repost_username} repost_profileName={post.repost_profileName} repost_profile_image_src={post.repost_profile_image_src}
+                genre={post.genre} repostDate={post.repostDate} isPlaylist={false} classStyle={"post_profile_link"}/>
               :
-              <MediaHeader username={this.props.username} profile_image_src={this.props.profile_image_src} profileName={this.props.profileName}
-                genre={this.props.genre} uploadDate={this.props.uploadDate} isPlaylist={false} classStyle={"post_profile_link"}/>
+              <MediaHeader username={post.username} profile_image_src={post.profile_image_src} profileName={post.profileName}
+                genre={post.genre} uploadDate={post.uploadDate} isPlaylist={false} classStyle={"post_profile_link"}/>
             }
-          <LinkContainer to={{ pathname: '/' + this.props.username + '/' + this.props.url, state: { postData: this.props}}}>
+          <LinkContainer to={{ pathname: '/' + post.username + '/' + post.url, state: { postData: post}}}>
             <div className="image_wrapper">
-              <CarouselImages imageUrls={this.props.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
+              <CarouselImages imageUrls={post.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
             </div>
           </LinkContainer>
           <div id="stats_wrapper">
-            <StatsHeader mediaId={this.props.mediaId} views={this.props.views} likes={this.props.likes} reposts={this.props.reposts}
-              reposted={this.props.reposted} liked={this.props.liked} isPoster={this.props.isPoster}/>
+            <StatsHeader mediaId={post.mediaId} views={post.views} likes={post.likes} reposts={post.reposts}
+              reposted={post.reposted} liked={post.liked} isPoster={post.isPoster}/>
           </div>
         </div>
         <div id="tags_div_wrapper">
           <div id="tags_div_flexbox">
             <div id="title">
-              <p id="title_text">{this.props.title}</p>
+              <p id="title_text">{post.title}</p>
               <div className="title_og_tag">
-                {this.props.original !== 0 && <span>✔</span>}
+                {post.original !== 0 && <span>✔</span>}
               </div>
             </div>
-            <Tags mediaId={this.props.mediaId} tags={this.props.tags} modify={false} setCarouselIndex={this.setCarouselIndex} carouselIndex={this.state.carouselIndex}/>
+            <Tags mediaId={post.mediaId} tags={post.tags} modify={false} setCarouselIndex={this.setCarouselIndex} carouselIndex={this.state.carouselIndex}/>
+            {post.description &&
             <div id="description_wrapper">
-              <p id="description">{this.props.description.split('\n').map((item, key) => {
+              <p id="description">{post.description.split('\n').map((item, key) => {
                 return <span key={key}>{item}<br/></span>})}
               </p>
             </div>
-            <Comments mediaId={this.props.mediaId} username={this.props.username} comments={this.props.comments} />
+            }
+            <Comments mediaId={post.mediaId} username={post.username} comments={post.comments} />
           </div>
         </div>
       </div>

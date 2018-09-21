@@ -3,40 +3,36 @@ import Tags from './Tags.jsx'
 import RepostHeader from './RepostHeader.jsx'
 import MediaHeader from './MediaHeader.jsx'
 import StatsHeader from './StatsHeader.jsx'
-import ProfileHover from './ProfileHover.jsx'
+import PlaylistPosts from './PlaylistPosts.jsx'
 import Comments from './Comments.jsx'
 import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
 import CarouselImages from './CarouselImages.jsx'
 import { Link } from 'react-router-dom';
 import { LinkContainer } from 'react-router-bootstrap'
 import Cookie from 'js-cookie'
+import view_icon from 'images/view-icon-revised.png'
+
 
 export default class Playlist extends React.Component {
   constructor(props) {
     super(props);
 
-    var posts = JSON.parse(this.props.posts)
-    console.log(posts);
-
     this.state = {
       carouselIndex: 0,
-      playlistPosts: posts,
       playlistIndex: 0,
-      currentPost: null,
       bottom: 0,
-      seen: new Array(posts.length).fill(false)
+      tags: [],
+      seen: new Array(this.props.playlist.posts.length).fill(false)
     };
 
     this.myRef = React.createRef()
-    this.fetchPlaylistPost = this.fetchPlaylistPost.bind(this)
     this.setPlaylistIndex = this.setPlaylistIndex.bind(this)
+    this.fetchTags = this.fetchTags.bind(this)
     this.handleScroll = this.handleScroll.bind(this)
     this.setCarouselIndex = this.setCarouselIndex.bind(this)
   }
 
   componentDidMount() {
-    console.log("playlist mounted");
-    this.fetchPlaylistPost(this.state.playlistPosts[0].mediaId)
     window.addEventListener('scroll', this.handleScroll);
     setTimeout(() => {
       this.setState({bottom: this.myRef.current.offsetTop + this.myRef.current.clientHeight - 80})
@@ -47,33 +43,17 @@ export default class Playlist extends React.Component {
     window.removeEventListener('scroll', this.handleScroll)
   }
 
-  fetchPlaylistPost(mediaId) {
-    fetch('/api/playlistPost/' + mediaId, {
-      credentials: 'include'
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data) {
-        console.log(data);
-        this.setState({currentPost: data})
-      }
-    })
-    .catch(e => {
-      console.log(e);
-    })
-  }
-
   handleScroll() {
+    const playlist = this.props.playlist
     if (window.scrollY + window.innerHeight >= this.state.bottom && !this.state.seen[this.state.playlistIndex]) {
-      console.log("hit bottom");
       var now = new Date()
       var nowISOString = now.toISOString()
       var view = {}
       var arr = []
-      if (this.props.repost_username) {
-        view = {playlistId: this.props.playlistId, mediaId: this.state.playlistPosts[this.state.playlistIndex].mediaId, reposter: this.props.repost_username, dateTime: nowISOString}
+      if (playlist.repost_username) {
+        view = {playlistId: playlist.playlistId, mediaId: playlist.posts[this.state.playlistIndex].mediaId, reposter: playlist.repost_username, dateTime: nowISOString}
       } else {
-        view = {playlistId: this.props.playlistId, mediaId: this.state.playlistPosts[this.state.playlistIndex].mediaId, dateTime: nowISOString}
+        view = {playlistId: playlist.playlistId, mediaId: playlist.posts[this.state.playlistIndex].mediaId, dateTime: nowISOString}
       }
       if (Cookie.get('viewHistory')) {
         arr = JSON.parse(Cookie.get('viewHistory'));
@@ -114,9 +94,22 @@ export default class Playlist extends React.Component {
     }
   }
 
+  fetchTags(mediaId) {
+    fetch('/api/postTags/' + mediaId, {
+      credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+      this.setState({tags: data});
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
   setPlaylistIndex(index, e) {
-    this.fetchPlaylistPost(this.state.playlistPosts[index].mediaId)
     this.setState({playlistIndex: index, carouselIndex: 0})
+    this.fetchTags(this.props.playlist.posts[index].mediaId)
   }
 
   setCarouselIndex(index) {
@@ -124,68 +117,45 @@ export default class Playlist extends React.Component {
   }
 
   render() {
-    var currentPost = this.state.playlistPosts[this.state.playlistIndex]
-    var rendered_playlist_posts = [];
-    if (this.state.playlistPosts.length > 0) {
-      rendered_playlist_posts = this.state.playlistPosts.map((item, index) => {
-        return (
-          <li key={index} value={index} className={(this.state.playlistIndex === index) ? 'playlist_post_selected' : 'playlist_post'}
-                disabled={(this.state.playlistIndex === index)}>
-            <div id="playlist_post_user_title_div">
-              <ProfileHover username={item.username} profileName={item.profileName} classStyle={"post_profile_link"}/>
-              <p id="playlist_post_title" onClick={this.setPlaylistIndex.bind(this, index)}>{item.title}</p>
+    const playlist = this.props.playlist
+    const currentPost = playlist.posts[this.state.playlistIndex]
+    return (
+      <div className="post_wrapper" ref={this.myRef}>
+        <div id="polaroid_div">
+          {playlist.repost_username ?
+            <RepostHeader username={playlist.username} profileName={playlist.profileName} profile_image_src={playlist.profile_image_src}
+              repost_username={playlist.repost_username} repost_profileName={playlist.repost_profileName} repost_profile_image_src={playlist.repost_profile_image_src}
+              genre={playlist.genre} repostDate={playlist.repostDate} classStyle={"post_profile_link"}/>
+            :
+            <MediaHeader username={playlist.username} profileName={playlist.profileName} profile_image_src={playlist.profile_image_src}
+              genre={playlist.genre} uploadDate={playlist.uploadDate} isPlaylist={true} classStyle={"post_profile_link"}/>
+          }
+          <LinkContainer to={{ pathname: '/' + playlist.username + '/album/' + playlist.url, state: { playlistData: playlist} }}>
+            <div className="image_wrapper">
+              {currentPost &&
+                <CarouselImages imageUrls={currentPost.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
+              }
             </div>
-            {(this.state.playlistIndex === index && this.state.currentPost) &&
-              <div id="stats_wrapper">
-                <StatsHeader mediaId={this.state.currentPost.mediaId} views={this.state.currentPost.views} likes={this.state.currentPost.likes}
-                  reposts={this.state.currentPost.reposts} comments={this.state.currentPost.comments} reposted={this.state.currentPost.reposted}
-                  liked={this.state.currentPost.liked}/>
+        </LinkContainer>
+        <div id="stats_wrapper">
+          <PlaylistStatsHeader playlistId={playlist.playlistId} likes={playlist.likes} reposts={playlist.reposts} followers={playlist.followers}
+          reposted={playlist.reposted} liked={playlist.liked} followed={playlist.followed} isPoster={playlist.isPoster}/>
+        </div>
+        </div>
+          <div id="tags_div_wrapper">
+            <div id="tags_div_flexbox">
+              <div id="title">
+                <p id="title_text">{playlist.title}</p>
               </div>
-            }
-          </li>
-          )
-      });
-    }
-
-      return (
-        <div className="post_wrapper" ref={this.myRef}>
-          <div id="polaroid_div">
-            {this.props.repost_username ?
-              <RepostHeader username={this.props.username} profileName={this.props.profileName} profile_image_src={this.props.profile_image_src}
-                repost_username={this.props.repost_username} repost_profileName={this.props.repost_profileName} repost_profile_image_src={this.props.repost_profile_image_src}
-                genre={this.props.genre} repostDate={this.props.repostDate} classStyle={"post_profile_link"}/>
-              :
-              <MediaHeader username={this.props.username} profileName={this.props.profileName} profile_image_src={this.props.profile_image_src}
-                genre={this.props.genre} uploadDate={this.props.uploadDate} isPlaylist={true} classStyle={"post_profile_link"}/>
-            }
-            <LinkContainer to={{ pathname: '/' + this.props.username + '/album/' + this.props.url, state: { playlistData: this.props} }}>
-              <div className="image_wrapper">
-                {this.state.currentPost &&
-                  <CarouselImages imageUrls={this.state.currentPost.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
-                }
+              <Tags tags={this.state.tags}/>
+              <div id="description_wrapper">
+                <p id="description">{playlist.description}</p>
               </div>
-          </LinkContainer>
-          <div id="stats_wrapper">
-            <PlaylistStatsHeader playlistId={this.props.playlistId} likes={this.props.likes} reposts={this.props.reposts} followers={this.props.followers}
-            reposted={this.props.reposted} liked={this.props.liked} followed={this.props.followed} isPoster={this.props.isPoster}/>
-          </div>
-          </div>
-            <div id="tags_div_wrapper">
-              <div id="tags_div_flexbox">
-                <div id="title">
-                  <p id="title_text">{this.props.title}</p>
-                </div>
-                <Tags tags={currentPost.tags}/>
-                <div id="description_wrapper">
-                  <p id="description">{this.props.description}</p>
-                </div>
-                <ul id="playlist_posts_list">
-                  {rendered_playlist_posts}
-                </ul>
-                <Comments playlistId={this.props.playlistId} username={this.props.username} comments={this.props.comments} />
-            </div>
+              <PlaylistPosts posts={playlist.posts} playlistIndex={this.state.playlistIndex} setPlaylistIndex={this.setPlaylistIndex} />
+              <Comments playlistId={playlist.playlistId} username={playlist.username} comments={playlist.comments} />
           </div>
         </div>
+      </div>
     );
   }
 }

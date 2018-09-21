@@ -1714,22 +1714,44 @@ div.dropdown {
 }
 
 #playlist_posts_list li {
+  display: flex;
   list-style: none;
-  /* border-bottom: 1px solid #ccc; */
-}
-
-#playlist_post_user {
-  display: inline-block;
-  padding-right: 10px;
-}
-
-#playlist_post_title {
-  display: inline-block;
+  height: 40px;
+  padding: 8px 5px;
+  font-weight: 300;
   font-size: 12px;
-  margin-left: 10px;
-  font-weight: 400;
-  padding: 16px 0;
+  -webkit-transition: box-shadow 0.4s ease-in;
+  transition: box-shadow 0.4s ease-in;
+}
+
+#playlist_posts_list li.selected {
+  box-shadow: 0 1px 1px 2px #ccc;
+}
+
+#playlist_posts_list li div.playlist_post_title {
+  display: inline-flex;
+  flex: 1;
+  margin-left: 8px;
   cursor: pointer;
+}
+
+#playlist_posts_list li div.playlist_post_title p {
+  margin: auto 0;
+}
+
+#playlist_posts_list li div.views {
+  display: inline-flex;
+}
+
+#playlist_posts_list li div.views div {
+  display: inline-block;
+  width: 25px;
+  height: 25px;
+  background-size: cover;
+}
+
+#playlist_posts_list li div.views p {
+  margin: auto 5px;
 }
 
 .playlist_post_stat {
@@ -1743,18 +1765,7 @@ div.dropdown {
 
 .playlist_post {
   padding: 10px 0;
-  color: black;
-  -webkit-transition: color 0.15s ease-in;
-  transition: color 0.15s ease-in;
-}
 
-.playlist_post:hover {
-  color: gray;
-}
-
-.playlist_post_selected {
-  padding-top: 10px;
-  color: gray;
 }
 
 #follow_button {

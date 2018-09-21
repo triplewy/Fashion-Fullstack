@@ -26,6 +26,7 @@ export default class Explore extends React.Component {
   }
 
   componentDidMount() {
+    window.scrollTo(0, 0)
     this.fetchExploreHot(this.state.genre)
   }
 

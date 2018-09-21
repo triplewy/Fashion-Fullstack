@@ -186,7 +186,7 @@ export default class StatsHeader extends React.Component {
 
     return (
       <div id={stats_header_style}>
-        <button id="followers" onClick={this.state.followed ? this.handleUnfollow : this.handleFollow}>
+        <button id="followers" onClick={this.state.followed ? this.handleUnfollow : this.handleFollow} disabled={this.props.isPoster}>
           <img id="follower_icon" alt="follower icon" src={this.state.followed ? followers_icon_followed : followers_icon_notFollowed}></img>
           <p className="stats_number" id="follower_number">{this.state.followers}</p>
         </button>
@@ -194,12 +194,10 @@ export default class StatsHeader extends React.Component {
           <img id="like_icon" alt="like icon" src={this.state.liked ? like_icon_liked : like_icon}></img>
           <p className="stats_number" id="like_number">{this.state.likes}</p>
         </button>
-        {!this.props.isPoster &&
-        <button id="reposts" onClick={this.state.reposted ? this.handleUnrepost : this.handleRepost}>
+        <button id="reposts" onClick={this.state.reposted ? this.handleUnrepost : this.handleRepost} disabled={this.props.isPoster}>
           <img id="repost_icon" alt="repost icon" src={this.state.reposted ? repost_icon_reposted : repost_icon}></img>
           <p className="stats_number" id="repost_number">{this.state.reposts}</p>
         </button>
-        }
         <div id="non_stat_div">
           <div className="btn-group">
             <button id="more" type="button" data-toggle="dropdown">

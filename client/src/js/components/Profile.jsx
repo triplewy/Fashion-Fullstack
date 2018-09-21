@@ -7,8 +7,6 @@ import memoize from 'memoize-one'
 import Cookie from 'js-cookie'
 import * as loadImage from 'blueimp-load-image'
 
-// style={{backgroundImage: `url(${flower_background})`}}
-
 export default class Profile extends React.Component {
   constructor(props) {
     super(props);
@@ -39,6 +37,7 @@ export default class Profile extends React.Component {
   }
 
   componentDidMount() {
+    window.scrollTo(0, 0)
     if (Cookie.get('username') !== this.props.profile) {
       fetch('/api/profileVisit', {
         method: 'POST',

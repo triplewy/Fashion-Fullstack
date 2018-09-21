@@ -13,24 +13,29 @@ export default class SinglePostPageComments extends React.Component {
     };
 
     this.fetchComments = this.fetchComments.bind(this)
+    this.fetchPlaylistComments = this.fetchPlaylistComments.bind(this)
     this.handleComment = this.handleComment.bind(this)
+    this.handlePlaylistComment = this.handlePlaylistComment.bind(this)
     this.handleChange = this.handleChange.bind(this)
   }
 
   componentDidMount() {
-    this.fetchComments()
-  }
-
-  componentDidUpdate(prevProps) {
-    console.log("mediaId is", this.props.mediaId);
-    if (this.props.mediaId !== prevProps.mediaId) {
+    if (this.props.playlistId) {
+      this.fetchPlaylistComments()
+    } else {
       this.fetchComments()
     }
   }
 
-  fetchComments(e) {
-    console.log("username is", this.props.username);
+  componentDidUpdate(prevProps) {
+    if (this.props.mediaId !== prevProps.mediaId) {
+      this.fetchComments()
+    } else if (this.props.playlistId !== prevProps.playlistId) {
+      this.fetchPlaylistComments()
+    }
+  }
 
+  fetchComments(e) {
     fetch('/api/' + this.props.username + '/' + this.props.mediaId + '/comments', {
       credentials: 'include'
     })
@@ -38,6 +43,20 @@ export default class SinglePostPageComments extends React.Component {
     .then((data) => {
       console.log(data);
       this.setState({comments: data.comments})
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
+  fetchPlaylistComments(e) {
+    fetch('/api/' + this.props.username + '/' + this.props.playlistId + '/playlistComments', {
+      credentials: 'include'
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      this.setState({comments: data.comments, loadComments: true})
     })
     .catch((error) => {
       console.error(error);
@@ -61,6 +80,42 @@ export default class SinglePostPageComments extends React.Component {
     .then(data => {
       if (data.message === "success") {
         fetch('/api/' + this.props.username + '/' + this.props.mediaId + '/comments', {
+          credentials: 'include'
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data.comments);
+          this.setState({commentInput: '', comments: data.comments, numComments: this.state.numComments + 1})
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+      } else {
+        console.log(data.message);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
+  handlePlaylistComment(e) {
+    fetch('/api/playlistComment', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        playlistId: this.props.playlistId,
+        comment: this.state.commentInput
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === "success") {
+        fetch('/api/' + this.props.username + '/' + this.props.playlistId + '/playlistComments', {
           credentials: 'include'
         })
         .then((response) => response.json())
