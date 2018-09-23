@@ -9,7 +9,6 @@ import googleLogo from 'images/google-logo.png'
 export default class Signup extends React.Component {
   constructor(props) {
     super(props);
-    console.log("signup is constructed", props);
     this.state = {
       loginUsername: '',
       loginPassword: '',
@@ -36,7 +35,7 @@ export default class Signup extends React.Component {
   }
 
   componentDidMount() {
-
+    window.scrollTo(0, 0)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -78,8 +77,9 @@ export default class Signup extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message === 'success') {
-        this.props.loggedIn()
+      if (data.message === 'not logged in') {
+      } else {
+        this.props.loggedIn(data)
         this.setState({redirect: true})
       }
     })

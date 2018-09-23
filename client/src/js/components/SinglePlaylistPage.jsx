@@ -54,6 +54,7 @@ export default class SinglePlaylistPage extends React.Component {
       this.fetchStats(this.state.playlist.playlistId)
       this.postVisit(this.state.playlist.mediaId)
     } else {
+      console.log("helllo");
       this.fetchPlaylist()
     }
   }
@@ -108,14 +109,15 @@ export default class SinglePlaylistPage extends React.Component {
   }
 
   fetchPlaylist() {
-    fetch('/api/playlist/' + this.props.match.url, {
+    console.log('/api' + this.props.match.url);
+    fetch('/api' + this.props.match.url, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({playlist: data, views: data.views, likes: data.likes, reposts: data.reposts, liked: data.liked, reposted: data.reposted})
-      this.postVisit(data.mediaId)
+      this.setState({playlist: data, followers: data.followers, likes: data.likes, reposts: data.reposts, followed: data.followed, liked: data.liked, reposted: data.reposted})
+      this.postVisit(data.posts[0].mediaId)
     })
     .catch((error) => {
       console.error(error);
@@ -125,6 +127,7 @@ export default class SinglePlaylistPage extends React.Component {
   render() {
     const playlist = this.state.playlist
     if (playlist) {
+      const currentPost = playlist.posts[this.state.playlistIndex]
       return (
         <div id="white_background_wrapper">
           <div className="single_post_title_div">
@@ -143,7 +146,11 @@ export default class SinglePlaylistPage extends React.Component {
           </div>
           <div className="single_post_wrapper">
             <div className="center">
-              <CarouselImages singlePost={true} imageUrls={playlist.posts[this.state.playlistIndex].imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
+              <LinkContainer to={{ pathname: '/' + currentPost.username + '/' + currentPost.url}}>
+                <div className="image_wrapper">
+                  <CarouselImages singlePost={true} imageUrls={currentPost.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
+                </div>
+              </LinkContainer>
               <PlaylistStatsHeader playlistId={playlist.playlistId} followers={this.state.followers} likes={this.state.likes} reposts={this.state.reposts}
                 followed={this.state.followed} liked={this.state.liked} reposted={this.state.reposted} isPoster={playlist.isPoster}/>
             </div>

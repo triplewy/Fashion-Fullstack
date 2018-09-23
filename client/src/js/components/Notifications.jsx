@@ -11,12 +11,14 @@ export default class Notifications extends React.Component {
     this.state = {
       endpoint: 'http://localhost:8081',
       unread: 0,
-      notifications: []
+      notifications: [],
+      open: false
     };
 
     this.getNotifications = this.getNotifications.bind(this)
     this.handleFollow = this.handleFollow.bind(this)
     this.handleUnfollow = this.handleUnfollow.bind(this)
+    this.closeDropdown = this.closeDropdown.bind(this)
   }
 
   componentDidMount() {
@@ -37,13 +39,20 @@ export default class Notifications extends React.Component {
   }
 
   getNotifications() {
-    fetch('/api/notificationsDropdown/' + this.state.unread, {
-      credentials: 'include'
-    })
-    .then(res => res.json())
-    .then(data => {
-      this.setState({notifications: data.notifications, unread: 0})
-    })
+    if (!this.state.open) {
+      this.setState({open: true})
+      fetch('/api/notificationsDropdown/' + this.state.unread, {
+        credentials: 'include'
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        this.setState({notifications: data.notifications, unread: 0})
+      })
+    } else {
+      this.setState({open: false})
+    }
+
   }
 
   handleFollow(profile, index) {
@@ -90,18 +99,22 @@ export default class Notifications extends React.Component {
     });
   }
 
+  closeDropdown(e) {
+    this.setState({open: false})
+  }
+
   render() {
     var renderedNotifications = []
     if (this.state.notifications) {
       renderedNotifications = this.state.notifications.map((item, index) => {
         return (
-          <NotificationItem item={item} index={index} key={index} handleFollow={this.handleFollow} handleUnfollow={this.handleUnfollow}/>
+          <NotificationItem item={item} index={index} key={index} handleFollow={this.handleFollow} handleUnfollow={this.handleUnfollow} closeDropdown={this.closeDropdown}/>
         )
       })
     }
 
     return (
-      <Dropdown id="notifications_dropdown" onToggle={this.getNotifications} pullRight={true}>
+      <Dropdown id="notifications_dropdown" open={this.state.open} onToggle={this.getNotifications} pullRight={true}>
         <Dropdown.Toggle className="banner_button" noCaret={true}>
           <img id="notifications_icon" alt="notifications icon" src={notification_icon}></img>
           <div className={this.state.unread ? 'notification_cirlce_show' : 'notification_cirlce_hide'}>

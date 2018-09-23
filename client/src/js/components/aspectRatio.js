@@ -58,3 +58,18 @@ export function setAspectRatioSinglePost(width, height) {
     return [width, height]
   }
 }
+
+export function setAspectRatioNotification(width, height) {
+  var aspectRatio = width/height
+  if (aspectRatio >= 0.75 && width > 60) {
+    aspectRatio = width/60
+    return [60, height/aspectRatio]
+  }
+  else if (aspectRatio < 0.75 && height > 80) {
+    aspectRatio = height/80
+    return [width/aspectRatio, 80]
+  }
+  else {
+    return [width, height]
+  }
+}

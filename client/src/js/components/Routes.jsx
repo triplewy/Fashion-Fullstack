@@ -5,7 +5,6 @@ import {
   Switch,
   Redirect
 } from 'react-router-dom';
-import Cookie from 'js-cookie'
 
 import Home from './Home.jsx';
 import Signup from './Signup.jsx'
@@ -15,11 +14,11 @@ import Stream from './Stream.jsx';
 import Profile from './Profile.jsx';
 import SinglePostPage from './SinglePostPage.jsx'
 import SinglePlaylistPage from './SinglePlaylistPage.jsx'
-import Collections from './Collections.jsx'
+import LikesPosts from './LikesPosts.jsx'
+import LikesAlbums from './LikesAlbums.jsx'
 import UploadDropzone from './UploadDropzone.jsx'
 import Explore from './Explore.jsx'
 import Search from './Search.jsx'
-import Playlist from './Playlist.jsx'
 import Stats from './Stats.jsx'
 import NotificationsPage from './NotificationsPage.jsx'
 import FollowersPage from './FollowersPage.jsx'
@@ -31,12 +30,29 @@ export default class Routes extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      loggedIn: Cookie.get('userId') ? true : false
+      user: null
     }
 
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this)
     this.loggedIn = this.loggedIn.bind(this)
+  }
+
+  componentDidMount() {
+    fetch('/api/sessionLogin', {
+      credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === "not logged in") {
+        this.setState({user: null})
+      } else {
+        this.setState({user: data})
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   }
 
   handleLogin(username, password) {
@@ -54,10 +70,10 @@ export default class Routes extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message === 'success') {
-        this.setState({loggedIn: true});
+      if (data.message === 'not logged in') {
+        this.setState({user: null});
       } else {
-        this.setState({loggedIn: false})
+        this.setState({user: data})
       }
     })
     .catch(function(err) {
@@ -77,7 +93,7 @@ export default class Routes extends React.Component {
     .then(res => res.json())
     .then(data => {
       if (data.message === 'success') {
-        this.setState({loggedIn: false})
+        this.setState({user: null})
       } else {
         console.log("Could not logout for some reason");
       }
@@ -86,24 +102,23 @@ export default class Routes extends React.Component {
     });
   }
 
-  loggedIn() {
-    this.setState({loggedIn: true})
+  loggedIn(user) {
+    this.setState({user: user})
   }
 
   render() {
     const PrivateRoute = ({component: Component}) => (
-      <Route render={(props) => (this.state.loggedIn ? <Component {...props}/> : <Redirect to={{pathname: '/signup', state: {from: props.location}}} /> )} />
+      <Route render={(props) => (this.state.user ? <Component {...props}/> : <Redirect to={{pathname: '/signup', state: {from: props.location}}} /> )} />
     )
-    console.log("is loggedIn", this.state.loggedIn);
-
     return (
       <BrowserRouter>
         <div>
-          <Navbar loggedIn={this.state.loggedIn} handleLogin={this.handleLogin} handleLogout={this.handleLogout}/>
+          <Navbar user={this.state.user} handleLogin={this.handleLogin} handleLogout={this.handleLogout}/>
           <Switch>
-            <Route exact path='/' component={this.state.loggedIn ? Stream : Home}/>
+            <Route exact path='/' component={this.state.user ? Stream : Home}/>
             <PrivateRoute exact path='/upload' component={UploadDropzone} />}/>
-            <PrivateRoute exact path='/you/collections' component={Collections} />
+            <PrivateRoute exact path='/you/likes/posts' component={LikesPosts} />
+            <PrivateRoute exact path='/you/likes/albums' component={LikesAlbums} />
             <PrivateRoute exact path='/you/stats' component={Stats} />
             <PrivateRoute exact path='/you/notifications' component={NotificationsPage} />
             <PrivateRoute exact path='/you/followers' component={FollowersPage} />

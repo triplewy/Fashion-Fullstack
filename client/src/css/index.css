@@ -915,16 +915,30 @@ div.dropdown {
   background-color: white;
 }
 
-#profile_info {
-  display: inline-block;
+.profile_info {
+  display: inline-flex;
   height: 100%;
-  padding: 20px 20px;
-  padding-left: 50px;
+  padding: 20px 0;
+  margin-left: 50px;
+}
+
+.profile_info div {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.profile_info div#profile_info_image_div {
+  margin-right: 20px;
+}
+
+.profile_info div.profile_info_text_div div {
+  margin: auto 0;
 }
 
 #profile_info_image {
   display: inline-block;
-  object-fit: cover;
+  position: relative;
+  background-size: cover;
   width: 170px;
   height: 170px;
   border-radius: 50%;
@@ -1109,6 +1123,17 @@ div.dropdown {
 
 .single_post_wrapper div.center {
   margin: 0 auto;
+}
+
+.single_post_wrapper div.center div.image_wrapper {
+  border: 1px solid #f1f1f1;
+  border-radius: 8px;
+  transition: border-color 0.2s;
+  -webkit-transition: border-color 0.2s;
+}
+
+.single_post_wrapper div.center div.image_wrapper:hover {
+  border-color: #337ab7;
 }
 
 .single_post_bottom {
@@ -1799,6 +1824,7 @@ div.dropdown {
 .type_selector_dropdown_div {
   position: absolute;
   right: 0;
+  padding: 5px 0;
 }
 
 .profile_dropdown_div {
@@ -1807,16 +1833,15 @@ div.dropdown {
   padding: 5px 10px;
   padding-left: 30px;
   border-radius: 2px;
-  cursor: pointer;
 }
 
 .profile_dropdown_div div.links_dropdown {
   position: absolute;
+  display: none;
   right: 0;
   border-radius: 4px;
   background-color: white;
   padding: 20px 20px;
-  opacity: 0;
   width: 300px;
   /* min-height: 200px; */
   max-height: 0px;
@@ -1825,8 +1850,8 @@ div.dropdown {
 }
 
 .profile_dropdown_div:hover div.links_dropdown {
+  display: block;
   max-height: 1000px;
-  opacity: 1;
   box-shadow: -2px 4px 12px 2px #888888;
 }
 
@@ -2151,6 +2176,7 @@ div.dropdown {
 .post_profile_link {
   display: inline-block;
   height: 100%;
+  position: relative;
 }
 
 .post_profile_link a {
@@ -2182,19 +2208,18 @@ div.dropdown {
 .post_profile_link div.dropdown {
   display: none;
   position: absolute;
-  top: 10;
-  padding: 10px 15px;
+  top: 100%;
+  padding: 10px 10px;
+  margin: 0 0;
+  width: 150px;
+  text-align: center;
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 6px;
-  -webkit-transition: opacity 0.15s ease-out;
-  transition: opacity 0.15s ease-out;
 }
 
 .post_profile_link:hover div.dropdown {
   display: block;
-  -webkit-transition: opacity 0.15s ease-in;
-  transition: opacity 0.15s ease-in;
 }
 
 .single_post_profile_link {
@@ -2262,6 +2287,57 @@ div.dropdown {
   color: black;
 }
 
+.edit_profile_wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  margin: 0 auto;
+}
+
+.edit_profile_wrapper div {
+  font-weight: 300;
+}
+
+.edit_profile_image {
+  position: relative;
+  margin: auto auto;
+  width: 200px;
+  height: 200px;
+  background-size: cover;
+  border-radius: 50%;
+}
+
+.edit_profile_image div label {
+  display: none;
+  position: absolute;
+  bottom: 10%;
+  left: 70px;
+  width: 68px;
+  text-align: center;
+  font-weight: 300;
+  background-color: rgb(255, 255, 255, 0.4);
+  border: 1px solid white;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  -webkit-transition: background-color 0.3s ease-in;
+  transition: background-color 0.3s ease-in;
+}
+
+.edit_profile_image div label:hover {
+  background-color: rgb(255, 255, 255, 0.6);
+}
+
+.edit_profile_image:hover div label {
+  display: block;
+}
+
+.edit_profile_wrapper div.edit_profile_form label {
+  font-weight: 500;
+  padding-top: 25px;
+}
+
 #edit_profile_button {
   border: 1px solid black;
   border-radius: 4px;
@@ -2274,58 +2350,9 @@ div.dropdown {
   border: 1px solid #ccc;
 }
 
-#edit_profile_modal_body {
-  padding: 20px 20px;
-}
-
 #edit_profile_text_div {
   display: inline-block;
   padding: 0 20px;
-}
-
-#profile_info_image_div {
-  display: inline-block;
-}
-
-#profile_info_image_div label#update_profile_image_label {
-  display: none;
-  position: absolute;
-  top: 160px;
-  left: 103px;
-  background-color: white;
-  border: 1px solid #ccc;
-  color: #ccc;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-#profile_info_image_div:hover label#update_profile_image_label {
-  display: block;
-  color: black;
-}
-
-#edit_profile_image_div {
-  display: inline-block;
-  vertical-align: top;
-}
-
-#edit_profile_image_div label#update_profile_image_label {
-  display: none;
-  position: absolute;
-  bottom: 120px;
-  left: 75px;
-  background-color: white;
-  border: 1px solid #ccc;
-  color: #ccc;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-#edit_profile_image_div:hover label#update_profile_image_label {
-  display: block;
-  color: black;
 }
 
 #edit_profile_image {
@@ -2395,9 +2422,45 @@ div.dropdown {
 
 .notifications_list li {
   padding: 10px 10px;
-  width: 400px;
-  height: 90px;
+  width: 500px;
+  /* height: 100px; */
   font-size: 12px;
+  font-weight: 300;
+}
+
+.notifications_list li div {
+  display: flex;
+}
+
+.notifications_list li div div {
+  display: inline-flex;
+  flex-direction: column;
+  margin-right: 10px;
+}
+
+.notifications_list li div * {
+  margin: auto 0;
+}
+
+.notifications_list li div.notification_post_image {
+  background-size: cover;
+  border-radius: 6px;
+}
+
+.notifications_list li div.notification_collection_image {
+  background-size: cover;
+  border-radius: 6px;
+  box-shadow: 6px 6px 0px 0px #ccc;
+}
+
+.notifications_list li div.activity_type {
+  width: 30px;
+  height: 30px;
+  background-size: cover;
+}
+
+.notifications_list li div.notification_date {
+  margin-left: auto;
 }
 
 .notifications_list button {
@@ -2409,12 +2472,6 @@ div.dropdown {
 .notifications_list button:hover {
   color: red;
   border-color: red;
-}
-
-.activity_type {
-  display: inline-block;
-  width: 25px;
-  margin: 0 10px;
 }
 
 .post_link {
@@ -2429,22 +2486,6 @@ div.dropdown {
 
 .post_link p {
   display: inline-block;
-}
-
-.notification_date {
-  float: right;
-  padding: 20px 10px;
-  color: gray;
-}
-
-.notification_date p {
-  font-size: 12px;
-}
-
-.notification_followed_you_text {
-  display: inline-block;
-  padding: 0 10px;
-  font-size: 12px;
 }
 
 #see_all_notifications {

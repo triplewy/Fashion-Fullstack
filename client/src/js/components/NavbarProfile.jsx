@@ -10,31 +10,42 @@ export default class NavbarProfile extends React.Component {
     this.state = {
       totalViews: 0,
       dayViews: 0,
-      weekViews: 0
+      weekViews: 0,
+      open: false
     };
 
     this.fetchStats = this.fetchStats.bind(this)
+    this.closeDropdown = this.closeDropdown.bind(this)
   }
 
   fetchStats() {
-    fetch('/api/profileStats', {
-      credentials: 'include'
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data) {
-        console.log(data);
-        this.setState({dayViews: data.dayViews, weekViews: data.weekViews, totalViews: data.totalViews})
-      }
-    })
-    .catch(e => {
-      console.log(e);
-    })
+    if (!this.state.open) {
+      this.setState({open: true})
+      fetch('/api/profileStats', {
+        credentials: 'include'
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data) {
+          console.log(data);
+          this.setState({dayViews: data.dayViews, weekViews: data.weekViews, totalViews: data.totalViews})
+        }
+      })
+      .catch(e => {
+        console.log(e);
+      })
+    } else {
+      this.setState({open: false})
+    }
+  }
+
+  closeDropdown(e) {
+    this.setState({open: false})
   }
 
   render() {
     return (
-      <Dropdown id="navbar_profile_dropdown" onToggle={this.fetchStats}>
+      <Dropdown id="navbar_profile_dropdown" onToggle={this.fetchStats} open={this.state.open}>
         <Dropdown.Toggle className="banner_button" noCaret={true}>
           <div id="profile_image_div">
             <img id="profile_image" alt="" src={this.props.profile_image_src}></img>
@@ -42,11 +53,11 @@ export default class NavbarProfile extends React.Component {
           <p id="user_name">{this.props.profileName}</p>
         </Dropdown.Toggle>
         <Dropdown.Menu>
-          <li>
+          <li onClick={this.closeDropdown}>
             <Link to={"/" + this.props.username}>Profile</Link>
           </li>
-          <li>
-            <Link to={"/you/collections"}>Collections</Link>
+          <li onClick={this.closeDropdown}>
+            <Link to={"/you/likes/posts"}>Likes</Link>
           </li>
           <li>
             <StatsColumn dayViews={this.state.dayViews} weekViews={this.state.weekViews} totalViews={this.state.totalViews} />

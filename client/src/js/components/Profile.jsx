@@ -3,7 +3,6 @@ import RenderedPosts from './RenderedPosts.jsx'
 import TypeSelector from './TypeSelector.jsx'
 import EditProfileModal from './EditProfileModal.jsx'
 import ProfileInfo from './ProfileInfo.jsx'
-import memoize from 'memoize-one'
 import Cookie from 'js-cookie'
 import * as loadImage from 'blueimp-load-image'
 
@@ -12,8 +11,9 @@ export default class Profile extends React.Component {
     super(props);
     console.log(props);
     this.state = {
-      streamData: [],
+      streamData: null,
       profileInfo: {},
+      isProfile: false,
       type_selector_value: 0,
       isFollowing: false,
       editProfile: false,
@@ -22,11 +22,13 @@ export default class Profile extends React.Component {
     };
 
     this.toggle_type = this.toggle_type.bind(this);
-    this.changeProfile = this.changeProfile.bind(this);
     this.handleFollow = this.handleFollow.bind(this);
     this.handleUnfollow = this.handleUnfollow.bind(this);
-    this.getProfile = this.getProfile.bind(this)
-    this.getUserDetails = this.getUserDetails.bind(this)
+    // this.getProfile = this.getProfile.bind(this)
+    // this.fetchProfileStream = this.fetchProfileStream.bind(this)
+    this.fetchProfileInfo = this.fetchProfileInfo.bind(this)
+    this.profileVisit = this.profileVisit.bind(this)
+    // this.getUserDetails = this.getUserDetails.bind(this)
     this.getStream = this.getStream.bind(this)
     this.getOriginalStream = this.getOriginalStream.bind(this)
     this.getPlaylistStream = this.getPlaylistStream.bind(this)
@@ -38,6 +40,36 @@ export default class Profile extends React.Component {
 
   componentDidMount() {
     window.scrollTo(0, 0)
+    this.fetchProfileInfo(this.props.profile)
+    this.getStream()
+    this.profileVisit()
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.profile !== prevProps.profile) {
+      window.scrollTo(0, 0)
+      this.fetchProfileInfo(this.props.profile)
+      this.getStream()
+      this.profileVisit()
+    }
+  }
+
+  toggle_type(e) {
+    if (e.target.name == 1) {
+      this.getOriginalStream()
+    } else if (e.target.name == 2) {
+      this.getPostStream()
+    } else if (e.target.name == 3) {
+      this.getPlaylistStream()
+    } else if (e.target.name == 4) {
+      this.getRepostStream()
+    } else {
+      this.getStream()
+    }
+    this.setState({type_selector_value: e.target.name});
+  }
+
+  profileVisit() {
     if (Cookie.get('username') !== this.props.profile) {
       fetch('/api/profileVisit', {
         method: 'POST',
@@ -60,30 +92,6 @@ export default class Profile extends React.Component {
     } else {
       console.log("same user");
     }
-  }
-
-  changeProfile = memoize((url) => {
-    console.log("we memoized");
-    this.getProfile(url)
-  })
-
-  componentWillReceiveProps(nextProps) {
-    this.getProfile(nextProps.profile);
-  }
-
-  toggle_type(e) {
-    if (e.target.name == 1) {
-      this.getOriginalStream()
-    } else if (e.target.name == 2) {
-      this.getPostStream()
-    } else if (e.target.name == 3) {
-      this.getPlaylistStream()
-    } else if (e.target.name == 4) {
-      this.getRepostStream()
-    } else {
-      this.getStream()
-    }
-    this.setState({type_selector_value: e.target.name});
   }
 
   handleFollow(e) {
@@ -124,39 +132,69 @@ export default class Profile extends React.Component {
     });
   }
 
-  getProfile(url) {
-    fetch('/api/' + url, {
+  // getProfile(url) {
+  //   fetch('/api/' + url, {
+  //     credentials: 'include'
+  //   })
+  //   .then(res => res.json())
+  //   .then(data => {
+  //     console.log("profile data is", data);
+  //     this.setState({
+  //       isFollowing: data.userDetails.isFollowing,
+  //       streamData: data.media.stream,
+  //       profileInfo: data.userDetails,
+  //       type_selector_value: 0,
+  //       editProfile: false,
+  //       profile_image_src: data.userDetails.profile_image_src
+  //     })
+  //   })
+  //   .catch((error) => {
+  //     console.error(error);
+  //   });
+  // }
+
+  // fetchProfileStream(profile) {
+  //   fetch('/api/' + profile + '/stream', {
+  //     credentials: 'include'
+  //   })
+  //   .then(res => res.json())
+  //   .then(data => {
+  //     console.log(data);
+  //     this.setState({
+  //       streamData: data.stream
+  //     })
+  //   })
+  //   .catch((error) => {
+  //     console.error(error);
+  //   });
+  // }
+
+  fetchProfileInfo() {
+    fetch('/api/' + this.props.profile + '/info', {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
-      console.log("profile data is", data);
-      this.setState({
-        isFollowing: data.userDetails.isFollowing,
-        streamData: data.media.stream,
-        profileInfo: data.userDetails,
-        type_selector_value: 0,
-        editProfile: false,
-        profile_image_src: data.userDetails.profile_image_src
-      })
+      console.log(data);
+      this.setState({profileInfo: data.profile, isProfile: data.isUser})
     })
     .catch((error) => {
       console.error(error);
     });
   }
 
-  getUserDetails() {
-    fetch('/api/' + this.props.profile + '/userDetails', {
-      credentials: 'include'
-    })
-    .then(res => res.json())
-    .then(data => {
-      this.setState({profileInfo: data.userDetails});
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-  }
+  // getUserDetails() {
+  //   fetch('/api/' + this.props.profile + '/userDetails', {
+  //     credentials: 'include'
+  //   })
+  //   .then(res => res.json())
+  //   .then(data => {
+  //     this.setState({profileInfo: data.userDetails});
+  //   })
+  //   .catch((error) => {
+  //     console.error(error);
+  //   });
+  // }
 
   getStream() {
     fetch('/api/' + this.props.profile + '/stream', {
@@ -164,9 +202,8 @@ export default class Profile extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      var streamData = data.stream
-      console.log("streamData is", streamData);
-      this.setState({streamData: streamData});
+      console.log(data);
+      this.setState({streamData: data.stream});
     })
     .catch((error) => {
       console.error(error);
@@ -179,9 +216,8 @@ export default class Profile extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      var streamData = data.stream
-      console.log("streamData is", streamData);
-      this.setState({streamData: streamData});
+      console.log(data);
+      this.setState({streamData: data.stream});
     })
     .catch((error) => {
       console.error(error);
@@ -194,9 +230,8 @@ export default class Profile extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      var streamData = data.stream
-      console.log("streamData is", streamData);
-      this.setState({streamData: streamData});
+      console.log(data);
+      this.setState({streamData: data.stream});
     })
     .catch((error) => {
       console.error(error);
@@ -209,9 +244,8 @@ export default class Profile extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      var streamData = data.stream
-      console.log("streamData is", streamData);
-      this.setState({streamData: streamData});
+      console.log(data);
+      this.setState({streamData: data.stream});
     })
     .catch((error) => {
       console.error(error);
@@ -224,9 +258,8 @@ export default class Profile extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      var streamData = data.stream
-      console.log("streamData is", streamData);
-      this.setState({streamData: streamData});
+      console.log(data);
+      this.setState({streamData: data.stream});
     })
     .catch((error) => {
       console.error(error);
@@ -286,46 +319,51 @@ export default class Profile extends React.Component {
   }
 
   render() {
-
-    this.changeProfile(this.props.profile);
-
     return (
       <div>
-        <EditProfileModal showModal={this.state.editProfile} profileInfo={this.state.profileInfo}
+        {/* <EditProfileModal showModal={this.state.editProfile} profileInfo={this.state.profileInfo}
           profile_image_src={this.state.profile_image_src} closeEditProfile={this.closeEditProfile}
-          readImageFile={this.readImageFile} getUserDetails={this.getUserDetails}/>
+          readImageFile={this.readImageFile} getUserDetails={this.getUserDetails}/> */}
         <div id="white_background_wrapper">
           <div id="profile_banner">
-            <div id="profile_info">
+            <div className="profile_info">
               <div id="profile_info_image_div">
-                <img id="profile_info_image" alt="" src={this.state.profile_image_src}></img>
-                {this.state.profileInfo.editable &&
+                {/* <div className="edit_profile_image" style={{backgroundImage: 'url(' + this.state.profile_image_src + ')'}}>
+                  <label htmlFor="input_image_button" id="update_profile_image_label">Update</label>
+                  <input id="input_image_button" type="file" name="post_pic" accept="image/*"
+                    onChange={this.props.readImageFile}></input>
+                </div> */}
+                <div className="edit_profile_image" style={{backgroundImage: 'url(' + this.state.profileInfo.profile_image_src + ')'}}>
+                {this.state.isProfile &&
                   <div>
-                    <label htmlFor="input_image_button" id="update_profile_image_label">
-                      Update
-                    </label>
+                    <label htmlFor="input_image_button">Update</label>
                     <input id="input_image_button" type="file" name="post_pic" accept="image/*"
                       onChange={this.readImageFile}></input>
                   </div>
                 }
+                </div>
               </div>
-              <div id="profile_info_text_div">
-                <p id="profile_info_username">{this.state.profileInfo.profileName}</p>
-                <p id="profile_info_location">{this.state.profileInfo.location}</p>
-                {!this.state.profileInfo.editable &&
-                  <button id={this.state.isFollowing ? "following_button" : "follow_button"}
-                    onClick={this.state.isFollowing ? this.handleUnfollow : this.handleFollow}>
-                    {this.state.isFollowing ? 'Following' : 'Follow'}
-                  </button>
-                }
+              <div className="profile_info_text_div">
+                <div>
+                  <p id="profile_info_username">{this.state.profileInfo.profileName}</p>
+                  <p id="profile_info_location">{this.state.profileInfo.location}</p>
+                  {!this.state.isProfile &&
+                    <button id={this.state.isFollowing ? "following_button" : "follow_button"}
+                      onClick={this.state.isFollowing ? this.handleUnfollow : this.handleFollow}>
+                      {this.state.isFollowing ? 'Following' : 'Follow'}
+                    </button>
+                  }
+                </div>
               </div>
             </div>
           </div>
           <div id="content_wrapper">
             <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Posts", "Playlists", "Reposts"]}
             type_selector_value={this.state.type_selector_value}
-            right={<ProfileInfo profileInfo={this.state.profileInfo} editProfile={this.editProfile} /> } />
-            <RenderedPosts streamData={this.state.streamData} />
+            right={<ProfileInfo profileInfo={this.state.profileInfo} isProfile={this.state.isProfile} fetchProfileInfo={this.fetchProfileInfo}/> } />
+            {this.state.streamData &&
+              <RenderedPosts streamData={this.state.streamData} />
+            }
           </div>
         </div>
       </div>
