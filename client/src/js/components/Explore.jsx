@@ -142,6 +142,7 @@ export default class Explore extends React.Component {
   render() {
     return (
       <div id="white_background_wrapper">
+        <p className="page_title">Explore</p>
         <TypeSelector toggle_type={this.toggle_type} types={["Hot", "New", "Top", "Random"]}
         type_selector_value={this.state.type_selector_value}
         right={

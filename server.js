@@ -246,7 +246,7 @@ conn.query('CREATE TABLE IF NOT EXISTS reposts (repostId INTEGER AUTO_INCREMENT 
 
 conn.query('CREATE TABLE IF NOT EXISTS likes (likeId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS views (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER, mediaId INTEGER NOT NULL, reposterId INTEGER, viewerId INTEGER NOT NULL, receiverId INTEGER NOT NULL, IP_Address TEXT, dateTime DATETIME NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), ' +
+conn.query('CREATE TABLE IF NOT EXISTS views (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER, mediaId INTEGER NOT NULL, reposterId INTEGER, viewerId INTEGER NOT NULL, receiverId INTEGER NOT NULL, IP_Address TEXT, explore BOOLEAN, dateTime DATETIME NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), ' +
 'FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (reposterId) REFERENCES users(userId), FOREIGN KEY (viewerId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId), UNIQUE(mediaId, viewerId, dateTime))');
 
 conn.query('CREATE TABLE IF NOT EXISTS comments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (userId) REFERENCES users(userId))');
@@ -381,6 +381,26 @@ conn.query('CREATE TRIGGER before_playlists_insert BEFORE INSERT ON playlists FO
 'SELECT username, profileName, profile_image_src INTO newUsername, newProfileName, new_profile_image_src FROM ' +
 'users WHERE userId = NEW.userId; SET NEW.username = newUsername; SET NEW.profileName = newProfileName; SET NEW.profile_image_src = new_profile_image_src; END;')
 
+conn.query('CREATE TRIGGER after_users_update AFTER UPDATE ON users FOR EACH ROW BEGIN ' +
+'IF NEW.username <> OLD.username THEN ' +
+'UPDATE logins SET username = NEW.username WHERE userId=NEW.userId; ' +
+'UPDATE posts SET username = NEW.username WHERE userId=NEW.userId; ' +
+'UPDATE reposts SET username = NEW.username WHERE userId=NEW.userId; ' +
+'UPDATE playlists SET username = NEW.username WHERE userId=NEW.userId; ' +
+'UPDATE playlistsReposts SET username = NEW.username WHERE userId=NEW.userId; ' +
+'END IF;' +
+'IF NEW.profileName <> OLD.profileName THEN ' +
+'UPDATE posts SET profileName = NEW.profileName WHERE userId=NEW.userId; ' +
+'UPDATE reposts SET profileName = NEW.profileName WHERE userId=NEW.userId; ' +
+'UPDATE playlists SET profileName = NEW.profileName WHERE userId=NEW.userId; ' +
+'UPDATE playlistsReposts SET profileName = NEW.profileName WHERE userId=NEW.userId; ' +
+'END IF;' +
+'IF NEW.profile_image_src <> OLD.profile_image_src THEN ' +
+'UPDATE posts SET profile_image_src = NEW.profile_image_src WHERE userId=NEW.userId; ' +
+'UPDATE reposts SET profile_image_src = NEW.profile_image_src WHERE userId=NEW.userId; ' +
+'UPDATE playlists SET profile_image_src = NEW.profile_image_src WHERE userId=NEW.userId; ' +
+'UPDATE playlistsReposts SET profile_image_src = NEW.profile_image_src WHERE userId=NEW.userId; ' +
+'END IF; END;')
 
 var connectedUserIds = []
 var usersToSockets = {}
@@ -403,7 +423,7 @@ function onAuthorizeSuccess(data, accept){
 }
 
 function onAuthorizeFail(data, message, error, accept){
-  if(error)
+  if (error)
     throw new Error(message);
   console.log('failed connection to socket.io:', message);
   accept(null, false);
@@ -887,44 +907,47 @@ app.get('/api/postsStats/:timePeriod', loggedIn, (req, res) => {
 
 app.get('/api/topPosts/:timePeriod', loggedIn, (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/topPosts/' + req.params.timePeriod);
-  var userId = req.user.userId
-  var now = new Date()
-  var timePeriod = getTimePeriod(req.params.timePeriod)
+  const userId = req.user.userId
+  const now = new Date()
+  const timePeriod = getTimePeriod(req.params.timePeriod)
   var timePeriodQuery = ''
   if (timePeriod) {
-    timePeriodQuery = 'AND views.dateTime BETWEEN :timePeriod AND :now '
+    timePeriodQuery = 'AND c.dateTime BETWEEN :timePeriod AND :now '
   }
 
-  conn.query('SELECT views.mediaId, posts.title, posts.imageUrl, COUNT(*) AS views FROM views ' +
-  'INNER JOIN posts ON posts.mediaId = views.mediaId WHERE receiverId = :userId ' + timePeriodQuery +
-  'GROUP BY views.mediaId ORDER BY views LIMIT 3', {userId: userId, timePeriod: timePeriod.toISOString(), now: now.toISOString()}, function(err, result) {
+  conn.query('SELECT a.*, a.dateTime AS uploadDate, b.imageUrls, COUNT(c.viewId) AS timeViews FROM posts AS a ' +
+  'JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', imageUrl, \'width\', width, \'height\', height, \'imageIndex\', imageIndex)) AS imageUrls FROM postsImages GROUP BY mediaId) b ON b.mediaId = a.mediaId ' +
+  'LEFT JOIN views AS c ON c.mediaId = a.mediaId ' + timePeriodQuery +
+  'WHERE a.userId=:userId GROUP BY a.mediaId ORDER BY timeViews LIMIT 3', {userId: userId, timePeriod: timePeriod.toISOString(), now: now.toISOString()}, function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      console.log(result);
-      res.send({topPosts: result})
+      for (var i = 0; i < result.length; i++) {
+        result[i].imageUrls = JSON.parse(result[i].imageUrls)
+      }
+      res.send(result)
     }
   })
 })
 
 app.get('/api/topPostsViewers/:timePeriod', loggedIn, (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/topPostsViewers/' + req.params.timePeriod);
-  var userId = req.user.userId
-  var now = new Date()
-  var timePeriod = getTimePeriod(req.params.timePeriod)
+  const userId = req.user.userId
+  const now = new Date()
+  const timePeriod = getTimePeriod(req.params.timePeriod)
   var timePeriodQuery = ''
   if (timePeriod) {
-    timePeriodQuery = 'AND views.dateTime BETWEEN :timePeriod AND :now '
+    timePeriodQuery = 'AND a.dateTime BETWEEN :timePeriod AND :now '
   }
 
-  conn.query('SELECT views.viewerId, users.username, users.profileName, users.profile_image_src, COUNT(*) AS views FROM views ' +
-  'INNER JOIN users ON users.userId = views.viewerId WHERE receiverId = :userId ' + timePeriodQuery +
-  'GROUP BY views.viewerId ORDER BY views LIMIT 3', {userId: userId, timePeriod: timePeriod.toISOString(), now: now.toISOString()}, function(err, result) {
+  conn.query('SELECT b.username, b.profileName, b.profile_image_src, COUNT(a.viewId) AS timeViews FROM views AS a ' +
+  'JOIN users AS b ON b.userId = a.viewerId WHERE a.receiverId = :userId ' + timePeriodQuery +
+  'GROUP BY a.viewerId ORDER BY timeViews LIMIT 3', {userId: userId, timePeriod: timePeriod.toISOString(), now: now.toISOString()}, function(err, result) {
     if (err) {
       console.log(err);
     } else {
       console.log(result);
-      res.send({topViewers: result})
+      res.send(result)
     }
   })
 })
@@ -952,29 +975,33 @@ app.get('/api/playlistsStats/:timePeriod', loggedIn, (req, res) => {
       console.log(err);
     } else {
       console.log(result);
-      res.send({views: result[0].views, likes: result[0].likes, reposts: result[0].reposts, comments: result[0].comments, followers: result[0].followers,
-      playlistsViews: result[0].playlistsViews, repostsViews: result[0].repostsViews})
+      res.send(result[0])
     }
   })
 })
 
 app.get('/api/topPlaylists/:timePeriod', loggedIn, (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/topPlaylists/' + req.params.timePeriod);
-  var userId = req.user.userId
-  var now = new Date()
-  var timePeriod = getTimePeriod(req.params.timePeriod)
+  const userId = req.user.userId
+  const now = new Date()
+  const timePeriod = getTimePeriod(req.params.timePeriod)
   var timePeriodQuery = ''
   if (timePeriod) {
-    timePeriodQuery = 'AND views.dateTime BETWEEN :timePeriod AND :now '
+    timePeriodQuery = 'AND c.dateTime BETWEEN :timePeriod AND :now '
   }
-  conn.query('SELECT views.playlistId, playlists.title, playlists.coverImageUrl, COUNT(*) AS views FROM views ' +
-  'INNER JOIN playlists ON playlists.playlistId = views.playlistId WHERE receiverId = :userId ' + timePeriodQuery + 'AND views.playlistId IS NOT NULL ' +
-  'GROUP BY views.playlistId ORDER BY views LIMIT 3', {userId: userId, timePeriod: timePeriod.toISOString(), now: now.toISOString()}, function(err, result) {
+
+  conn.query('SELECT a.*, a.dateTime AS uploadDate, b.coverImage, COUNT(c.viewId) AS timeViews FROM playlists AS a ' +
+  'JOIN (SELECT imageId, JSON_OBJECT(\'imageUrl\', imageUrl, \'width\', width, \'height\', height) AS coverImage FROM postsImages GROUP BY imageId) b ON b.imageId = a.coverImageId ' +
+  'LEFT JOIN views AS c ON c.playlistId = a.playlistId ' + timePeriodQuery +
+  'WHERE a.userId = :userId GROUP BY a.playlistId ORDER BY timeViews LIMIT 3', {userId: userId, timePeriod: timePeriod.toISOString(), now: now.toISOString()}, function(err, result) {
     if (err) {
       console.log(err);
     } else {
       console.log(result);
-      res.send({topPlaylists: result})
+      for (var i = 0; i < result.length; i++) {
+        result[i].coverImage = JSON.parse(result[i].coverImage)
+      }
+      res.send(result)
     }
   })
 })
@@ -986,17 +1013,17 @@ app.get('/api/topPlaylistsViewers/:timePeriod', loggedIn, (req, res) => {
   var timePeriod = getTimePeriod(req.params.timePeriod)
   var timePeriodQuery = ''
   if (timePeriod) {
-    timePeriodQuery = 'AND views.dateTime BETWEEN :timePeriod AND :now '
+    timePeriodQuery = 'AND a.dateTime BETWEEN :timePeriod AND :now '
   }
 
-  conn.query('SELECT views.viewerId, users.username, users.profileName, users.profile_image_src, COUNT(*) AS views FROM views ' +
-  'INNER JOIN users ON users.userId = views.viewerId WHERE receiverId = :userId ' + timePeriodQuery + 'AND views.playlistId IS NOT NULL ' +
-  'GROUP BY views.viewerId ORDER BY views LIMIT 3', {userId: userId, timePeriod: timePeriod.toISOString(), now: now.toISOString()}, function(err, result) {
+  conn.query('SELECT b.username, b.profileName, b.profile_image_src, COUNT(a.viewId) AS timeViews FROM views AS a ' +
+  'JOIN users AS b ON b.userId = a.viewerId WHERE a.receiverId = :userId ' + timePeriodQuery + 'AND a.playlistId IN (SELECT playlistId FROM playlists WHERE userId = :userId) ' +
+  'GROUP BY a.viewerId ORDER BY timeViews LIMIT 3', {userId: userId, timePeriod: timePeriod.toISOString(), now: now.toISOString()}, function(err, result) {
     if (err) {
       console.log(err);
     } else {
       console.log(result);
-      res.send({topViewers: result})
+      res.send(result)
     }
   })
 })
@@ -1338,6 +1365,27 @@ app.post('/api/postVisit', (req, res) => {
 
   conn.query('INSERT IGNORE INTO views (mediaId, viewerId, dateTime) VALUES ' +
   '(:mediaId, :userId, :dateTime)', {mediaId: view.mediaId, userId: userId, dateTime: view.dateTime}, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      if (result.insertId) {
+        console.log("Recorded views successfully");
+        res.send({message: "success"})
+      } else {
+        res.send({message: "same user"})
+      }
+    }
+  })
+})
+
+app.post('/api/collectionPostVisit', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/collectionPostVisit');
+  const userId = req.user.userId
+  const view = req.body.view
+
+  conn.query('INSERT IGNORE INTO views (playlistId, mediaId, viewerId, dateTime) VALUES ' +
+  '(:playlistId, :mediaId, :userId, :dateTime)', {playlistId: view.playlistId, mediaId: view.mediaId, userId: userId, dateTime: view.dateTime},
+  function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -1805,50 +1853,64 @@ app.get('/api/:profile/:playlistId/playlistComments', function(req, res) {
   })
 })
 
-app.post('/api/:profile/edit', function(req, res) {
-  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/edit');
-  var username = req.params.profile;
-  var userId = req.user.userId;
-  conn.query('UPDATE users SET profileName = ?, location = ?, description = ? WHERE userId=?',
-  [req.body.profileName, req.body.location, req.body.description, userId], function(err, result) {
+app.post('/api/editProfileInfo', function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/editProfileInfo');
+  const userId = req.user.userId;
+  var body = req.body
+  body.userId = userId
+  var updateQuery = ''
+  if (body.username) {
+    updateQuery += 'username = :username,'
+  }
+  if (body.profileName) {
+    updateQuery += 'profileName = :profileName,'
+  }
+  if (body.location) {
+    updateQuery += 'location = :location,'
+  }
+  if (body.description) {
+    updateQuery += 'description = :description,'
+  }
+  updateQuery = updateQuery.slice(0, -1)
+  conn.query('UPDATE users SET ' + updateQuery + ' WHERE userId=:userId', body, function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      console.log("user edited successfully");
+      console.log("Edited profile successfully");
       res.send({message: 'success'})
     }
   })
 
 })
 
-app.post('/api/:profile/updateProfileImage', function(req, res) {
-  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/updateProfileImage');
-  var username = req.params.profile;
-  var userId = req.user.userId;
+app.post('/api/updateProfileImage', function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/updateProfileImage');
+  const userId = req.user.userId;
   upload(req, res, function(err) {
     if (err) {
       console.log(err);
       res.send({message: err.message})
     } else {
-      var filename = "/profileImages/" + req.file.fieldname + '-' + Date.now() +'.jpg'
-      if (req.file.mimetype == 'image/png') {
-        Promise.all([updateProfileImage(filename, req.file.buffer, userId)])
-        .then(function(allData) {
+      const file = req.files[0]
+      const filename = "/profileImages/" + file.fieldname + '-' + Date.now() +'.jpg'
+      if (file.mimetype == 'image/png') {
+        updateProfileImage(filename, file.buffer, userId)
+        .then(function(data) {
           console.log("updated profile image successfully");
-          res.send(allData[0])
+          res.send(data)
         }).catch(e => {
           console.log(e);
         })
       } else {
-        jo.rotate(req.file.buffer, {}, function(error, buffer) {
+        jo.rotate(file.buffer, {}, function(error, buffer) {
           if (error && error.code !== jo.errors.no_orientation && error.code !== jo.errors.correct_orientation) {
             console.log('An error occurred when rotating the file: ' + error.message)
             res.send({message: 'fail'})
           } else {
-            Promise.all([updateProfileImage(filename, buffer, userId)])
-            .then(function(allData) {
+            updateProfileImage(filename, buffer, userId)
+            .then(function(data) {
               console.log("updated profile image successfully");
-              res.send(allData[0])
+              res.send(data)
             }).catch(e => {
               console.log(e);
             })
@@ -2442,28 +2504,11 @@ function updateProfileImage(filename, buffer, userId) {
       if (err) {
         return reject(err)
       } else {
-        conn.query('SELECT profile_image_src FROM users WHERE userId=?', [userId], function(err, result) {
+        conn.query('UPDATE users SET profile_image_src = ? WHERE userId=?', [filename, userId], function(err, result) {
           if (err) {
-            return reject(err);
+            return reject(err)
           } else {
-            var oldFilename = result[0].profile_image_src
-            conn.query('UPDATE users SET profile_image_src = ? WHERE userId=?', [filename, userId], function(err, result) {
-              if (err) {
-                return reject(err)
-              } else {
-                if (oldFilename) {
-                  fs.unlink("public" + oldFilename, function(err) {
-                    if (err) {
-                      return reject(err)
-                    } else {
-                      return resolve({message: 'success'})
-                    }
-                  })
-                } else {
-                  return resolve({message: 'success'})
-                }
-              }
-            })
+            return resolve({profile_image_src: filename})
           }
         })
       }

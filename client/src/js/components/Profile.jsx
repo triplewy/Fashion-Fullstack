@@ -4,7 +4,7 @@ import TypeSelector from './TypeSelector.jsx'
 import EditProfileModal from './EditProfileModal.jsx'
 import ProfileInfo from './ProfileInfo.jsx'
 import Cookie from 'js-cookie'
-import * as loadImage from 'blueimp-load-image'
+// import * as loadImage from 'blueimp-load-image'
 
 export default class Profile extends React.Component {
   constructor(props) {
@@ -15,13 +15,10 @@ export default class Profile extends React.Component {
       profileInfo: {},
       isProfile: false,
       type_selector_value: 0,
-      isFollowing: false,
-      editProfile: false,
-      profile_image_file: null,
-      profile_image_src: ''
     };
 
     this.toggle_type = this.toggle_type.bind(this);
+    this.fetchStream = this.fetchStream.bind(this)
     this.handleFollow = this.handleFollow.bind(this);
     this.handleUnfollow = this.handleUnfollow.bind(this);
     // this.getProfile = this.getProfile.bind(this)
@@ -33,8 +30,6 @@ export default class Profile extends React.Component {
     this.getOriginalStream = this.getOriginalStream.bind(this)
     this.getPlaylistStream = this.getPlaylistStream.bind(this)
     this.getRepostStream = this.getRepostStream.bind(this)
-    this.editProfile = this.editProfile.bind(this)
-    this.closeEditProfile = this.closeEditProfile.bind(this)
     this.readImageFile = this.readImageFile.bind(this)
   }
 
@@ -48,6 +43,7 @@ export default class Profile extends React.Component {
   componentDidUpdate(prevProps) {
     if (this.props.profile !== prevProps.profile) {
       window.scrollTo(0, 0)
+      this.setState({type_selector_value: 0})
       this.fetchProfileInfo(this.props.profile)
       this.getStream()
       this.profileVisit()
@@ -55,18 +51,41 @@ export default class Profile extends React.Component {
   }
 
   toggle_type(e) {
-    if (e.target.name == 1) {
-      this.getOriginalStream()
-    } else if (e.target.name == 2) {
-      this.getPostStream()
-    } else if (e.target.name == 3) {
-      this.getPlaylistStream()
-    } else if (e.target.name == 4) {
-      this.getRepostStream()
-    } else {
-      this.getStream()
-    }
+    this.fetchStream(e.target.name * 1)
+    // if (e.target.name == 1) {
+    //   this.getOriginalStream()
+    // } else if (e.target.name == 2) {
+    //   this.getPostStream()
+    // } else if (e.target.name == 3) {
+    //   this.getPlaylistStream()
+    // } else if (e.target.name == 4) {
+    //   this.getRepostStream()
+    // } else {
+    //   this.getStream()
+    // }
     this.setState({type_selector_value: e.target.name});
+  }
+
+  fetchStream(type_selector_value) {
+    switch (type_selector_value) {
+      case 0:
+        this.getStream()
+        break;
+      case 1:
+        this.getOriginalStream()
+        break;
+      case 2:
+        this.getPostStream()
+        break;
+      case 3:
+        this.getPlaylistStream()
+        break;
+      case 4:
+        this.getRepostStream()
+        break;
+      default:
+        this.getStream()
+    }
   }
 
   profileVisit() {
@@ -104,7 +123,8 @@ export default class Profile extends React.Component {
       if (data.message === 'success') {
         var tempProfileInfo = this.state.profileInfo
         tempProfileInfo.followers += 1
-        this.setState({isFollowing: true, profileInfo: tempProfileInfo})
+        tempProfileInfo.isFollowing = true
+        this.setState({profileInfo: tempProfileInfo})
       } else if (data.message === 'not logged in') {
         console.log("not logged in");
       }
@@ -124,7 +144,8 @@ export default class Profile extends React.Component {
       if (data.message === 'success') {
         var tempProfileInfo = this.state.profileInfo
         tempProfileInfo.followers -= 1
-        this.setState({isFollowing: false, profileInfo: tempProfileInfo})
+        tempProfileInfo.isFollowing = false
+        this.setState({profileInfo: tempProfileInfo})
       }
     })
     .catch((error) => {
@@ -266,73 +287,72 @@ export default class Profile extends React.Component {
     });
   }
 
-  editProfile(e) {
-    this.setState({editProfile: true})
-  }
-
-  closeEditProfile(e) {
-    this.setState({editProfile: false})
-  }
-
   readImageFile(e) {
     e.preventDefault();
-    var file = e.target.files[0];
+    const file = e.target.files[0];
+    // var reader = new FileReader();
+    // reader.onloadend = () => {
+    //   // var img = new Image();
+    //   //   img.onload = () => {
+    //   //     var [width, height] = setAspectRatio(img.width, img.height)
+    //   //     var tempDimensions = this.state.dimensions
+    //   //     tempDimensions[index] = {original: {width: img.width, height: img.height}, display: {width: width, height: height}}
+    //   //     this.setState({dimensions: tempDimensions})
+    //   //   };
+    //   // img.src = reader.result;
+    // }
+    // console.log("file is", file);
+    // reader.readAsDataURL(file);
+    //
+    // const loadImageOptions = { canvas: true }
+    // loadImage.parseMetaData(file, (data) => {
+    //   if (data.exif) {
+    //     loadImageOptions.orientation = data.exif.get('Orientation')
+    //     console.log("loadImageOptions are", loadImageOptions);
+    //   }
+    //   loadImage(file, (canvas) => {
+    //     console.log("file is", file);
+    //     file.preview = canvas.toDataURL(file.type)
+    //
+    console.log("file is", file);
+    var formData = new FormData();
+    formData.append('image', file);
 
-    const loadImageOptions = { canvas: true }
-    loadImage.parseMetaData(file, (data) => {
-      if (data.exif) {
-        loadImageOptions.orientation = data.exif.get('Orientation')
-        console.log("loadImageOptions are", loadImageOptions);
-      }
-      loadImage(file, (canvas) => {
-        console.log("file is", file);
-        file.preview = canvas.toDataURL(file.type)
-
-        var formData = new FormData();
-        formData.append('image', file);
-
-        fetch('/api/' + this.props.profile + '/updateProfileImage', {
-          method: 'POST',
-          credentials: 'include',
-          body: formData
-        })
-        .then(response => {
-          console.log(response);
-          if (response.status === 400) {
-            console.log("not logged in");
-          } else {
-            return response.json()
-          }
-        })
-        .then(data => {
-          console.log(data.message);
-          if (data.message === 'success') {
-            console.log("updated profile pic successfully");
-            this.setState({
-              profile_image_file: file,
-              profile_image_src: file.preview,
-            })
-          }
-        })
-      }, loadImageOptions)
+    fetch('/api/updateProfileImage', {
+      method: 'POST',
+      credentials: 'include',
+      body: formData
     })
+    .then(response => {
+      console.log(response);
+      if (response.status === 400) {
+        console.log("not logged in");
+      } else {
+        return response.json()
+      }
+    })
+    .then(data => {
+      if (data.profile_image_src) {
+        console.log("updated profile pic successfully");
+        const profile = this.state.profileInfo
+        this.fetchProfileInfo()
+        this.fetchStream(this.state.type_selector_value)
+        this.props.setUser({username: profile.username, profileName: profile.profileName, profile_image_src: data.profile_image_src})
+      } else {
+        console.log(data.message);
+      }
+    })
+    //   }, loadImageOptions)
+    // })
   }
 
   render() {
     return (
       <div>
-        {/* <EditProfileModal showModal={this.state.editProfile} profileInfo={this.state.profileInfo}
-          profile_image_src={this.state.profile_image_src} closeEditProfile={this.closeEditProfile}
-          readImageFile={this.readImageFile} getUserDetails={this.getUserDetails}/> */}
         <div id="white_background_wrapper">
           <div id="profile_banner">
             <div className="profile_info">
               <div id="profile_info_image_div">
-                {/* <div className="edit_profile_image" style={{backgroundImage: 'url(' + this.state.profile_image_src + ')'}}>
-                  <label htmlFor="input_image_button" id="update_profile_image_label">Update</label>
-                  <input id="input_image_button" type="file" name="post_pic" accept="image/*"
-                    onChange={this.props.readImageFile}></input>
-                </div> */}
                 <div className="edit_profile_image" style={{backgroundImage: 'url(' + this.state.profileInfo.profile_image_src + ')'}}>
                 {this.state.isProfile &&
                   <div>
@@ -348,9 +368,9 @@ export default class Profile extends React.Component {
                   <p id="profile_info_username">{this.state.profileInfo.profileName}</p>
                   <p id="profile_info_location">{this.state.profileInfo.location}</p>
                   {!this.state.isProfile &&
-                    <button id={this.state.isFollowing ? "following_button" : "follow_button"}
-                      onClick={this.state.isFollowing ? this.handleUnfollow : this.handleFollow}>
-                      {this.state.isFollowing ? 'Following' : 'Follow'}
+                    <button id={this.state.profileInfo.isFollowing ? "following_button" : "follow_button"}
+                      onClick={this.state.profileInfo.isFollowing ? this.handleUnfollow : this.handleFollow}>
+                      {this.state.profileInfo.isFollowing ? 'Following' : 'Follow'}
                     </button>
                   }
                 </div>
@@ -360,7 +380,8 @@ export default class Profile extends React.Component {
           <div id="content_wrapper">
             <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Posts", "Playlists", "Reposts"]}
             type_selector_value={this.state.type_selector_value}
-            right={<ProfileInfo profileInfo={this.state.profileInfo} isProfile={this.state.isProfile} fetchProfileInfo={this.fetchProfileInfo}/> } />
+            right={<ProfileInfo profileInfo={this.state.profileInfo} isProfile={this.state.isProfile} fetchProfileInfo={this.fetchProfileInfo}
+              readImageFile={this.readImageFile} getStream={this.getStream} setUser={this.props.setUser}/> } />
             {this.state.streamData &&
               <RenderedPosts streamData={this.state.streamData} />
             }

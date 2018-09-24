@@ -35,7 +35,7 @@ export default class Routes extends React.Component {
 
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this)
-    this.loggedIn = this.loggedIn.bind(this)
+    this.setUser = this.setUser.bind(this)
   }
 
   componentDidMount() {
@@ -102,7 +102,7 @@ export default class Routes extends React.Component {
     });
   }
 
-  loggedIn(user) {
+  setUser(user) {
     this.setState({user: user})
   }
 
@@ -127,9 +127,9 @@ export default class Routes extends React.Component {
             <Route exact path='/explore' component={Explore}/>
             <Route exact path='/explore/:genre' render={({match}) => <Explore genre={match.params.genre} />} />
             <Route exact path='/search' component={Search}/>
-            <Route exact path='/signup' render={(props) => <Signup loggedIn={this.loggedIn} {...props}/>} />
+            <Route exact path='/signup' render={(props) => <Signup loggedIn={this.setUser} {...props}/>} />
             <Route exact path='/genre/:genre' render={({match}) => <GenrePage genre={match.params.genre} />} />
-            <Route exact path='/:profile' render={({match}) => <Profile profile={match.params.profile} />} />
+            <Route exact path='/:profile' render={({match}) => <Profile profile={match.params.profile} setUser={this.setUser}/>} />
             <Route exact path='/:profile/:url' component={SinglePostPage}/>
             <Route exact path='/:profile/album/:url' component={SinglePlaylistPage}/>
           </Switch>

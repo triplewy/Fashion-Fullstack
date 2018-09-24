@@ -17,8 +17,8 @@ export default class TypeSelector extends React.Component {
     if (this.props.types != null) {
       rendered_types = this.props.types.map((item, index) => {
           return (
-            <button key={index} name={index} className={(this.props.type_selector_value == index)?
-              'type_selector_button_selected' : 'type_selector_button'}
+            <button key={index} name={index} className="type_selector_button"
+              style={{color: this.props.type_selector_value == index ? 'red' : '', boxShadow: this.props.type_selector_value == index ? '0 1px 0 0 red' : ''}}
               disabled={(this.props.type_selector_value == index)}
               onClick={this.props.toggle_type}>{item}</button>
           )

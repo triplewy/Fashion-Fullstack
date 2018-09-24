@@ -12,8 +12,6 @@ export default class EditProfileModal extends React.Component {
         profileNameInput: this.props.profileInfo.profileName,
         locationInput: this.props.profileInfo.location,
         descriptionInput: this.props.profileInfo.description,
-        profile_image_src: this.props.profileInfo.profile_image_src,
-        changed_profile_image: false,
         showModal: false
       }
     } else {
@@ -23,15 +21,12 @@ export default class EditProfileModal extends React.Component {
         profileNameInput: '',
         locationInput: '',
         descriptionInput: '',
-        profile_image_src: '',
-        changed_profile_image: false,
         showModal: false
       }
     }
 
     this.handleChange = this.handleChange.bind(this);
     this.checkUsername = this.checkUsername.bind(this)
-    this.changeProfileImage = this.changeProfileImage.bind(this)
     this.handleSave = this.handleSave.bind(this)
     this.toggleModal = this.toggleModal.bind(this)
   }
@@ -43,7 +38,6 @@ export default class EditProfileModal extends React.Component {
         profileNameInput: this.props.profileInfo.profileName,
         locationInput: this.props.profileInfo.location,
         descriptionInput: this.props.profileInfo.description,
-        profile_image_src: this.props.profile_image_src
       });
     }
   }
@@ -51,10 +45,6 @@ export default class EditProfileModal extends React.Component {
   handleChange(e) {
     var value = e.target.value;
     this.setState({[e.target.name]: value});
-  }
-
-  changeProfileImage(e) {
-    this.setState({changed_profile_image: true})
   }
 
   checkUsername(e) {
@@ -94,27 +84,44 @@ export default class EditProfileModal extends React.Component {
   }
 
   handleSave(e) {
-    fetch('/api/' + this.state.username + '/edit', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        profileName: this.state.profileName,
-        location: this.state.location,
-        description: this.state.description,
-        username: this.state.username
+    var body = {}
+    const profile = this.props.profileInfo
+    if (this.state.usernameInput !== profile.username) {
+      body.username = this.state.usernameInput
+    }
+    if (this.state.profileNameInput !== profile.profileName) {
+      body.profileName = this.state.profileNameInput
+    }
+    if (this.state.locationInput !== profile.location) {
+      body.location = this.state.locationInput
+    }
+    if (this.state.descriptionInput !== profile.description) {
+      body.description = this.state.descriptionInput
+    }
+
+    if (Object.getOwnPropertyNames(body).length === 0) {
+      this.toggleModal()
+    } else {
+      fetch('/api/editProfileInfo', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(body)
       })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.message === 'success') {
-        this.props.getUserDetails()
-        this.toggleModal()
-      }
-    })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        if (data.message === 'success') {
+          this.props.fetchProfileInfo()
+          this.props.getStream()
+          this.toggleModal()
+          this.props.setUser({username: this.state.usernameInput, profileName: this.state.profileNameInput, profile_image_src: this.props.profileInfo.profile_image_src})
+        }
+      })
+    }
   }
 
   toggleModal(e) {
@@ -124,7 +131,7 @@ export default class EditProfileModal extends React.Component {
   render() {
     const profile = this.props.profileInfo
     return (
-      <div style={{display: 'inline-block'}}>
+      <div>
         <button className="profile_info_text" id="edit_profile_button" onClick={this.toggleModal}>Edit</button>
         <Modal show={this.state.showModal} onHide={this.toggleModal}>
           <Modal.Header closeButton>
@@ -133,7 +140,7 @@ export default class EditProfileModal extends React.Component {
           <Modal.Body id="edit_profile_modal_body">
             <div className="edit_profile_wrapper">
               <div>
-                <div className="edit_profile_image" style={{backgroundImage: 'url(' + this.state.profile_image_src + ')'}}>
+                <div className="edit_profile_image" style={{backgroundImage: 'url(' + profile.profile_image_src + ')'}}>
                   <div>
                     <label htmlFor="input_image_button" id="update_profile_image_label">Update</label>
                     <input id="input_image_button" type="file" name="post_pic" accept="image/*"
@@ -159,7 +166,7 @@ export default class EditProfileModal extends React.Component {
             </div>
           </Modal.Body>
           <Modal.Footer>
-            <button type="button" className="btn btn-default" onClick={this.handleSave}>Save</button>
+            <button type="button" className="btn btn-default" onClick={this.handleSave} disabled={!this.state.usernameIsValid}>Save</button>
           </Modal.Footer>
         </Modal>
       </div>

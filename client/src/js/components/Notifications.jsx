@@ -115,7 +115,7 @@ export default class Notifications extends React.Component {
 
     return (
       <Dropdown id="notifications_dropdown" open={this.state.open} onToggle={this.getNotifications} pullRight={true}>
-        <Dropdown.Toggle className="banner_button" noCaret={true}>
+        <Dropdown.Toggle noCaret={true}>
           <img id="notifications_icon" alt="notifications icon" src={notification_icon}></img>
           <div className={this.state.unread ? 'notification_cirlce_show' : 'notification_cirlce_hide'}>
             {this.state.unread}

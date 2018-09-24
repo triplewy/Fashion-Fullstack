@@ -45,11 +45,9 @@ export default class NavbarProfile extends React.Component {
 
   render() {
     return (
-      <Dropdown id="navbar_profile_dropdown" onToggle={this.fetchStats} open={this.state.open}>
-        <Dropdown.Toggle className="banner_button" noCaret={true}>
-          <div id="profile_image_div">
-            <img id="profile_image" alt="" src={this.props.profile_image_src}></img>
-          </div>
+      <Dropdown id="navbar_profile_dropdown" onToggle={this.fetchStats} open={this.state.open} pullRight={true}>
+        <Dropdown.Toggle noCaret={true}>
+          <div id="profile_image_div" style={{backgroundImage: 'url(' + this.props.profile_image_src + ')'}} />
           <p id="user_name">{this.props.profileName}</p>
         </Dropdown.Toggle>
         <Dropdown.Menu>
@@ -60,7 +58,7 @@ export default class NavbarProfile extends React.Component {
             <Link to={"/you/likes/posts"}>Likes</Link>
           </li>
           <li>
-            <StatsColumn dayViews={this.state.dayViews} weekViews={this.state.weekViews} totalViews={this.state.totalViews} />
+            <StatsColumn dayViews={this.state.dayViews} weekViews={this.state.weekViews} totalViews={this.state.totalViews} closeDropdown={this.closeDropdown}/>
           </li>
           <li>
             <button onClick={this.props.handleLogout}>Logout</button>

@@ -1,7 +1,8 @@
 import React from 'react';
 import TypeSelector from './TypeSelector.jsx'
 import ViewsGraph from './ViewsGraph.jsx';
-import TopStats from './TopStats.jsx'
+import TopPostsStats from './TopPostsStats.jsx'
+import TopCollectionsStats from './TopCollectionsStats.jsx'
 import TimePeriod from './TimePeriod.jsx'
 
 export default class Stats extends React.Component {
@@ -17,6 +18,10 @@ export default class Stats extends React.Component {
     this.toggleTime = this.toggleTime.bind(this);
   }
 
+  componentDidMount() {
+    window.scrollTo(0,0)
+  }
+
   toggle_type(e) {
     if (e.target.name == 0) {
       this.setState({type_selector_value: 0});
@@ -25,17 +30,25 @@ export default class Stats extends React.Component {
     }
   }
 
-  toggleTime(e) {
-    this.setState({timePeriod: e.target.value});
+  toggleTime(index) {
+    this.setState({timePeriod: index});
   }
 
   render() {
     return (
       <div id="white_background_wrapper">
+        <p className="page_title">Stats</p>
         <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["Posts", "Playlists"]}
               type_selector_value={this.state.type_selector_value} right={<TimePeriod toggleTime={this.toggleTime} />} />
         <ViewsGraph postOrPlaylist={this.state.type_selector_value} timePeriod={this.state.timePeriod}/>
-        <TopStats postOrPlaylist={this.state.type_selector_value} timePeriod={this.state.timePeriod}/>
+        {this.state.type_selector_value ?
+          <TopCollectionsStats timePeriod={this.state.timePeriod}/>
+          :
+          <TopPostsStats timePeriod={this.state.timePeriod}/>
+        }
+        <div style={{margin: '100px 0'}}>
+          Filler div to prevent overflow
+        </div>
       </div>
     );
   }

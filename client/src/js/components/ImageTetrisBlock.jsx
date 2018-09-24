@@ -115,6 +115,7 @@ export default class ImageTetris extends React.Component {
         <div className="block_profile" style={{opacity: this.state.entered ? 1 : 0}}>
           <ProfileHover classStyle="post_profile_link" username={post.username} profileName={post.profileName}
             profile_image_src={post.profile_image_src} />
+          <p>{post.title}</p>
         </div>
         <div className="block_stats" style={{opacity: this.state.entered ? 1 : 0}}>
           <StatsHeader mediaId={post.mediaId} views={post.views} likes={post.likes} reposts={post.reposts}

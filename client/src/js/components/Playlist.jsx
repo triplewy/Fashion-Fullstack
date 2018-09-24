@@ -151,7 +151,7 @@ export default class Playlist extends React.Component {
               <div id="description_wrapper">
                 <p id="description">{playlist.description}</p>
               </div>
-              <PlaylistPosts posts={playlist.posts} playlistIndex={this.state.playlistIndex} setPlaylistIndex={this.setPlaylistIndex} />
+              <PlaylistPosts playlistId={playlist.playlistId} posts={playlist.posts} playlistIndex={this.state.playlistIndex} setPlaylistIndex={this.setPlaylistIndex} />
               <Comments playlistId={playlist.playlistId} username={playlist.username} comments={playlist.comments} />
           </div>
         </div>

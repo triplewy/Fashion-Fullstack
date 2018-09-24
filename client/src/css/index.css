@@ -190,8 +190,29 @@ textarea:focus {
   padding: 20px 20px;
 }
 
-.dropdown-menu li {
-  /* padding: 10px 10px; */
+.btn {
+  padding: 0 0;
+  font-weight: 300;
+}
+
+.btn-group.open .dropdown-toggle {
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.dropdown.btn-group {
+  height: 100%;
+  -webkit-transition: box-shadow 0.3s ease-in;
+  transition: box-shadow 0.3s ease-in;
+}
+
+.dropdown.btn-group:hover {
+  box-shadow: 0 1px 0 0 #4EA6EA;
+}
+
+.open>.dropdown-toggle.btn-default:focus {
+  background-color: transparent;
+  border: none;
 }
 
 .carousel-control.left, .carousel-control.right {
@@ -322,6 +343,10 @@ div.dropdown {
   height: 100%;
 }
 
+#banner_user_div>div {
+  margin-left: 40px;
+}
+
 .banner_button {
   display: inline-block;
   cursor: pointer;
@@ -379,6 +404,7 @@ div.dropdown {
 }
 
 #white_background_wrapper {
+  display: block;
   position: relative;
   overflow: hidden;
   z-index: 0;
@@ -411,41 +437,61 @@ div.dropdown {
 }
 
 #type_selector {
-  display: inline-block;
+  display: flex;
   position: relative;
-  width: 100%;
+  height: 40px;
   margin-bottom: 20px;
   margin-top: 20px;
   color: black;
   z-index: 1;
   font-size: 21px;
-  border-bottom: 1px solid #f1f1f1;
+  font-weight: 300;
+  box-shadow: 0 1px 0 0 #f1f1f1;
 }
 
 .type_selector_button {
   display: inline-block;
   margin-right: 40px;
-  padding: 5px 0;
+  transition: box-shadow 0.3s ease-in, color 0.3s ease-in;
+  -webkit-transition: box-shadow 0.3s ease-in, color 0.3s ease-in;
 }
 
 .type_selector_button:hover {
-  color: gray;
+  color: #888888;
 }
 
-.type_selector_button_selected {
-  display: inline-block;
-  margin-right: 40px;
-  color: red;
-  box-shadow: 0 1px 0px 0px red;
-  padding: 5px 0;
+.profile_section {
+  display: flex;
+  margin-left: auto;
 }
 
-.type_selector_button_selected:hover {
-  color: gray;
+.profile_section_item {
+  display: flex;
+  margin-left: 30px;
 }
 
-#profile_section {
-  float: right;
+.profile_section_item p {
+  margin: auto 0;
+}
+
+.profile_section_item div.links_dropdown {
+  position: absolute;
+  display: none;
+  right: 0;
+  border-radius: 4px;
+  background-color: white;
+  padding: 20px 20px;
+  width: 300px;
+  /* min-height: 200px; */
+  max-height: 0px;
+  -webkit-transition: box-shadow 0.5s;
+  transition: box-shadow 0.5s;
+}
+
+.profile_section_item:hover div.links_dropdown {
+  display: block;
+  max-height: 1000px;
+  box-shadow: -2px 4px 12px 2px #888888;
 }
 
 .post_wrapper {
@@ -547,15 +593,9 @@ div.dropdown {
   display: inline-block;
   height: 50px;
   width: 50px;
-  vertical-align: middle;
-}
-
-#profile_image {
-  height: 50px;
-  width: 50px;
-  object-fit: cover;
+  background-size: cover;
   border-radius: 50%;
-  border: 1px solid #f1f1f1;
+  vertical-align: middle;
 }
 
 .image_wrapper {
@@ -770,13 +810,16 @@ div.dropdown {
 
 #stats_column {
   border-top: 1px solid #f1f1f1;
+  border-bottom: 1px solid #f1f1f1;
   width: 300px;
   padding: 15px 20px;
 }
 
 #stats_column h1 {
+  display: inline-block;
   margin: 0 0;
   font-size: 18px;
+  font-weight: 400;
 }
 
 #stats_wrapper {
@@ -810,15 +853,13 @@ div.dropdown {
 }
 
 .view_div {
-  display: inline-block;
-  width: 50%;
-  border-right: 1px solid #ccc;
+  display: flex;
   margin-top: 20px;
 }
 
-#right_half_view_div {
-  border: none;
-  text-align: right;
+.view_div div {
+  display: inline-block;
+  flex: 1;
 }
 
 .view_counter {
@@ -828,17 +869,10 @@ div.dropdown {
 
 .stat_number {
   display: inline-block;
+  width: 100%;
   font-size: 18px;
   font-weight: 500;
   padding: 5px 0;
-}
-
-#stat_line_separator {
-  display: inline-block;
-  border-left: 2px solid #f1f1f1;
-  height: 50px;
-  vertical-align: top;
-  margin: 0 0;
 }
 
 #seven_days_counter {
@@ -849,8 +883,9 @@ div.dropdown {
   text-align: right;
 }
 
+
 #total_plays {
-  padding: 10px 0;
+  padding-top: 20px;
 }
 
 #time_period_title {
@@ -960,8 +995,10 @@ div.dropdown {
 }
 
 .profile_info_icon {
+  display: inline-block;
   width: 35px;
-  margin-left: 30px;
+  height: 35px;
+  background-size: cover;
 }
 
 #profile_info_username {
@@ -978,7 +1015,13 @@ div.dropdown {
   padding: 10px 0;
 }
 
-#likes_list {
+.page_title {
+  margin-top: 20px;
+  font-size: 32px;
+  font-weight: 300;
+}
+
+/* #likes_list {
   padding: 0 0;
   margin: 0 0;
 }
@@ -998,7 +1041,7 @@ div.dropdown {
   background-color: #f1f1f1;
   color: white;
   border-radius: 50%;
-}
+} */
 
 .see_all_link {
   float: right;
@@ -1159,7 +1202,8 @@ div.dropdown {
   margin: 20px 2%;
   color: black;
   z-index: 1;
-  font-size: 21px;
+  font-size: 20px;
+  font-weight: 300;
   border-bottom: 1px solid #f1f1f1;
 }
 
@@ -1531,7 +1575,7 @@ div.dropdown {
 }
 
 .time_period_dropdown {
-  float: right;
+  margin-left: auto;
 }
 
 #time_period_button {
@@ -1540,6 +1584,11 @@ div.dropdown {
 #time_period_list li {
   padding: 10px 10px;
   cursor: pointer;
+}
+
+#time_period_list li>a {
+  font-weight: 300;
+  padding: 0 0;
 }
 
 #time_period_list li:hover {
@@ -1552,14 +1601,13 @@ div.dropdown {
 }
 
 #views_graph_div {
-  width: 100%;
-  padding: 0 2%;
 }
 
 .stats_title {
-  font-size: 24px;
-  font-weight: 600;
-  padding-bottom: 10px;
+  font-size: 28px;
+  font-weight: 300;
+  margin-top: 50px;
+  margin-bottom: 20px;
 }
 
 .views_graph_stats_number {
@@ -1704,11 +1752,13 @@ div.dropdown {
   padding: 0 0;
 }
 
-.dropdown-menu li {
-}
-
 .dropdown-menu li>a {
   padding: 15px 20px;
+}
+
+.dropdown-menu li>button {
+  color: #337ab7;
+  padding: 5px 20px;
 }
 
 .form-group {
@@ -1825,34 +1875,6 @@ div.dropdown {
   position: absolute;
   right: 0;
   padding: 5px 0;
-}
-
-.profile_dropdown_div {
-  display: inline-block;
-  font-size: 16px;
-  padding: 5px 10px;
-  padding-left: 30px;
-  border-radius: 2px;
-}
-
-.profile_dropdown_div div.links_dropdown {
-  position: absolute;
-  display: none;
-  right: 0;
-  border-radius: 4px;
-  background-color: white;
-  padding: 20px 20px;
-  width: 300px;
-  /* min-height: 200px; */
-  max-height: 0px;
-  -webkit-transition: box-shadow 0.5s;
-  transition: box-shadow 0.5s;
-}
-
-.profile_dropdown_div:hover div.links_dropdown {
-  display: block;
-  max-height: 1000px;
-  box-shadow: -2px 4px 12px 2px #888888;
 }
 
 .comments_list {
@@ -2315,7 +2337,7 @@ div.dropdown {
   width: 68px;
   text-align: center;
   font-weight: 300;
-  background-color: rgb(255, 255, 255, 0.4);
+  background-color: rgb(255, 255, 255, 0.2);
   border: 1px solid white;
   color: white;
   padding: 4px 8px;
@@ -2326,7 +2348,7 @@ div.dropdown {
 }
 
 .edit_profile_image div label:hover {
-  background-color: rgb(255, 255, 255, 0.6);
+  background-color: rgb(255, 255, 255, 0.4);
 }
 
 .edit_profile_image:hover div label {
@@ -2520,8 +2542,10 @@ div.dropdown {
 
 .followers_profile {
   display: inline-block;
+  position: relative;
   text-align: center;
   font-size: 18px;
+  font-weight: 300;
 }
 
 .followers_profile div.profile_image {
@@ -2535,24 +2559,23 @@ div.dropdown {
 .followers_profile strong {
   display: block;
   text-decoration: none;
+  font-weight: 300;
 }
 
 .followers_profile div.dropdown {
   display: none;
   position: absolute;
   top: 10;
+  left: 30px;
+  font-size: 14px;
   padding: 10px 15px;
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 6px;
-  -webkit-transition: opacity 0.15s ease-out;
-  transition: opacity 0.15s ease-out;
 }
 
 .followers_profile:hover div.dropdown {
   display: block;
-  -webkit-transition: opacity 0.15s ease-in;
-  transition: opacity 0.15s ease-in;
 }
 
 #genre_title {
@@ -2562,6 +2585,8 @@ div.dropdown {
 }
 
 .image_tetris_wrapper {
+  border-radius: 8px;
+  overflow-x: hidden;
 }
 
 .tetris_column {
@@ -2580,6 +2605,7 @@ div.dropdown {
 }
 
 .block_profile {
+  display: flex;
   position: absolute;
   top: 0;
   height: 60px;
@@ -2588,6 +2614,12 @@ div.dropdown {
   background-color: rgb(255,255,255,0.3);
   -webkit-transition: opacity 0.2s ease-in;
   transition: opacity 0.2s ease-in;
+}
+
+.block_profile>p {
+  margin: auto 0;
+  font-size: 12px;
+  font-weight: 300;
 }
 
 .block_stats {
@@ -2751,13 +2783,19 @@ div.dropdown {
 }
 
 .explore_right {
-  float: right;
+  display: inline-flex;
+  margin-left: auto;
 }
 
-.explore_right label {
+.explore_right>div {
+  display: inline-flex;
+  margin-left: 40px;
+}
+
+.explore_right div label {
   display: inline-block;
-  font-weight: 400;
-  margin-right: 5px;
+  font-weight: 300;
+  margin: auto 10px;
 }
 
 .explore_right input {
@@ -2770,6 +2808,38 @@ div.dropdown {
   font-size: 14px;
   font-weight: 400;
   color: #337ab7;
+}
+
+.top_posts_wrapper {
+  display: flex;
+}
+
+.top_posts_column {
+  width: 384px;
+  vertical-align: top;
+}
+
+.top_posts_column>p {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 300;
+  padding: 10px 0;
+}
+
+.top_viewers_column {
+  display: flex;
+  width: 384px;
+  vertical-align: top;
+}
+
+.top_viewers_column div {
+  margin: 0 auto;
+}
+
+.top_viewers_column div p.time_views {
+  text-align: center;
+  font-weight: 300;
+  font-size: 24px;
 }
 
 @media only screen and (max-width: 1300px) {

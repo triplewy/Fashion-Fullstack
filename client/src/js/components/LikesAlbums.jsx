@@ -48,6 +48,7 @@ export default class LikesAlbums extends React.Component {
     }
     return (
       <div id="white_background_wrapper">
+        <p className="page_title">Likes</p>
         <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["Posts", "Albums"]}
         type_selector_value={1}/>
         <AlbumTetris albums={this.state.albums}/>

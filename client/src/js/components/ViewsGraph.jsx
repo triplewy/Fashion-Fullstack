@@ -76,23 +76,20 @@ export default class ViewsGraph extends React.Component {
   render() {
       return (
         <div id="views_graph_div">
-          <div className="stats_portion_div">
-            <p className="stats_title">{this.props.postOrPlaylist ? "Playlists" : "Posts"} Stats</p>
-            <img id="views_icon" alt="view icon" className="stats_icon" src={view_icon}></img>
-            <p className="views_graph_stats_number" id="view_number">{this.state.stats.views}</p>
-            <img id="like_icon" alt="like icon" className="stats_icon" src={like_icon}></img>
-            <p className="views_graph_stats_number" id="like_number">{this.state.stats.likes}</p>
-            <img id="repost_icon" alt="repost icon" className="stats_icon" src={repost_icon}></img>
-            <p className="views_graph_stats_number" id="repost_number">{this.state.stats.reposts}</p>
-            <img id="comment_icon" alt="comment icon" className="stats_icon" src={comment_icon}></img>
-            <p className="views_graph_stats_number" id="comment_number">{this.state.stats.comments}</p>
-            <div id="graph_wrapper">
+          <img id="views_icon" alt="view icon" className="stats_icon" src={view_icon}></img>
+          <p className="views_graph_stats_number" id="view_number">{this.state.stats.views}</p>
+          <img id="like_icon" alt="like icon" className="stats_icon" src={like_icon}></img>
+          <p className="views_graph_stats_number" id="like_number">{this.state.stats.likes}</p>
+          <img id="repost_icon" alt="repost icon" className="stats_icon" src={repost_icon}></img>
+          <p className="views_graph_stats_number" id="repost_number">{this.state.stats.reposts}</p>
+          <img id="comment_icon" alt="comment icon" className="stats_icon" src={comment_icon}></img>
+          <p className="views_graph_stats_number" id="comment_number">{this.state.stats.comments}</p>
+          <div id="graph_wrapper">
 
-            </div>
-            <p>Total views are: {this.state.stats.postsViews}</p>
-            <p>Reposts views are: {this.state.stats.repostsViews}</p>
-            <p>Playlists views are: {this.state.stats.playlistsViews}</p>
           </div>
+          <p>Total views are: {this.state.stats.postsViews}</p>
+          <p>Reposts views are: {this.state.stats.repostsViews}</p>
+          <p>Playlists views are: {this.state.stats.playlistsViews}</p>
         </div>
       );
   }

@@ -48,6 +48,7 @@ export default class UploadMetadata extends React.Component {
   }
 
   componentDidMount() {
+    window.scrollTo(0,0)
     fetch('/api/topGenres', {
       credentials: 'include'
     })
