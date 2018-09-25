@@ -151,7 +151,7 @@ export default class Explore extends React.Component {
             {this.state.type_selector_value > 1 ? <TimePeriod toggleTime={this.toggleTime}/> : null}
           </div>
         }/>
-        <ImageTetris posts={this.state.posts}/>
+        <ImageTetris posts={this.state.posts} explore />
     </div>
     );
   }

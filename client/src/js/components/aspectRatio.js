@@ -24,6 +24,25 @@ export function setAspectRatioImageList(width, height) {
   }
 }
 
+export function setAspectRatioRelatedPosts(width, height) {
+  var aspectRatio = width/height
+  if (width > 288) {
+    aspectRatio = width/288
+    return [288, height/aspectRatio]
+  }
+  // if (aspectRatio >= 0.75 && width > 288) {
+  //   aspectRatio = width/288
+  //   return [288, height/aspectRatio]
+  // }
+  // else if (aspectRatio < 0.75 && height > 384) {
+  //   aspectRatio = height/384
+  //   return [width/aspectRatio, 384]
+  // }
+  else {
+    return [width, height]
+  }
+}
+
 export function setAspectRatioImageTetrisBlock(width, height) {
   var aspectRatio = width/height
   if (width > 384) {

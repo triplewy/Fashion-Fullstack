@@ -2,6 +2,7 @@ import React from 'react';
 import CarouselImages from './CarouselImages.jsx'
 import Tags from './Tags.jsx'
 import SinglePostPageComments from './SinglePostPageComments.jsx'
+import RelatedPosts from './RelatedPosts.jsx'
 import StatsHeader from './StatsHeader.jsx'
 import ProfileHover from './ProfileHover.jsx'
 import { dateDiffInDays } from './DateHelper.js'
@@ -20,7 +21,8 @@ export default class SinglePostPage extends React.Component {
         reposted: this.props.location.state.postData.reposted,
         tags: this.props.location.state.postData.tags,
         carouselIndex: 0,
-        post: this.props.location.state.postData
+        post: this.props.location.state.postData,
+        relatedPosts: []
       };
     } else {
       this.state = {
@@ -31,7 +33,8 @@ export default class SinglePostPage extends React.Component {
         reposted: false,
         tags: null,
         carouselIndex: 0,
-        post: null
+        post: null,
+        relatedPosts: []
       };
     }
 
@@ -54,7 +57,13 @@ export default class SinglePostPage extends React.Component {
     } else {
       this.fetchPost()
     }
+  }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.match.url !== prevProps.match.url) {
+      window.scrollTo(0,0)
+      this.fetchPost()
+    }
   }
 
   setCarouselIndex(index) {
@@ -142,6 +151,7 @@ export default class SinglePostPage extends React.Component {
             </div>
             <div className="right">
               <div>
+                {post.original !== 0 && <span>✔</span>}
                 <Link to={"/explore/" + post.genre}>{post.genre.replace(/^\w/, c => c.toUpperCase())}</Link>
                 <p>{dateDiffInDays(new Date(post.uploadDate)) + " ago"}</p>
               </div>
@@ -155,18 +165,15 @@ export default class SinglePostPage extends React.Component {
             </div>
           </div>
           <div className="single_post_bottom">
-            <div className="left_bottom">
-              <p>Related Outfits</p>
-              <ul>
-
-              </ul>
-            </div>
+            <RelatedPosts url={this.props.match.url} />
             <div className="right_bottom">
               <Tags mediaId={post.mediaId} tags={this.state.tags} modify={false} setCarouselIndex={this.setCarouselIndex} carouselIndex={this.state.carouselIndex}/>
-              <div id="description_wrapper">
-                <p id="description">{post.description.split('\n').map((item, key) => {
-                  return <span key={key}>{item}<br/></span>})}</p>
-              </div>
+              {post.description &&
+                <div id="description_wrapper">
+                  <p id="description">{post.description.split('\n').map((item, key) => {
+                    return <span key={key}>{item}<br/></span>})}</p>
+                </div>
+              }
               <SinglePostPageComments mediaId={post.mediaId} username={this.props.match.params.profile}/>
             </div>
           </div>

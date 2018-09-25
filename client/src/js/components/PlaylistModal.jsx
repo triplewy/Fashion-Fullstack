@@ -2,6 +2,7 @@ import React from 'react';
 import followers_icon from 'images/followers-icon.png'
 import posts_icon from 'images/posts-icon.png'
 import {Modal} from 'react-bootstrap'
+import Cookie from 'js-cookie'
 
 export default class PlaylistModal extends React.Component {
   constructor(props) {
@@ -9,12 +10,13 @@ export default class PlaylistModal extends React.Component {
     this.state = {
       showModal: this.props.showModal,
       titleInput: '',
+      url: '',
+      urlAvailable: false,
       genreInput: '',
       descriptionInput: '',
       selectedOption: 'private',
       playlists: [],
       showNewPlaylist: false,
-      mediaId: this.props.mediaId
     };
 
     this.handleChange = this.handleChange.bind(this)
@@ -23,13 +25,14 @@ export default class PlaylistModal extends React.Component {
     this.addToPlaylist = this.addToPlaylist.bind(this);
     this.createNewPlaylist = this.createNewPlaylist.bind(this);
     this.backButton = this.backButton.bind(this);
+    this.checkUrlAvailability = this.checkUrlAvailability.bind(this)
+    this.fetchUrlAvailable = this.fetchUrlAvailable.bind(this)
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({
-      showModal: nextProps.showModal,
-      mediaId: nextProps.mediaId
-    });
+  componentDidUpdate(prevProps) {
+    if (this.props.showModal !== prevProps.showModal) {
+      this.setState({showModal: this.props.showModal});
+    }
   }
 
   handleChange(e) {
@@ -51,10 +54,11 @@ export default class PlaylistModal extends React.Component {
       credentials: 'include',
       body: JSON.stringify({
         title: this.state.titleInput,
+        url: this.state.url,
         genre: this.state.genreInput,
         description: this.state.descriptionInput,
         isPublic: isPublic,
-        mediaId: this.state.mediaId
+        mediaId: this.props.mediaId
       })
     })
     .then(res => res.json())
@@ -83,8 +87,7 @@ export default class PlaylistModal extends React.Component {
     });
   }
 
-  addToPlaylist(playlistId, mediaId) {
-    console.log(mediaId);
+  addToPlaylist(playlistId) {
     fetch('/api/addToPlaylist', {
       method: 'POST',
       headers: {
@@ -118,6 +121,28 @@ export default class PlaylistModal extends React.Component {
     this.setState({showNewPlaylist: false})
   }
 
+  checkUrlAvailability(e) {
+    this.setState({url: e.target.value.replace(/\W+/g, '-').toLowerCase()})
+    this.fetchUrlAvailable(e.target.value.replace(/\W+/g, '-').toLowerCase())
+  }
+
+  fetchUrlAvailable(url) {
+    if (url) {
+      fetch('/api/urlAvailable/collection/' + url, {
+        credentials: 'include'
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        this.setState({urlAvailable: (data.length === 0)});
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    }
+  }
+
+
 
   render() {
     var renderedPlaylists = []
@@ -143,28 +168,34 @@ export default class PlaylistModal extends React.Component {
     return (
       <Modal show={this.state.showModal} onHide={this.props.closeModal} onEnter={this.getPlaylists}>
         <Modal.Header closeButton>
-          <Modal.Title>{this.state.showNewPlaylist ? "Create New Playlist" : "Add To Playlist"}</Modal.Title>
+          {this.state.showNewPlaylist && <button className="playlist_modal_back_button" onClick={this.backButton}>Back</button>}
+          <Modal.Title>{this.state.showNewPlaylist ? "Create New Collection" : "Add To Collection"}</Modal.Title>
         </Modal.Header>
         <Modal.Body id="playlist_modal">
           {this.state.showNewPlaylist ?
             <div id="create_new_playlist_wrapper">
-              <div id="login_input_fields">
-                <input type="text" autocomplete="off" placeholder="Title"
-                  name="titleInput" onChange={this.handleChange} value={this.state.titleInput}></input>
-                <input type="text" autocomplete="off" placeholder="Genre"
-                  name="genreInput" onChange={this.handleChange} value={this.state.genreInput}></input>
-                <textarea type="text" autocomplete="off" placeholder="Description"
-                  name="descriptionInput" onChange={this.handleChange} value={this.state.descriptionInput}></textarea>
+              <div id="input_div">
+                <label className="required">Title:</label>
+                <input type="text" autoComplete="off" name="titleInput" onChange={this.handleChange} onBlur={this.setUrlPlaceholder} value={this.state.titleInput}></input>
+                <div className="url_div">
+                  <p className="url_head">{"fashion.com/" + Cookie.get('username') + "/collection/"}</p>
+                  <input className="url" type="text" autoComplete="off" name="url" onChange={this.checkUrlAvailability}
+                    placeholder={this.state.url} value={this.state.url} style={{boxShadow: (this.state.urlAvailable || !this.state.url ? "" : "0 1px 0px 0px red")}}></input>
+                </div>
+                <label className="required">Genre:</label>
+                <input type="text" autoComplete="off" name="genreInput" onChange={this.handleChange} value={this.state.genreInput}></input>
+                <label>Description:</label>
+                <textarea type="text" autoComplete="off" rows="5" name="descriptionInput" onChange={this.handleChange} value={this.state.descriptionInput}></textarea>
                 <div className="playlist_input_div">
                   <label className="playlist_input_label">Public</label>
-                  <input type="radio" name="selectedOption" id="public_radio_input" value="public"
+                  <input className="playlist_input" type="radio" name="selectedOption" value="public"
                     checked={this.state.selectedOption === 'public'} onChange={this.handleChange}></input>
                   <label className="playlist_input_label">Private</label>
                   <input className="playlist_input" type="radio" name="selectedOption"
-                    id="private_radio_input" value="private" checked={this.state.selectedOption === 'private'}
+                    value="private" checked={this.state.selectedOption === 'private'}
                     onChange={this.handleChange}></input>
                 </div>
-                <button type="button" onClick={this.handleSubmit} disabled={!this.state.titleInput}>Create</button>
+                <button type="button" onClick={this.handleSubmit} disabled={!this.state.titleInput || !this.state.genreInput || !this.state.urlAvailable}>Create</button>
               </div>
             </div>
             :

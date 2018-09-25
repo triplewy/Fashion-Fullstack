@@ -2,7 +2,7 @@ import React from 'react';
 import ProfileHover from './ProfileHover.jsx'
 import CarouselImages from './CarouselImages.jsx'
 import StatsHeader from './StatsHeader.jsx'
-import { setAspectRatioImageTetrisBlock } from './aspectRatio.js'
+import { setAspectRatioImageTetrisBlock, setAspectRatioRelatedPosts } from './aspectRatio.js'
 import { Link } from 'react-router-dom'
 import { LinkContainer } from 'react-router-bootstrap'
 import Cookie from 'js-cookie'
@@ -40,7 +40,7 @@ export default class ImageTetris extends React.Component {
     if (window.scrollY + window.innerHeight >= this.state.bottom && !this.state.seen) {
       var now = new Date()
       var nowISOString = now.toISOString()
-      var view = {mediaId: this.props.mediaId, explore:true, dateTime: nowISOString}
+      var view = {mediaId: this.props.mediaId, explore:this.props.explore, dateTime: nowISOString}
       if (Cookie.get('viewHistory')) {
         var arr = JSON.parse(Cookie.get('viewHistory'));
         arr.push(view)
@@ -97,13 +97,20 @@ export default class ImageTetris extends React.Component {
   render() {
     const post = this.props.post
     const postImages = this.props.post.imageUrls
-    const [width, height] = setAspectRatioImageTetrisBlock(postImages[0].width, postImages[0].height)
+    var width = 0;
+    var height = 0;
+    if (this.props.relatedPosts) {
+      [width, height] = setAspectRatioRelatedPosts(postImages[0].width, postImages[0].height)
+    } else {
+      [width, height] = setAspectRatioImageTetrisBlock(postImages[0].width, postImages[0].height)
+    }
     return (
       <div className="tetris_block_wrapper" onMouseEnter={this.setEntered} onMouseLeave={this.setLeft} ref={this.myRef}>
         {postImages.length > 1 ?
           <LinkContainer to={{ pathname: '/' + post.username + '/' + post.url, state: { postData: post}}}>
             <div className="image_wrapper">
-              <CarouselImages imageUrls={postImages} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex} explore={true}/>
+              <CarouselImages imageUrls={postImages} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}
+                explore={this.props.explore} relatedPosts={this.props.relatedPosts}/>
             </div>
           </LinkContainer>
         :

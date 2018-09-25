@@ -56,7 +56,7 @@ export default class NotificationItem extends React.Component {
       )
     } else if (item.playlist) {
       item = item.playlist
-      var [width, height] = setAspectRatioNotification(item.image.width, item.image.height)
+      // var [width, height] = setAspectRatioNotification(item.image.width, item.image.height)
       return (
         <li key={this.props.index} eventkey={this.props.index}>
           <div>
@@ -68,8 +68,8 @@ export default class NotificationItem extends React.Component {
             </div>
             <div className="post_link">
               <Link to={"/" + Cookie.get('username') + "/album/" + item.url} onClick={this.props.closeDropdown}>
-              <div alt="" style={{backgroundImage: 'url(' + item.image.imageUrl + ')', width: width, height: height}} className="notification_collection_image" />
-                {/* <p>{item.title}</p> */}
+              {/* <div alt="" style={{backgroundImage: 'url(' + item.image.imageUrl + ')', width: width, height: height}} className="notification_collection_image" /> */}
+                <p>{item.title}</p>
               </Link>
             </div>
             <div className="notification_date">

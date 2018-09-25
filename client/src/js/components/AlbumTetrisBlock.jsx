@@ -1,22 +1,28 @@
 import React from 'react';
 import ProfileHover from './ProfileHover.jsx'
 import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
+import PlaylistPosts from './PlaylistPosts.jsx'
+import CarouselImages from './CarouselImages.jsx'
 import { setAspectRatioImageTetrisBlock } from './aspectRatio.js'
 import Cookie from 'js-cookie'
-import { Link } from 'react-router-dom'
+import { LinkContainer } from 'react-router-bootstrap'
 
 export default class AlbumTetrisBlock extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      entered: false
+      entered: false,
+      playlistIndex: 0,
+      carouselIndex: 0
     };
 
     this.setEntered = this.setEntered.bind(this)
     this.setLeft = this.setLeft.bind(this)
     this.myRef = React.createRef()
     this.handleScroll = this.handleScroll.bind(this)
+    this.setPlaylistIndex = this.setPlaylistIndex.bind(this)
+    this.setCarouselIndex = this.setCarouselIndex.bind(this)
   }
 
   componentDidMount() {
@@ -84,25 +90,44 @@ export default class AlbumTetrisBlock extends React.Component {
     }
   }
 
+  setPlaylistIndex(index) {
+    this.setState({playlistIndex: index, carouselIndex: 0})
+  }
+
+  setCarouselIndex(index) {
+    this.setState({carouselIndex: index})
+  }
+
   render() {
     const playlist = this.props.playlist
-    const coverImage = this.props.playlist.coverImage
-    const [width, height] = setAspectRatioImageTetrisBlock(coverImage.width, coverImage.height)
+    const post = playlist.posts[this.state.playlistIndex]
+    const postImages = post.imageUrls
+    // var width = 0
+    // var height = 0
+    // if (this.props.relatedCollections) {
+    //
+    // } else {
+    //   [width, height] = setAspectRatioImageTetrisBlock(postImages[0].width, postImages[0].height)
+    // }
+
     return (
-      <div className="tetris_block_wrapper" onMouseEnter={this.setEntered} onMouseLeave={this.setLeft} ref={this.myRef}>
-        <Link to={{ pathname: '/' + playlist.username + '/album/' + playlist.url}}>
-          <div className="tetris_image" style={{backgroundImage: 'url(' + coverImage.imageUrl + ')',
-            width: width, height: height, backgroundSize: width + "px " + height + "px"}} />
-        </Link>
-        <div className="block_profile" style={{opacity: this.state.entered ? 1 : 0}}>
-          <ProfileHover classStyle="post_profile_link" username={playlist.username} profileName={playlist.profileName}
-            profile_image_src={playlist.profile_image_src} />
-            <p>{playlist.title}</p>
-        </div>
-        <div className="block_stats" style={{opacity: this.state.entered ? 1 : 0}}>
-          <PlaylistStatsHeader playlistId={playlist.playlistId} followers={playlist.followers} likes={playlist.likes} reposts={playlist.reposts}
-            followed={playlist.followed} reposted={playlist.reposted} liked={playlist.liked} isPoster={playlist.isPoster}/>
-        </div>
+      <div className="album_tetris_block_wrapper" onMouseEnter={this.setEntered} onMouseLeave={this.setLeft} ref={this.myRef}>
+        <LinkContainer to={{ pathname: '/' + playlist.username + '/album/' + playlist.url}}>
+          <div className="image_wrapper">
+            <CarouselImages imageUrls={postImages} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}
+              explore={this.props.explore} relatedPosts={this.props.relatedCollections}/>
+              <div className="block_profile" style={{opacity: this.state.entered ? 1 : 0}}>
+                <ProfileHover classStyle="post_profile_link" username={playlist.username} profileName={playlist.profileName}
+                  profile_image_src={playlist.profile_image_src} />
+                  <p>{playlist.title}</p>
+              </div>
+              <div className="block_stats" style={{opacity: this.state.entered ? 1 : 0}}>
+                <PlaylistStatsHeader playlistId={playlist.playlistId} followers={playlist.followers} likes={playlist.likes} reposts={playlist.reposts}
+                  followed={playlist.followed} reposted={playlist.reposted} liked={playlist.liked} isPoster={playlist.isPoster}/>
+              </div>
+          </div>
+        </LinkContainer>
+        <PlaylistPosts playlistId={playlist.playlistId} posts={playlist.posts} setPlaylistIndex={this.setPlaylistIndex} playlistIndex={this.state.playlistIndex}/>
       </div>
     );
   }

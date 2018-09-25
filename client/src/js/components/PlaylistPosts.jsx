@@ -20,7 +20,9 @@ export default class PlaylistPosts extends React.Component {
 
   handleClick(index, mediaId) {
     this.props.setPlaylistIndex(index)
-    this.postVisit(index, mediaId)
+    if (this.props.playlistIndex !== index) {
+      this.postVisit(index, mediaId)
+    }
   }
 
   postVisit(index, mediaId) {
@@ -63,6 +65,9 @@ export default class PlaylistPosts extends React.Component {
               <ProfileHover username={item.username} profileName={item.profileName} classStyle={"post_profile_link"}/>
               <div className="playlist_post_title">
                 <p>{item.title}</p>
+              </div>
+              <div className="original">
+                {item.original !== 0 && <span>✔</span>}
               </div>
               <div className="views">
                 <div style={{backgroundImage: 'url(' + view_icon + ')'}}></div>

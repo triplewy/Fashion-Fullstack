@@ -2,6 +2,7 @@ import React from 'react';
 import CarouselImages from './CarouselImages.jsx'
 import Tags from './Tags.jsx'
 import SinglePostPageComments from './SinglePostPageComments.jsx'
+import RelatedCollections from './RelatedCollections.jsx'
 import PlaylistPosts from './PlaylistPosts.jsx'
 import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
 import ProfileHover from './ProfileHover.jsx'
@@ -156,12 +157,7 @@ export default class SinglePlaylistPage extends React.Component {
             </div>
           </div>
           <div className="single_post_bottom">
-            <div className="left_bottom">
-              <p>Related Outfits</p>
-              <ul>
-
-              </ul>
-            </div>
+            <RelatedCollections url={this.props.match.url} />
             <div className="right_bottom">
               <Tags mediaId={playlist.posts[this.state.playlistIndex].mediaId} tags={this.state.tags} modify={false} setCarouselIndex={this.setCarouselIndex} carouselIndex={this.state.carouselIndex}/>
               <div id="description_wrapper">

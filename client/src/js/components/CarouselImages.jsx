@@ -1,6 +1,6 @@
 import React from 'react';
 import { Carousel } from 'react-bootstrap'
-import { setAspectRatio, setAspectRatioImageTetrisBlock, setAspectRatioSinglePost } from './aspectRatio.js'
+import { setAspectRatio, setAspectRatioImageTetrisBlock, setAspectRatioSinglePost, setAspectRatioRelatedPosts } from './aspectRatio.js'
 
 export default class CarouselImages extends React.Component {
   constructor(props) {
@@ -28,6 +28,8 @@ export default class CarouselImages extends React.Component {
           [width, height] = setAspectRatioImageTetrisBlock(this.props.imageUrls[0].width, this.props.imageUrls[0].height)
         } else if (this.props.singlePost) {
           [width, height] = setAspectRatioSinglePost(this.props.imageUrls[0].width, this.props.imageUrls[0].height)
+        } else if (this.props.relatedPosts) {
+          [width, height] = setAspectRatioRelatedPosts(this.props.imageUrls[0].width, this.props.imageUrls[0].height)
         } else {
           [width, height] = setAspectRatio(this.props.imageUrls[0].width, this.props.imageUrls[0].height)
         }
@@ -42,6 +44,8 @@ export default class CarouselImages extends React.Component {
             [width, height] = setAspectRatioImageTetrisBlock(item.width, item.height)
           } else if (this.props.singlePost) {
             [width, height] = setAspectRatioSinglePost(item.width, item.height)
+          } else if (this.props.relatedPosts) {
+            [width, height] = setAspectRatioRelatedPosts(item.width, item.height)
           } else {
             [width, height] = setAspectRatio(item.width, item.height)
           }

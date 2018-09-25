@@ -93,6 +93,10 @@ label {
   margin: 0 0;
 }
 
+:focus {
+  outline: none;
+}
+
 .react-autosuggest__container {
   position: relative;
 }
@@ -193,6 +197,10 @@ textarea:focus {
 .btn {
   padding: 0 0;
   font-weight: 300;
+}
+
+.btn-default:focus {
+  background-color: transparent;
 }
 
 .btn-group.open .dropdown-toggle {
@@ -600,6 +608,7 @@ div.dropdown {
 
 .image_wrapper {
   cursor: pointer;
+  position: relative;
 }
 
 .post_image {
@@ -1160,6 +1169,11 @@ div.dropdown {
   display: inline-block;
 }
 
+.single_post_title_div div.right span {
+  display: inline-block;
+  margin: 0 20px;
+}
+
 .single_post_wrapper {
   display: flex;
 }
@@ -1184,13 +1198,24 @@ div.dropdown {
   padding-bottom: 20px;
 }
 
-.single_post_bottom div.left_bottom, div.right_bottom {
-  display: inline-block;
+.single_post_bottom div.right_bottom {
+  flex: 50%;
+  padding: 20px 20px;
+}
+
+.single_post_bottom div.left_bottom {
   flex: 50%;
 }
 
-.single_post_bottom div.left_bottom p {
+.single_post_bottom div.left_bottom div.tetris_block_wrapper {
+  display: inline-block;
+}
+
+.single_post_bottom div.left_bottom>p {
   text-align: center;
+  font-size: 24px;
+  font-weight: 300;
+  padding: 20px 0;
 }
 
 #single_post_stats_header {
@@ -1610,16 +1635,9 @@ div.dropdown {
   margin-bottom: 20px;
 }
 
-.views_graph_stats_number {
-  display: inline-block;
-  vertical-align: middle;
-  margin-right: 20px;
-}
-
 #graph_wrapper {
-  display: block;
   margin: 20px auto;
-  height: 500px;
+  width: 800px;
   background-color: #f1f1f1;
 }
 
@@ -1723,7 +1741,7 @@ div.dropdown {
 }
 
 #login_input_fields {
-  width: 320px;
+  width: 400px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -1784,8 +1802,10 @@ div.dropdown {
 }
 
 #playlist_posts_list {
-  padding: 0 0;
+  padding: 20px 5px;
   margin: 0 0;
+  max-height: 500px;
+  overflow-y: scroll;
 }
 
 #playlist_posts_list li {
@@ -1812,6 +1832,16 @@ div.dropdown {
 
 #playlist_posts_list li div.playlist_post_title p {
   margin: auto 0;
+}
+
+#playlist_posts_list li div.original {
+  display: flex;
+  margin-right: 10px;
+}
+
+#playlist_posts_list li div.original span {
+  margin: auto 0;
+  color: red;
 }
 
 #playlist_posts_list li div.views {
@@ -2025,6 +2055,34 @@ div.dropdown {
   padding: 20px 20px;
 }
 
+#create_new_playlist_wrapper>div {
+  display: block;
+  margin: 0 auto;
+}
+
+#create_new_playlist_wrapper>div>button {
+  display: block;
+  margin: 20px 0;
+  padding: 10px 0;
+  border-radius: 8px;
+  color: #337ab7;
+  border: 1px solid #337ab7;
+  width: 100%;
+  transition: color 0.4s, border-color 0.4s;
+  -webkit-transition: color 0.4s, border-color 0.4s;
+  cursor: pointer;
+}
+
+#create_new_playlist_wrapper>div>button:disabled {
+  color: #ccc;
+  border-color: #ccc;
+}
+
+#create_new_playlist_wrapper>div>button:hover {
+  /* color: #337ab7;
+  border-color: #337ab7; */
+}
+
 .playlist_input_div {
   display: flex;
   width: 100%;
@@ -2039,14 +2097,16 @@ div.dropdown {
 }
 
 .playlist_input {
-  width: 400px;
-  border-radius: 2px;
-  border: 1px solid #cccccc;
-  font-size: 16px;
+  box-shadow: none;
+}
+
+.playlist_input:focus {
+  box-shadow: none;
 }
 
 #public_radio_input {
   margin-right: 10px;
+  box-shadow: none;
 }
 
 #create_playlist_button {
@@ -2585,8 +2645,6 @@ div.dropdown {
 }
 
 .image_tetris_wrapper {
-  border-radius: 8px;
-  overflow-x: hidden;
 }
 
 .tetris_column {
@@ -2597,11 +2655,16 @@ div.dropdown {
 
 .tetris_image {
   display: inline-block;
+  position: relative;
   vertical-align: top;
 }
 
 .tetris_block_wrapper {
   position: relative;
+}
+
+.album_tetris_block_wrapper {
+  padding-bottom: 20px;
 }
 
 .block_profile {
@@ -2840,6 +2903,28 @@ div.dropdown {
   text-align: center;
   font-weight: 300;
   font-size: 24px;
+}
+
+.total_stats_div {
+  display: flex;
+}
+
+.total_stats_div div {
+  display: flex;
+  margin-right: 30px;
+  font-size: 32px;
+  font-weight: 300;
+}
+
+.total_stats_div div>* {
+  margin: auto 0;
+}
+
+.total_stats_div div div {
+  margin-left: 5px;
+  width: 30px;
+  height: 30px;
+  background-size: cover;
 }
 
 @media only screen and (max-width: 1300px) {
