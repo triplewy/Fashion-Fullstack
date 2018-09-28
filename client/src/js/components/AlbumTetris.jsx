@@ -15,9 +15,9 @@ export default class AlbumTetris extends React.Component {
     if (albums.length > 0) {
       for (var i = 0; i < albums.length; i++) {
         if (i < 3) {
-          renderedColumns.push([<AlbumTetrisBlock key={i} playlist={albums[i]} />])
+          renderedColumns.push([<AlbumTetrisBlock key={i} playlist={albums[i]} explore={this.props.explore}/>])
         } else {
-          renderedColumns[i%3].push(<AlbumTetrisBlock key={i} playlist={albums[i]} />)
+          renderedColumns[i%3].push(<AlbumTetrisBlock key={i} playlist={albums[i]} explore={this.props.explore}/>)
         }
       }
     }

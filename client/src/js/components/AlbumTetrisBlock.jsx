@@ -41,11 +41,11 @@ export default class AlbumTetrisBlock extends React.Component {
       var now = new Date()
       var nowISOString = now.toISOString()
       var view = {playlistId: this.props.playlist.playlistId, explore:true, dateTime: nowISOString}
-      if (Cookie.get('viewHistory')) {
-        var arr = JSON.parse(Cookie.get('viewHistory'));
+      if (Cookie.get('collectionsViews')) {
+        var arr = JSON.parse(Cookie.get('collectionsViews'));
         arr.push(view)
         if (arr.length > 9) {
-          fetch('/api/storeViews', {
+          fetch('/api/storeCollectionsViews', {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -60,7 +60,7 @@ export default class AlbumTetrisBlock extends React.Component {
           .then(data => {
             if (data.message === "success") {
               console.log("success");
-              Cookie.set('viewHistory', [])
+              Cookie.set('collectionsViews', [])
             } else {
               console.log(data.message);
             }
@@ -69,10 +69,10 @@ export default class AlbumTetrisBlock extends React.Component {
             console.error(error);
           });
         }
-        Cookie.set('viewHistory', arr)
+        Cookie.set('collectionsViews', arr)
       } else {
         var newArr = [view]
-        Cookie.set('viewHistory', JSON.stringify(newArr))
+        Cookie.set('collectionsViews', JSON.stringify(newArr))
       }
       this.setState({seen: true})
     }

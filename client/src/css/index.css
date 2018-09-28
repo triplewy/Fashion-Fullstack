@@ -546,14 +546,14 @@ div.dropdown {
   font-size: 12px;
 }
 
-#post_header div.genre {
+.genre {
   display: inline-flex;
   flex-direction: column;
   margin-left: auto;
-  padding: 0 10px;
+  /* padding: 0 10px; */
 }
 
-#post_header div.genre a {
+.genre a {
   margin: auto 0;
   background-color: gray;
   color: white;
@@ -565,7 +565,7 @@ div.dropdown {
   -webkit-transition: background-color 0.2s ease-in;
 }
 
-#post_header div.genre a:hover {
+.genre a:hover {
   background-color: #ccc;
 }
 
@@ -643,15 +643,24 @@ div.dropdown {
   padding-top: 30px;
   height: 60px;
   width: 100%;
-  border-bottom: 1px solid #888888;
+  box-shadow: 0 1px 0 0 #888888;
+}
+
+.title_og_tag {
+  display: flex;
+  padding: 0 10px;
+}
+
+.title_og_tag span {
+  margin: auto 0;
+  color: red;
 }
 
 #title_text {
-  display: inline-block;
   flex: 1;
   font-size: 15px;
   font-weight: 500;
-  margin-bottom: 0;
+  margin: auto 0;
 }
 
 #tag_title_hr {
@@ -697,6 +706,7 @@ div.dropdown {
 
 .tag_link {
   display: inline-block;
+  margin: auto 0;
   width: 20px;
   height: 20px;
   background-size: cover;
@@ -704,7 +714,7 @@ div.dropdown {
 }
 
 .tag_link_wrapper {
-  display: inline-block;
+  display: inline-flex;
   position: relative;
   margin: 0 30px;
   cursor: pointer;
@@ -714,8 +724,8 @@ div.dropdown {
   display: none;
   position: absolute;
   padding: 5px 10px;
-  top: 20px;
-  left: 0;
+  top: 30px;
+  right: 0;
   border-radius: 4px;
   background-color: white;
   -webkit-transition: box-shadow 0.5s;
@@ -953,10 +963,34 @@ div.dropdown {
 }
 
 #profile_banner {
-  display: inline-block;
+  display: flex;
   height: 250px;
-  width: 100%;
   background-color: white;
+}
+
+.profile_info_description_div {
+  display: flex;
+  margin-left: auto;
+  max-width: 250px;
+}
+
+.profile_info_description_div>div {
+  margin: auto 0;
+}
+
+.profile_info_description_div>div>div {
+  text-align: center;
+}
+
+.profile_info_description_div>div>div>p {
+  font-weight: 300;
+}
+
+.profile_info_description_title {
+  font-weight: 400;
+  font-size: 16px;
+  box-shadow: 0 1px 0 0 #ccc;
+  margin-bottom: 5px;
 }
 
 .profile_info {
@@ -978,6 +1012,7 @@ div.dropdown {
 .profile_info div.profile_info_text_div div {
   margin: auto 0;
 }
+
 
 #profile_info_image {
   display: inline-block;
@@ -1200,14 +1235,21 @@ div.dropdown {
 
 .single_post_bottom div.right_bottom {
   flex: 50%;
-  padding: 20px 20px;
+  padding: 0 30px;
+}
+
+.single_post_bottom div.right_bottom>p {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 300;
+  padding: 20px 0;
 }
 
 .single_post_bottom div.left_bottom {
   flex: 50%;
 }
 
-.single_post_bottom div.left_bottom div.tetris_block_wrapper {
+.single_post_bottom div.left_bottom div.tetris_block_wrapper, div.album_tetris_block_wrapper {
   display: inline-block;
 }
 
@@ -1629,7 +1671,7 @@ div.dropdown {
 }
 
 .stats_title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 300;
   margin-top: 50px;
   margin-bottom: 20px;
@@ -1804,7 +1846,7 @@ div.dropdown {
 #playlist_posts_list {
   padding: 20px 5px;
   margin: 0 0;
-  max-height: 500px;
+  max-height: 300px;
   overflow-y: scroll;
 }
 
@@ -2008,12 +2050,26 @@ div.dropdown {
 }
 
 .playlist_selector {
+  display: flex;
   padding: 20px 20px;
 }
 
 .playlist_selector:hover {
   background-color: #f1f1f1;
   cursor: pointer;
+}
+
+.playlist_selector>* {
+  margin-right: 10px;
+}
+
+.playlist_selector>p {
+  margin: auto 0;
+  margin-right: 20px;
+}
+
+.playlist_selector>p.is_public {
+  margin-left: auto;
 }
 
 #create_new_playlist {
@@ -2036,19 +2092,23 @@ div.dropdown {
 }
 
 #playlist_title {
-  display: inline-block;
   font-weight: 500;
   font-size: 16px;
-  padding-right: 20px
 }
 
 .playlist_icon_div {
-  display: inline-block;
+  display: flex;
   padding: 0 5px;
 }
 
-.playlist_icon {
+.playlist_icon_div>p {
+  margin: auto 5px;
+}
+
+.playlist_icon_div>div {
   height: 30px;
+  width: 30px;
+  background-size: cover;
 }
 
 #create_new_playlist_wrapper {
@@ -2076,6 +2136,7 @@ div.dropdown {
 #create_new_playlist_wrapper>div>button:disabled {
   color: #ccc;
   border-color: #ccc;
+  cursor: default;
 }
 
 #create_new_playlist_wrapper>div>button:hover {
@@ -2645,11 +2706,18 @@ div.dropdown {
 }
 
 .image_tetris_wrapper {
+  width: 1152px;
 }
 
 .tetris_column {
   display: inline-block;
   width: 384px;
+  vertical-align: top;
+}
+
+.related_tetris_column {
+  display: inline-block;
+  width: 288px;
   vertical-align: top;
 }
 
@@ -2660,10 +2728,13 @@ div.dropdown {
 }
 
 .tetris_block_wrapper {
+  vertical-align: top;
   position: relative;
 }
 
 .album_tetris_block_wrapper {
+  vertical-align: top;
+  position: relative;
   padding-bottom: 20px;
 }
 
@@ -2925,6 +2996,60 @@ div.dropdown {
   width: 30px;
   height: 30px;
   background-size: cover;
+}
+
+.total_views {
+  margin: 20px 0;
+  font-weight: 300;
+}
+
+.total_views span{
+  font-size: 36px;
+  color: #9BDEBF;
+  margin-right: 8px;
+}
+
+.total_views p {
+  font-size: 18px;
+}
+
+.views_progress_bar_div {
+  margin: 20px 0;
+}
+
+.views_progress_bar_div>div>p {
+  font-size: 18px;
+  font-weight: 300;
+  padding: 5px 0;
+}
+
+.views_progress_bar_wrapper {
+  display: flex;
+}
+
+.views_progress_bar_wrapper>div {
+  margin: auto 0;
+  /* height: 20px; */
+  width: 0px;
+  border-radius: 10px;
+  background-color: #9BDEBF;
+  transition: width 2.0s;
+  -webkit-transition: width 2.0s;
+}
+
+.views_progress_bar_wrapper>div>p {
+  text-align: center;
+  color: white;
+  padding: 2px 0;
+  font-size: 16px;
+  font-weight: 300;
+}
+
+.views_progress_bar_wrapper>p {
+  margin: auto 0;
+  padding: 0 10px;
+  font-size: 28px;
+  font-weight: 300;
 }
 
 @media only screen and (max-width: 1300px) {

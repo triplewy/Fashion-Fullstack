@@ -1,7 +1,7 @@
 import React from 'react';
 import view_icon from 'images/view-icon.png'
-import like_icon from 'images/heart-icon.png'
-import repost_icon from 'images/repost-icon.png'
+import like_icon from 'images/heart-icon-liked.png'
+import repost_icon from 'images/repost-icon-reposted.png'
 import comment_icon from 'images/comment-icon.png'
 
 export default class TotalPostsStats extends React.Component {
@@ -9,19 +9,23 @@ export default class TotalPostsStats extends React.Component {
     super(props);
 
     this.state = {
-      stats: {}
+      stats: {},
+      views: {}
     };
 
     this.fetchPostsStats = this.fetchPostsStats.bind(this)
+    this.fetchPostsViews = this.fetchPostsViews.bind(this)
   }
 
   componentDidMount() {
     this.fetchPostsStats()
+    this.fetchPostsViews()
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.timePeriod !== prevProps.timePeriod) {
       this.fetchPostsStats()
+      this.fetchPostsViews()
     }
   }
 
@@ -41,29 +45,96 @@ export default class TotalPostsStats extends React.Component {
     })
   }
 
+  fetchPostsViews() {
+    fetch('/api/postsViews/' + this.props.timePeriod, {
+      credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data) {
+        console.log(data);
+        this.setState({views: data})
+      }
+    })
+    .catch(e => {
+      console.log(e);
+    })
+  }
+
   render() {
-    return (
-      <div className="total_stats_div">
+    const stats = this.state.stats
+    const views = this.state.views
+    if (stats && views) {
+      const totalViews = views.postsViews + views.collectionsViews
+      return (
         <div>
-          <p>{this.state.stats.postsViews}</p>
-          <div className="stats_icon" style={{backgroundImage: 'url(' + view_icon + ')'}} />
+          <div className="total_stats_div">
+            {/* <div>
+              <p>{stats.postsViews}</p>
+              <div className="stats_icon" style={{backgroundImage: 'url(' + view_icon + ')'}} />
+            </div> */}
+            <div>
+              <p>{stats.likes}</p>
+              <div className="stats_icon" style={{backgroundImage: 'url(' + like_icon + ')'}} />
+            </div>
+            <div>
+              <p>{stats.reposts}</p>
+              <div className="stats_icon" style={{backgroundImage: 'url(' + repost_icon + ')'}} />
+            </div>
+            <div>
+              <p>{stats.comments}</p>
+              <div className="stats_icon" style={{backgroundImage: 'url(' + comment_icon + ')'}} />
+            </div>
+          </div>
+          <div className="total_views">
+            <p><span>{totalViews}</span>total views</p>
+          </div>
+          <div className="views_progress_bar_div">
+            <div>
+              <p>Views from posts:</p>
+              <div className="views_progress_bar_wrapper">
+                <div className="views_progress_bar"
+                  style={{width: (views.postsViews - views.repostsViews) / totalViews * 100 + '%'}}>
+                  <p>{Math.round((views.postsViews - views.repostsViews) / totalViews * 100) + '%'}</p>
+                </div>
+                <p>{views.postsViews - views.repostsViews}</p>
+              </div>
+            </div>
+            <div>
+              <p>Views from reposts:</p>
+              <div className="views_progress_bar_wrapper">
+                <div className="views_progress_bar" style={{width: views.repostsViews / totalViews * 100 + '%'}}>
+                  <p>{Math.round(views.repostsViews / totalViews * 100) + '%'}</p>
+                </div>
+                <p>{views.repostsViews}</p>
+              </div>
+            </div>
+            <div>
+              <p>Views from collections:</p>
+              <div className="views_progress_bar_wrapper">
+                <div className="views_progress_bar" style={{width: (views.collectionsViews - views.collectionsRepostsViews) / totalViews * 100 + '%'}}>
+                  <p>{Math.round((views.collectionsViews - views.collectionsRepostsViews) / totalViews * 100) + '%'}</p>
+                </div>
+                <p>{views.collectionsViews - views.collectionsRepostsViews}</p>
+              </div>
+            </div>
+            <div>
+              <p>Views from collections reposts:</p>
+              <div className="views_progress_bar_wrapper">
+                <div className="views_progress_bar" style={{width: views.collectionsRepostsViews / totalViews * 100 + '%'}}>
+                  <p>{Math.round(views.collectionsRepostsViews / totalViews * 100) + '%'}</p>
+                </div>
+                <p>{views.collectionsRepostsViews}</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div>
-          <p>{this.state.stats.likes}</p>
-          <div className="stats_icon" style={{backgroundImage: 'url(' + like_icon + ')'}} />
-        </div>
-        <div>
-          <p>{this.state.stats.reposts}</p>
-          <div className="stats_icon" style={{backgroundImage: 'url(' + repost_icon + ')'}} />
-        </div>
-        <div>
-          <p>{this.state.stats.comments}</p>
-          <div className="stats_icon" style={{backgroundImage: 'url(' + comment_icon + ')'}} />
-        </div>
-        <p>Total views are: {this.state.stats.postsViews}</p>
-        <p>Reposts views are: {this.state.stats.repostsViews}</p>
-        <p>Playlists views are: {this.state.stats.playlistsViews}</p>
-      </div>
-    );
+      );
+    } else {
+      return (
+        <div>Loading</div>
+      )
+    }
+
   }
 }

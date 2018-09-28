@@ -66,7 +66,7 @@ export default class TopPostsStats extends React.Component {
       renderedTopPosts = this.state.topPosts.map((item, index) => {
         return (
           <div key={index} className="top_posts_column">
-            <ImageTetrisBlock post={item} />
+            <ImageTetrisBlock post={item} explore />
             <p>{item.timeViews}</p>
           </div>
         )

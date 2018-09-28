@@ -51,7 +51,7 @@ export default class LikesPosts extends React.Component {
         <p className="page_title">Likes</p>
         <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["Posts", "Albums"]}
         type_selector_value={0}/>
-        <ImageTetris posts={this.state.posts}/>
+        <ImageTetris posts={this.state.posts} explore/>
     </div>
   );
   }

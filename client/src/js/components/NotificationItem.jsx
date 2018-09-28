@@ -64,7 +64,7 @@ export default class NotificationItem extends React.Component {
               profile_image_src={item.profile_image_src} onClick={this.props.closeDropdown}/>
             <div>
               <div className="activity_type" alt="activity type"
-                style={{backgroundImage: 'url(' + (item.activity === 0 ? like_icon_liked : (item.activity === 1 ? repost_icon_reposted : comment_icon)) + ')'}} />
+                style={{backgroundImage: 'url(' + (item.activity === 0 ? like_icon_liked : (item.activity === 1 ? repost_icon_reposted : (item.activity === 2 ? comment_icon : follow_icon))) + ')'}} />
             </div>
             <div className="post_link">
               <Link to={"/" + Cookie.get('username') + "/album/" + item.url} onClick={this.props.closeDropdown}>

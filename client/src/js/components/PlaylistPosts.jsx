@@ -28,7 +28,7 @@ export default class PlaylistPosts extends React.Component {
   postVisit(index, mediaId) {
     const now = new Date()
     const nowISOString = now.toISOString()
-    const view = {playlistId: this.props.playlistId, mediaId: mediaId, dateTime: nowISOString}
+    const view = {playlistId: this.props.playlistId, repost_username: this.props.repost_username, mediaId: mediaId, dateTime: nowISOString}
     fetch('/api/collectionPostVisit', {
       method: 'POST',
       headers: {

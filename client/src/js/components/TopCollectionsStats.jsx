@@ -66,7 +66,7 @@ export default class TopCollectionsStats extends React.Component {
       renderedTopPlaylists = this.state.topCollections.map((item, index) => {
         return (
           <div key={index} className="top_posts_column">
-            <AlbumTetrisBlock playlist={item} />
+            <AlbumTetrisBlock playlist={item} explore />
             <p>{item.timeViews}</p>
           </div>
         )

@@ -8,17 +8,12 @@ export default class LoginModal extends React.Component {
     super(props);
     this.state = {
       username: '',
-      password: '',
-      showModal: this.props.showModal
+      password: ''
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.handleLogin = this.handleLogin.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.setState({showModal: nextProps.showModal});
   }
 
   handleChange(e) {
@@ -39,7 +34,7 @@ export default class LoginModal extends React.Component {
 
   render() {
     return (
-      <Modal show={this.state.showModal} onHide={this.props.closeModal}>
+      <Modal show={this.props.showModal} onHide={this.props.closeModal}>
         <Modal.Header closeButton>
           <Modal.Title>Login</Modal.Title>
         </Modal.Header>

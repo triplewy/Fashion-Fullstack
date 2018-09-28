@@ -30,12 +30,12 @@ export default class ViewsGraphPosts extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchPostsViewsGraph()
+    // this.fetchPostsViewsGraph()
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.timePeriod !== prevProps.timePeriod) {
-      this.fetchPostsViewsGraph()
+      // this.fetchPostsViewsGraph()
     }
   }
 

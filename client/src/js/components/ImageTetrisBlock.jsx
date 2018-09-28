@@ -41,11 +41,11 @@ export default class ImageTetris extends React.Component {
       var now = new Date()
       var nowISOString = now.toISOString()
       var view = {mediaId: this.props.mediaId, explore:this.props.explore, dateTime: nowISOString}
-      if (Cookie.get('viewHistory')) {
-        var arr = JSON.parse(Cookie.get('viewHistory'));
+      if (Cookie.get('postsViews')) {
+        var arr = JSON.parse(Cookie.get('postsViews'));
         arr.push(view)
         if (arr.length > 9) {
-          fetch('/api/storeViews', {
+          fetch('/api/storePostsViews', {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -60,7 +60,7 @@ export default class ImageTetris extends React.Component {
           .then(data => {
             if (data.message === "success") {
               console.log("success");
-              Cookie.set('viewHistory', [])
+              Cookie.set('postsViews', [])
             } else {
               console.log(data.message);
             }
@@ -69,10 +69,10 @@ export default class ImageTetris extends React.Component {
             console.error(error);
           });
         }
-        Cookie.set('viewHistory', arr)
+        Cookie.set('postsViews', arr)
       } else {
         var newArr = [view]
-        Cookie.set('viewHistory', JSON.stringify(newArr))
+        Cookie.set('postsViews', JSON.stringify(newArr))
       }
       this.setState({seen: true})
     }

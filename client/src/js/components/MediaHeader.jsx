@@ -20,9 +20,9 @@ export default class MediaHeader extends React.Component {
             <p>{(this.props.isPlaylist ? "posted a playlist " : "posted a fit ") + dateDiffInDays(new Date(this.props.uploadDate)) + " ago"}</p>
         }
         </div>
-        <div className="genre">
+        {/* <div className="genre">
           {this.props.genre && <Link to={"/explore/" + this.props.genre}>{this.props.genre.replace(/^\w/, c => c.toUpperCase())}</Link>}
-        </div>
+        </div> */}
       </div>
     );
   }

@@ -65,6 +65,7 @@ export default class PlaylistModal extends React.Component {
     .then(data => {
       if (data.message === "success") {
         console.log("Added to playlist successfully");
+        this.props.closeModal()
       } else {
         console.log(data.message);
       }
@@ -87,7 +88,7 @@ export default class PlaylistModal extends React.Component {
     });
   }
 
-  addToPlaylist(playlistId) {
+  addToPlaylist(playlistId, numPosts) {
     fetch('/api/addToPlaylist', {
       method: 'POST',
       headers: {
@@ -97,7 +98,8 @@ export default class PlaylistModal extends React.Component {
       credentials: 'include',
       body: JSON.stringify({
         playlistId: playlistId,
-        mediaId: this.props.mediaId
+        mediaId: this.props.mediaId,
+        playlistIndex: numPosts
       })
     })
     .then(res => res.json())
@@ -149,17 +151,17 @@ export default class PlaylistModal extends React.Component {
     if (this.state.playlists.length > 0) {
       renderedPlaylists = this.state.playlists.map((item, index) => {
         return (
-          <li className="playlist_selector" key={index} value={this.props.mediaId} onClick={this.addToPlaylist.bind(this, item.playlistId)}>
+          <li className="playlist_selector" key={index} value={this.props.mediaId} onClick={this.addToPlaylist.bind(this, item.playlistId, item.numPosts)}>
             <p id="playlist_title">{item.title}</p>
-            <p className="playlist_icon_div">{item.public ? "Public" : "Private"}</p>
             <div className="playlist_icon_div">
-              <img className="playlist_icon" src={followers_icon} alt="followers icon"></img>
-              {item.followers}
+              <p>{item.followers}</p>
+              <div className="playlist_icon" style={{backgroundImage: 'url(' + followers_icon + ')'}} />
             </div>
             <div className="playlist_icon_div">
-              <img className="playlist_icon" src={posts_icon} alt="posts icon"></img>
-              {item.numPosts}
+              <p>{item.numPosts}</p>
+              <div className="playlist_icon" style={{backgroundImage: 'url(' + posts_icon + ')'}} />
             </div>
+            <p className="is_public">{item.public ? "Public" : "Private"}</p>
           </li>
         )
       })
@@ -176,7 +178,7 @@ export default class PlaylistModal extends React.Component {
             <div id="create_new_playlist_wrapper">
               <div id="input_div">
                 <label className="required">Title:</label>
-                <input type="text" autoComplete="off" name="titleInput" onChange={this.handleChange} onBlur={this.setUrlPlaceholder} value={this.state.titleInput}></input>
+                <input type="text" autoComplete="off" name="titleInput" onChange={this.handleChange} onBlur={this.checkUrlAvailability} value={this.state.titleInput}></input>
                 <div className="url_div">
                   <p className="url_head">{"fashion.com/" + Cookie.get('username') + "/collection/"}</p>
                   <input className="url" type="text" autoComplete="off" name="url" onChange={this.checkUrlAvailability}

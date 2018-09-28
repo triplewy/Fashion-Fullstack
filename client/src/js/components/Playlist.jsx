@@ -2,6 +2,7 @@ import React from 'react';
 import Tags from './Tags.jsx'
 import RepostHeader from './RepostHeader.jsx'
 import MediaHeader from './MediaHeader.jsx'
+import PlaylistHeader from './PlaylistHeader.jsx'
 import StatsHeader from './StatsHeader.jsx'
 import PlaylistPosts from './PlaylistPosts.jsx'
 import Comments from './Comments.jsx'
@@ -39,6 +40,13 @@ export default class Playlist extends React.Component {
     }, 10);
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.playlist !== prevProps.playlist) {
+      this.setState({carouselIndex: 0, playlistIndex: 0, bottom: this.myRef.current.offsetTop + this.myRef.current.clientHeight - 80, tags: [], seen: false})
+      this.fetchTags(this.props.playlist.posts[0].mediaId)
+    }
+  }
+
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handleScroll)
   }
@@ -50,16 +58,13 @@ export default class Playlist extends React.Component {
       var nowISOString = now.toISOString()
       var view = {}
       var arr = []
-      if (playlist.repost_username) {
-        view = {playlistId: playlist.playlistId, mediaId: playlist.posts[this.state.playlistIndex].mediaId, reposter: playlist.repost_username, dateTime: nowISOString}
-      } else {
-        view = {playlistId: playlist.playlistId, mediaId: playlist.posts[this.state.playlistIndex].mediaId, dateTime: nowISOString}
-      }
-      if (Cookie.get('viewHistory')) {
-        arr = JSON.parse(Cookie.get('viewHistory'));
+      view = {playlistId: playlist.playlistId, mediaId: playlist.posts[this.state.playlistIndex].mediaId, repost_username: playlist.repost_username, dateTime: nowISOString}
+      if (Cookie.get('collectionsViews')) {
+        arr = JSON.parse(Cookie.get('collectionsViews'));
         arr.push(view)
         if (arr.length > 9) {
-          fetch('/api/storeViews', {
+          Cookie.set('collectionsViews', [])
+          fetch('/api/storeCollectionsViews', {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -74,7 +79,6 @@ export default class Playlist extends React.Component {
           .then(data => {
             if (data.message === "success") {
               console.log("success");
-              Cookie.set('viewHistory', [])
             } else {
               console.log(data.message);
             }
@@ -82,11 +86,12 @@ export default class Playlist extends React.Component {
           .catch((error) => {
             console.error(error);
           });
+        } else {
+          Cookie.set('collectionsViews', arr)
         }
-        Cookie.set('viewHistory', arr)
       } else {
         arr = [view]
-        Cookie.set('viewHistory', JSON.stringify(arr))
+        Cookie.set('collectionsViews', JSON.stringify(arr))
       }
       var tempSeen = this.state.seen
       tempSeen[this.state.playlistIndex] = true
@@ -127,8 +132,9 @@ export default class Playlist extends React.Component {
               repost_username={playlist.repost_username} repost_profileName={playlist.repost_profileName} repost_profile_image_src={playlist.repost_profile_image_src}
               genre={playlist.genre} repostDate={playlist.repostDate} classStyle={"post_profile_link"}/>
             :
-            <MediaHeader username={playlist.username} profileName={playlist.profileName} profile_image_src={playlist.profile_image_src}
-              genre={playlist.genre} uploadDate={playlist.uploadDate} isPlaylist={true} classStyle={"post_profile_link"}/>
+            <PlaylistHeader username={playlist.username} profileName={playlist.profileName} profile_image_src={playlist.profile_image_src}
+              genre={playlist.genre} uploadDate={playlist.uploadDate} displayTime={playlist.displayTime} postsAdded={playlist.postsAdded}
+              classStyle={"post_profile_link"}/>
           }
           <LinkContainer to={{ pathname: '/' + playlist.username + '/album/' + playlist.url, state: { playlistData: playlist} }}>
             <div className="image_wrapper">
@@ -151,7 +157,8 @@ export default class Playlist extends React.Component {
               <div id="description_wrapper">
                 <p id="description">{playlist.description}</p>
               </div>
-              <PlaylistPosts playlistId={playlist.playlistId} posts={playlist.posts} playlistIndex={this.state.playlistIndex} setPlaylistIndex={this.setPlaylistIndex} />
+              <PlaylistPosts playlistId={playlist.playlistId} repost_username={playlist.repost_username} posts={playlist.posts}
+                playlistIndex={this.state.playlistIndex} setPlaylistIndex={this.setPlaylistIndex} />
               <Comments playlistId={playlist.playlistId} username={playlist.username} comments={playlist.comments} />
           </div>
         </div>

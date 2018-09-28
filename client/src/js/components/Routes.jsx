@@ -5,6 +5,7 @@ import {
   Switch,
   Redirect
 } from 'react-router-dom';
+import Cookie from 'js-cookie'
 
 import Home from './Home.jsx';
 import Signup from './Signup.jsx'
@@ -39,11 +40,15 @@ export default class Routes extends React.Component {
   }
 
   componentDidMount() {
+    Cookie.set('postsViews', [])
+    Cookie.set('collectionsViews', [])
+
     fetch('/api/sessionLogin', {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
+      console.log("sessionLogin data is", data);
       if (data.message === "not logged in") {
         this.setState({user: null})
       } else {
@@ -70,6 +75,7 @@ export default class Routes extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
+      console.log("login data is", data);
       if (data.message === 'not logged in') {
         this.setState({user: null});
       } else {

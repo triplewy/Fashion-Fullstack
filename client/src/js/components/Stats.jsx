@@ -42,7 +42,7 @@ export default class Stats extends React.Component {
       return (
         <div id="white_background_wrapper">
           <p className="page_title">Stats</p>
-          <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["Posts", "Playlists"]}
+          <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["Posts", "Collections"]}
                 type_selector_value={this.state.type_selector_value} right={<TimePeriod toggleTime={this.toggleTime} />} />
           <TotalCollectionsStats timePeriod={this.state.timePeriod}/>
           <ViewsGraphCollections timePeriod={this.state.timePeriod}/>
@@ -56,7 +56,7 @@ export default class Stats extends React.Component {
       return (
         <div id="white_background_wrapper">
           <p className="page_title">Stats</p>
-          <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["Posts", "Playlists"]}
+          <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["Posts", "Collections"]}
                 type_selector_value={this.state.type_selector_value} right={<TimePeriod toggleTime={this.toggleTime} />} />
           <TotalPostsStats timePeriod={this.state.timePeriod}/>
           <ViewsGraphPosts timePeriod={this.state.timePeriod}/>

@@ -85,7 +85,7 @@ export default class InputTag extends React.Component {
   }
 
   saveTag(e) {
-    this.props.handleTagSave(this.state.itemType, this.state.itemBrand, this.state.itemName, this.state.itemLink, this.state.original);
+    this.props.handleTagSave(this.state.itemType, this.state.itemBrand, this.state.itemName, this.state.itemLink.replace(/^https?\:\/\//i, ""), this.state.original);
     this.setState({itemType: 'shirt', itemBrand: '', itemName: '', itemLink: '', original: false, index: -1});
   }
 

@@ -39,16 +39,24 @@ export default class relatedCollections extends React.Component {
   render() {
     const relatedCollections = this.state.relatedCollections
     if (relatedCollections.length > 0) {
-      var renderedCollections = [];
-      renderedCollections = relatedCollections.map((item, index) => {
-        return (
-          <AlbumTetrisBlock key={index} playlist={item} relatedCollections />
-        )
-      })
+      var renderedCol1 = []
+      var renderedCol2 = []
+      for (var i = 0; i < relatedCollections.length; i++) {
+        if (i%2) {
+          renderedCol2.push([<AlbumTetrisBlock playlist={relatedCollections[i]} relatedCollections />])
+        } else {
+          renderedCol1.push([<AlbumTetrisBlock playlist={relatedCollections[i]} relatedCollections />])
+        }
+      }
       return (
         <div className="left_bottom">
           <p>Related Collections</p>
-          {renderedCollections}
+          <div className="related_tetris_column">
+            {renderedCol1}
+          </div>
+          <div className="related_tetris_column">
+            {renderedCol2}
+          </div>
         </div>
       )
     } else {

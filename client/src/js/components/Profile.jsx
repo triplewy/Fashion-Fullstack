@@ -376,9 +376,21 @@ export default class Profile extends React.Component {
                 </div>
               </div>
             </div>
+            <div className="profile_info_description_div">
+              <div>
+                <div className="profile_info_description_title">About</div>
+                {this.state.profileInfo.description &&
+                <div>
+                  <p id="description">{this.state.profileInfo.description.split('\n').map((item, key) => {
+                    return <span key={key}>{item}<br/></span>})}
+                  </p>
+                </div>
+                }
+              </div>
+            </div>
           </div>
           <div id="content_wrapper">
-            <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Posts", "Playlists", "Reposts"]}
+            <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Posts", "Collections", "Reposts"]}
             type_selector_value={this.state.type_selector_value}
             right={<ProfileInfo profileInfo={this.state.profileInfo} isProfile={this.state.isProfile} fetchProfileInfo={this.fetchProfileInfo}
               readImageFile={this.readImageFile} getStream={this.getStream} setUser={this.props.setUser}/> } />

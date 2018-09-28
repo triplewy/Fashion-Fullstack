@@ -5,6 +5,7 @@ import MediaHeader from './MediaHeader.jsx'
 import StatsHeader from './StatsHeader.jsx'
 import Comments from './Comments.jsx'
 import CarouselImages from './CarouselImages.jsx'
+import { Link } from 'react-router-dom'
 import { LinkContainer } from 'react-router-bootstrap'
 import Cookie from 'js-cookie'
 
@@ -30,6 +31,12 @@ export default class Post extends React.Component {
     }, 10);
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.post !== prevProps.post) {
+      this.setState({carouselIndex: 0, bottom: this.myRef.current.offsetTop + this.myRef.current.clientHeight - 80, seen: false})
+    }
+  }
+
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handleScroll)
   }
@@ -46,11 +53,12 @@ export default class Post extends React.Component {
       } else {
         view = {mediaId: post.mediaId, dateTime: nowISOString}
       }
-      if (Cookie.get('viewHistory')) {
-        var arr = JSON.parse(Cookie.get('viewHistory'));
+      if (Cookie.get('postsViews')) {
+        var arr = JSON.parse(Cookie.get('postsViews'));
         arr.push(view)
         if (arr.length > 9) {
-          fetch('/api/storeViews', {
+          Cookie.set('postsViews', [])
+          fetch('/api/storePostsViews', {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -65,7 +73,6 @@ export default class Post extends React.Component {
           .then(data => {
             if (data.message === "success") {
               console.log("success");
-              Cookie.set('viewHistory', [])
             } else {
               console.log(data.message);
             }
@@ -73,11 +80,12 @@ export default class Post extends React.Component {
           .catch((error) => {
             console.error(error);
           });
+        } else {
+          Cookie.set('postsViews', arr)
         }
-        Cookie.set('viewHistory', arr)
       } else {
         var newArr = [view]
-        Cookie.set('viewHistory', JSON.stringify(newArr))
+        Cookie.set('postsViews', JSON.stringify(newArr))
       }
       this.setState({seen: true})
     }
@@ -116,6 +124,9 @@ export default class Post extends React.Component {
               <p id="title_text">{post.title}</p>
               <div className="title_og_tag">
                 {post.original !== 0 && <span>✔</span>}
+              </div>
+              <div className="genre">
+                {post.genre && <Link to={"/explore/" + post.genre}>{post.genre.replace(/^\w/, c => c.toUpperCase())}</Link>}
               </div>
             </div>
             <Tags mediaId={post.mediaId} tags={post.tags} modify={false} setCarouselIndex={this.setCarouselIndex} carouselIndex={this.state.carouselIndex}/>

@@ -55,11 +55,16 @@ export default class SinglePlaylistPage extends React.Component {
       this.fetchStats(this.state.playlist.playlistId)
       this.postVisit(this.state.playlist.mediaId)
     } else {
-      console.log("helllo");
       this.fetchPlaylist()
     }
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.playlist !== prevProps.playlist) {
+      window.scrollTo(0,0)
+      this.fetchPlaylist()
+    }
+  }
   setPlaylistIndex(index, e) {
     this.setState({playlistIndex: index, carouselIndex: 0})
   }
@@ -159,12 +164,15 @@ export default class SinglePlaylistPage extends React.Component {
           <div className="single_post_bottom">
             <RelatedCollections url={this.props.match.url} />
             <div className="right_bottom">
+              <p>Playlist Info</p>
               <Tags mediaId={playlist.posts[this.state.playlistIndex].mediaId} tags={this.state.tags} modify={false} setCarouselIndex={this.setCarouselIndex} carouselIndex={this.state.carouselIndex}/>
-              <div id="description_wrapper">
-                <p id="description">{playlist.description.split('\n').map((item, key) => {
-                  return <span key={key}>{item}<br/></span>})}</p>
-              </div>
-              <PlaylistPosts posts={playlist.posts} playlistIndex={this.state.playlistIndex} setPlaylistIndex={this.setPlaylistIndex} />
+              {playlist.description &&
+                <div id="description_wrapper">
+                  <p id="description">{playlist.description.split('\n').map((item, key) => {
+                    return <span key={key}>{item}<br/></span>})}</p>
+                </div>
+              }
+              <PlaylistPosts playlistId={playlist.playlistId} posts={playlist.posts} playlistIndex={this.state.playlistIndex} setPlaylistIndex={this.setPlaylistIndex} />
               <SinglePostPageComments playlistId={playlist.playlistId} username={this.props.match.params.profile}/>
             </div>
           </div>
