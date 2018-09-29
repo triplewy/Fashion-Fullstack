@@ -191,7 +191,7 @@ textarea:focus {
 }
 
 .modal-body {
-  padding: 20px 20px;
+  /* padding: 20px 20px; */
 }
 
 .btn {
@@ -210,17 +210,23 @@ textarea:focus {
 
 .dropdown.btn-group {
   height: 100%;
-  -webkit-transition: box-shadow 0.3s ease-in;
-  transition: box-shadow 0.3s ease-in;
+  -webkit-transition: box-shadow 0.3s ease-in, color 0.3s ease-in;
+  transition: box-shadow 0.3s ease-in, color 0.3s ease-in;
 }
 
 .dropdown.btn-group:hover {
-  box-shadow: 0 1px 0 0 #4EA6EA;
+  /* color: #4EA6EA; */
+  /* box-shadow: 0 1px 0 0 #4EA6EA; */
 }
 
 .open>.dropdown-toggle.btn-default:focus {
   background-color: transparent;
   border: none;
+}
+
+.carousel {
+  -webkit-transition: width 0.3s, height 0.3s;
+  transition: width 0.3s, height 0.3s;
 }
 
 .carousel-control.left, .carousel-control.right {
@@ -236,6 +242,13 @@ textarea:focus {
 
 div.dropdown {
   z-index: 2;
+}
+
+.tooltip > .tooltip-inner {
+  width: 120px;
+}
+
+.tooltip > .tooltip-arrow {
 }
 
 #app {
@@ -621,6 +634,7 @@ div.dropdown {
   image-orientation: from-image;
   /* max-height: 776px; */
   background-repeat: no-repeat;
+  background-size: cover;
   transition: width 0.5s ease-in, height 0.5s ease-in;
   -webkit-transition: width 0.5s ease-in, height 0.5s ease-in;
 
@@ -775,49 +789,42 @@ div.dropdown {
 }
 
 #stats_header {
-  padding: 15px 0;
-  width: 100%;
+  display: flex;
+  padding: 15px 15px;
 }
 
-#stats_header button {
-  display: inline-block;
+#stats_header>* {
+  display: flex;
   padding: 0 0;
-  padding-right: 20px;
+  margin-right: 20px;
 }
 
-#stats_header img {
-  display: inline-block;
+#stats_header>*>div {
   width: 30px;
-}
-
-#collection_stats_header {
-  padding: 15px 0;
-  width: 100%;
-}
-
-#collection_stats_header button {
-  display: inline-block;
-  padding: 0 0;
-  padding-right: 20px;
-}
-
-#collection_stats_header img {
-  display: inline-block;
-  width: 20px;
+  height: 30px;
+  background-size: cover;
 }
 
 .stats_number {
-  display: inline-block;
-  vertical-align: middle;
-  margin-bottom: 0;
+  margin: auto 0;
+  margin-left: 5px;
 }
 
 #non_stat_div {
-  float: right;
+  display: flex;
+  margin-left: auto;
+  margin-right: 0;
 }
 
-#add_playlist_wrapper {
-  display: inline-block;
+#non_stat_div>div {
+  margin: auto 0;
+  margin-left: 20px;
+}
+
+#non_stat_div>div>button>div {
+  width: 30px;
+  height: 30px;
+  background-size: cover;
 }
 
 #post_hr {
@@ -839,10 +846,6 @@ div.dropdown {
   margin: 0 0;
   font-size: 18px;
   font-weight: 400;
-}
-
-#stats_wrapper {
-  padding: 0 15px;
 }
 
 .vertical_line {
@@ -1261,7 +1264,7 @@ div.dropdown {
 }
 
 #single_post_stats_header {
-  padding: 10px 0;
+  padding: 10px 10px;
 }
 
 #collections_type_selector {
@@ -1334,6 +1337,40 @@ div.dropdown {
   display: inline-block;
 }
 
+#input_div>div.input_div_submit {
+  display: flex;
+  margin-top: 30px;
+}
+
+#input_div>div>button {
+  width: 60px;
+  padding: 5px 0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 300;
+}
+
+#input_div>div>button.cancel {
+  color: red;
+  border: 1px solid red;
+}
+
+#input_div>div>button.cancel:hover {
+  background-color: red;
+  color: white;
+}
+
+#input_div>div>button.save {
+  margin-left: auto;
+  color: green;
+  border: 1px solid green;
+}
+
+#input_div>div>button.save:hover {
+  background-color: green;
+  color: white;
+}
+
 #input_div input.url {
   display: inline-block;
   margin: 0 0;
@@ -1356,7 +1393,8 @@ div.dropdown {
   border-bottom: 1px solid #ccc;
   line-height: 2px;
   margin: 10px 0 20px;
-  font-weight: 600;
+  font-weight: 300;
+  font-size: 18px;
 }
 
 #tags_input span {
@@ -1810,6 +1848,7 @@ div.dropdown {
 .dropdown-menu {
   margin: 0 0;
   padding: 0 0;
+  min-width: 0;
 }
 
 .dropdown-menu li>a {
@@ -2039,6 +2078,9 @@ div.dropdown {
   display: inline-block;
   text-align: left;
   vertical-align: middle;
+  min-width: 600px;
+  width: auto;
+  margin-bottom: 100px;
 }
 
 #comments_wrapper {
@@ -2051,12 +2093,34 @@ div.dropdown {
 
 .playlist_selector {
   display: flex;
+  position: relative;
   padding: 20px 20px;
 }
 
 .playlist_selector:hover {
   background-color: #f1f1f1;
   cursor: pointer;
+}
+
+.success {
+  display: flex;
+  position: absolute;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: #9BDEBF;
+  font-size: 16px;
+  font-weight: 300;
+  color: white;
+  -webkit-transition: width 1.0s;
+  transition: width 1.0s;
+}
+
+.success>p {
+  margin: auto auto;
+  flex-shrink: 0;
 }
 
 .playlist_selector>* {
@@ -2112,7 +2176,7 @@ div.dropdown {
 }
 
 #create_new_playlist_wrapper {
-  padding: 20px 20px;
+  /* padding: 20px 20px; */
 }
 
 #create_new_playlist_wrapper>div {
@@ -2120,28 +2184,29 @@ div.dropdown {
   margin: 0 auto;
 }
 
-#create_new_playlist_wrapper>div>button {
+#create_new_playlist_wrapper>button.submit {
   display: block;
-  margin: 20px 0;
-  padding: 10px 0;
-  border-radius: 8px;
-  color: #337ab7;
-  border: 1px solid #337ab7;
+  position: relative;
+  padding: 15px 0;
+  background-color: #98CFDD;
+  font-size: 18px;
+  font-weight: 300;
+  color: white;
   width: 100%;
-  transition: color 0.4s, border-color 0.4s;
-  -webkit-transition: color 0.4s, border-color 0.4s;
+  text-align: center;
+  transition: color 0.4s, background-color 0.4s;
+  -webkit-transition: color 0.4s, background-color 0.4s;
   cursor: pointer;
 }
 
-#create_new_playlist_wrapper>div>button:disabled {
+#create_new_playlist_wrapper>button.submit:disabled {
+  background-color: white;
   color: #ccc;
-  border-color: #ccc;
   cursor: default;
 }
 
-#create_new_playlist_wrapper>div>button:hover {
-  /* color: #337ab7;
-  border-color: #337ab7; */
+#create_new_playlist_wrapper>button.submit:hover:not([disabled]) {
+  background-color: #4395C0;
 }
 
 .playlist_input_div {
@@ -2992,7 +3057,7 @@ div.dropdown {
 }
 
 .total_stats_div div div {
-  margin-left: 5px;
+  margin-right: 10px;
   width: 30px;
   height: 30px;
   background-size: cover;
@@ -3052,6 +3117,84 @@ div.dropdown {
   font-weight: 300;
 }
 
+.more_icon {
+  height: 30px;
+  width: 30px;
+  background-size: cover;
+}
+
+.more_dropdown_menu {
+
+}
+
+.more_dropdown_menu li {
+  display: flex;
+  padding: 10px 10px;
+  font-size: 14px;
+  font-weight: 300;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  -webkit-transition: background-color 0.3s;
+}
+
+.more_dropdown_menu li:hover {
+  background-color: #ccc;
+}
+
+.more_dropdown_menu li>* {
+  margin: auto 0;
+}
+
+.more_dropdown_menu li>div {
+  width: 25px;
+  height: 25px;
+  background-size: cover;
+  margin-right: 10px;
+}
+
+.delete_modal_body {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 300;
+}
+
+.delete_modal_body>div {
+  padding: 20px 0;
+}
+
+.delete_modal_body>div>button {
+  width: 80px;
+  font-size: 14px;
+  padding: 5px 0;
+  margin: 0 30px;
+  border-radius: 6px;
+  transition: background-color 0.3s, color 0.3s;
+  -webkit-transition: background-color 0.3s, color 0.3s;
+}
+
+.delete_modal_body>div>button.cancel {
+  border: 1px solid #337ab7;
+  color: #337ab7;
+}
+
+.delete_modal_body>div>button.cancel:hover {
+  background-color: #337ab7;
+  color: white;
+}
+
+.delete_modal_body>div>button.continue {
+  border: 1px solid #C24750;
+  color: #C24750;
+}
+
+.delete_modal_body>div>button.continue:hover {
+  background-color: #C24750;
+  color: white;
+}
+
 @media only screen and (max-width: 1300px) {
   #search_bar {
     display: inline-block;
@@ -3082,4 +3225,9 @@ div.dropdown {
     content: " ";
     height: 100%;
   }
+
+  /* .modal-dialog {
+    min-width: 160px;
+    width: auto;
+  } */
 }

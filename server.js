@@ -48,10 +48,10 @@ app.use(session({
   saveUninitialized: true,
   cookie: {
     httpOnly: false,
-    secure: false,
-    maxAge: 180*60*1000
+    secure: false
   }
 }));
+
 app.use(passport.initialize())
 app.use(passport.session())
 
@@ -64,6 +64,37 @@ passport.deserializeUser(function(user, done) {
   console.log("deserializing user");
   done(null, user);
 })
+
+var connectedUserIds = []
+var usersToSockets = {}
+var socketsToUsers = {}
+
+var io = socketIO(server)
+
+setTimeout(function () {
+  io.use(passportSocketIo.authorize({
+    cookieParser: cookieParser,       // the same middleware you registrer in express
+    key:          'connect.sid',       // the name of the cookie where express/connect stores its session_id
+    secret:       'secret',    // the session_secret to parse the cookie
+    store:        sessionStore,        // we NEED to use a sessionstore. no memorystore please
+    success:      onAuthorizeSuccess,  // *optional* callback on success - read more below
+    fail:         onAuthorizeFail,     // *optional* callback on fail/error - read more below
+  }));
+}, 1000)
+
+
+
+function onAuthorizeSuccess(data, accept){
+  console.log('successful connection to socket.io');
+  accept(null, true);
+}
+
+function onAuthorizeFail(data, message, error, accept){
+  if (error)
+    throw new Error(message);
+  console.log('failed connection to socket.io:', message);
+  accept(null, false);
+}
 
 passport.use('local-login', new LocalStrategy(
  function(username, password, done) {
@@ -221,53 +252,53 @@ conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER AUTO_INCREMENT PRIM
 'location TEXT, followers INTEGER NOT NULL DEFAULT 0, following INTEGER NOT NULL DEFAULT 0, numPosts INTEGER NOT NULL DEFAULT 0, description TEXT, createdDate DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL)')
 
 conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, network TEXT, networkId TEXT, accessToken TEXT, username VARCHAR(255) NOT NULL UNIQUE, email VARCHAR(255) UNIQUE, passwordText TEXT, passwordSalt TEXT, ' +
-'passwordHash CHAR(60), verificationHash CHAR(60), verified BOOLEAN NOT NULL DEFAULT FALSE, FOREIGN KEY (userId) REFERENCES users(userId));')
+'passwordHash CHAR(60), verificationHash CHAR(60), verified BOOLEAN NOT NULL DEFAULT FALSE, FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY (username) REFERENCES users(username) ON UPDATE CASCADE);')
 
-conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, username TEXT NOT NULL, profileName TEXT NOT NULL, profile_image_src VARCHAR(255), ' +
+conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT NOT NULL, profile_image_src VARCHAR(255), ' +
 'title VARCHAR(255) NOT NULL, url VARCHAR(255) NOT NULL, genre TEXT, original BOOLEAN, ' +
-'views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(userId, url));')
+'views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY (username) REFERENCES users(username) ON UPDATE CASCADE, UNIQUE(userId, url));')
 
-conn.query('CREATE TABLE IF NOT EXISTS postsImages (imageId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, imageUrl VARCHAR(255) NOT NULL UNIQUE, imageIndex INTEGER NOT NULL, width INTEGER NOT NULL, height INTEGER NOT NULL, displayWidth INTEGER, displayHeight INTEGER, FOREIGN KEY (mediaId) REFERENCES posts(mediaId));')
+conn.query('CREATE TABLE IF NOT EXISTS postsImages (imageId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, imageUrl VARCHAR(255) NOT NULL UNIQUE, imageIndex INTEGER NOT NULL, width INTEGER NOT NULL, height INTEGER NOT NULL, displayWidth INTEGER, displayHeight INTEGER, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE);')
 
-conn.query('CREATE TABLE IF NOT EXISTS playlists (playlistId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, username TEXT NOT NULL, profileName TEXT NOT NULL, profile_image_src VARCHAR(255), ' +
+conn.query('CREATE TABLE IF NOT EXISTS playlists (playlistId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT NOT NULL, profile_image_src VARCHAR(255), ' +
 'title VARCHAR(255), url VARCHAR(255) NOT NULL, genre TEXT, public BOOLEAN, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, ' +
 'followers INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, displayTime DATETIME, postsAdded INTEGER DEFAULT 0, ' +
-'dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(url, userId))')
+'dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY(username) REFERENCES users(username) ON UPDATE CASCADE, UNIQUE(url, userId))')
 
 conn.query('CREATE TABLE IF NOT EXISTS followingNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
 'FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId))')
 
 conn.query('CREATE TABLE IF NOT EXISTS postsNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, mediaId INTEGER NOT NULL, activity INTEGER NOT NULL, comment TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
-'FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId))')
+'FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId))')
 
 conn.query('CREATE TABLE IF NOT EXISTS playlistsNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, playlistId INTEGER NOT NULL, activity INTEGER NOT NULL, comment TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
-'FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId), FOREIGN KEY (playlistId) REFERENCES playlists(playlistId))')
+'FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId), FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE)')
 
-conn.query('CREATE TABLE IF NOT EXISTS tags (tagId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, itemType TEXT NOT NULL, itemName TEXT, itemBrand TEXT, itemLink VARCHAR(255), original BOOLEAN NOT NULL DEFAULT FALSE, x INTEGER NOT NULL, y INTEGER NOT NULL, imageIndex INTEGER NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId))');
+conn.query('CREATE TABLE IF NOT EXISTS tags (tagId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, itemType TEXT NOT NULL, itemName TEXT, itemBrand TEXT, itemLink VARCHAR(255), original BOOLEAN NOT NULL DEFAULT FALSE, x INTEGER NOT NULL, y INTEGER NOT NULL, imageIndex INTEGER NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE)');
 
 conn.query('CREATE TABLE IF NOT EXISTS reposts (repostId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT, profile_image_src VARCHAR(255), dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, active BOOLEAN NOT NULL DEFAULT TRUE, ' +
-'FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
+'FOREIGN KEY(mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY(username) REFERENCES users(username) ON UPDATE CASCADE, UNIQUE(mediaId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS likes (likeId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
+conn.query('CREATE TABLE IF NOT EXISTS likes (likeId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS views (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, reposterId INTEGER, viewerId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, IP_Address TEXT, explore BOOLEAN, dateTime DATETIME NOT NULL, ' +
-'FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (reposterId) REFERENCES users(userId), FOREIGN KEY (viewerId) REFERENCES users(userId), FOREIGN KEY (mediaUserId) REFERENCES users(userId), UNIQUE(mediaId, viewerId, dateTime))');
+'FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (reposterId) REFERENCES users(userId), FOREIGN KEY (viewerId) REFERENCES users(userId), FOREIGN KEY (mediaUserId) REFERENCES users(userId), UNIQUE(mediaId, viewerId, dateTime))');
 
-conn.query('CREATE TABLE IF NOT EXISTS comments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId))');
+conn.query('CREATE TABLE IF NOT EXISTS comments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsPosts (playlistPostId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, playlistIndex INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (mediaId) REFERENCES posts(mediaId), UNIQUE(playlistId, mediaId), UNIQUE(playlistId, playlistIndex))');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsPosts (playlistPostId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, playlistIndex INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY(mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, UNIQUE(playlistId, mediaId), UNIQUE(playlistId, playlistIndex))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsFollowers (playlistFollowId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsFollowers (playlistFollowId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS playlistsReposts (repostId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT, profile_image_src VARCHAR(255), dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, active BOOLEAN NOT NULL DEFAULT TRUE, ' +
-'FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
+'FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY(username) REFERENCES users(username) ON UPDATE CASCADE, UNIQUE(playlistId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsLikes (likeId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsLikes (likeId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsComments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId))')
+conn.query('CREATE TABLE IF NOT EXISTS playlistsComments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId))')
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsViews (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, reposterId INTEGER, viewerId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, IP_Address TEXT, explore BOOLEAN, dateTime DATETIME NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), ' +
-'FOREIGN KEY (mediaId) REFERENCES posts(mediaId), FOREIGN KEY (reposterId) REFERENCES users(userId), FOREIGN KEY (viewerId) REFERENCES users(userId), FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (playlistUserId) REFERENCES users(userId), UNIQUE(mediaId, viewerId, dateTime))');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsViews (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, reposterId INTEGER, viewerId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, IP_Address TEXT, explore BOOLEAN, dateTime DATETIME NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, ' +
+'FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (reposterId) REFERENCES users(userId), FOREIGN KEY (viewerId) REFERENCES users(userId), FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (playlistUserId) REFERENCES users(userId), UNIQUE(mediaId, viewerId, dateTime))');
 
 conn.query('CREATE TABLE IF NOT EXISTS following (followingId INTEGER AUTO_INCREMENT PRIMARY KEY, followerUserId INTEGER NOT NULL, followingUserId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (followerUserId) REFERENCES users(userId), FOREIGN KEY (followingUserId) REFERENCES users(userId), UNIQUE(followerUserId, followingUserId))')
 
@@ -431,13 +462,6 @@ conn.query('CREATE TRIGGER before_playlists_insert BEFORE INSERT ON playlists FO
 'users WHERE userId = NEW.userId; SET NEW.username = newUsername; SET NEW.profileName = newProfileName; SET NEW.profile_image_src = new_profile_image_src; END;')
 
 conn.query('CREATE TRIGGER after_users_update AFTER UPDATE ON users FOR EACH ROW BEGIN ' +
-'IF NEW.username <> OLD.username THEN ' +
-'UPDATE logins SET username = NEW.username WHERE userId=NEW.userId; ' +
-'UPDATE posts SET username = NEW.username WHERE userId=NEW.userId; ' +
-'UPDATE reposts SET username = NEW.username WHERE userId=NEW.userId; ' +
-'UPDATE playlists SET username = NEW.username WHERE userId=NEW.userId; ' +
-'UPDATE playlistsReposts SET username = NEW.username WHERE userId=NEW.userId; ' +
-'END IF;' +
 'IF NEW.profileName <> OLD.profileName THEN ' +
 'UPDATE posts SET profileName = NEW.profileName WHERE userId=NEW.userId; ' +
 'UPDATE reposts SET profileName = NEW.profileName WHERE userId=NEW.userId; ' +
@@ -456,34 +480,6 @@ conn.query('CREATE TRIGGER after_playlistsPosts_insert AFTER INSERT ON playlists
 'IF (NEW.playlistIndex != 0 AND (oldDisplayTime IS NULL OR NEW.dateTime > oldDisplayTime)) THEN ' +
 'UPDATE playlists SET displayTime = DATE_ADD(NEW.dateTime, INTERVAL 1 DAY), postsAdded = 1 WHERE playlistId=NEW.playlistId; ' +
 'ELSE UPDATE playlists SET postsAdded = (postsAdded + 1) WHERE playlistId=NEW.playlistId; END IF; END;')
-
-
-var connectedUserIds = []
-var usersToSockets = {}
-var socketsToUsers = {}
-
-var io = socketIO(server)
-
-io.use(passportSocketIo.authorize({
-  cookieParser: cookieParser,       // the same middleware you registrer in express
-  key:          'connect.sid',       // the name of the cookie where express/connect stores its session_id
-  secret:       'secret',    // the session_secret to parse the cookie
-  store:        sessionStore,        // we NEED to use a sessionstore. no memorystore please
-  success:      onAuthorizeSuccess,  // *optional* callback on success - read more below
-  fail:         onAuthorizeFail,     // *optional* callback on fail/error - read more below
-}));
-
-function onAuthorizeSuccess(data, accept){
-  console.log('successful connection to socket.io');
-  accept(null, true);
-}
-
-function onAuthorizeFail(data, message, error, accept){
-  if (error)
-    throw new Error(message);
-  console.log('failed connection to socket.io:', message);
-  accept(null, false);
-}
 
 io.on('connection', socket => {
   console.log("User connected");
@@ -914,7 +910,7 @@ app.get('/api/postTags/:mediaId', (req, res) => {
   const userId = req.user.userId
   const mediaId = req.params.mediaId
 
-  conn.query('SELECT itemType, itemName, itemBrand, itemLink, original, x, y, imageIndex ' +
+  conn.query('SELECT tagId, itemType, itemName, itemBrand, itemLink, original, x, y, imageIndex ' +
   'FROM tags WHERE mediaId=:mediaId', {mediaId: mediaId}, function(err, result) {
     if (err) {
       console.log(err);
@@ -1504,19 +1500,13 @@ app.get('/api/relatedCollections/:username/album/:url', (req, res) => {
 app.get('/api/getPlaylists', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/getPlaylists');
   var userId = req.user.userId;
-  conn.query('SELECT *, (SELECT COUNT(*) FROM playlistsPosts WHERE playlistId = playlists.playlistId) AS numPosts FROM playlists ' +
-  'WHERE userId=? ORDER BY dateTime',
+  conn.query('SELECT a.playlistId, a.title, a.followers, a.public, COUNT(b.playlistPostId) AS numPosts, MAX(b.playlistIndex) AS biggestPlaylistIndex ' +
+  'FROM playlists AS a LEFT JOIN playlistsPosts AS b ON b.playlistId = a.playlistId WHERE userId=? GROUP BY a.playlistId ORDER BY a.dateTime',
   [userId], function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      var playlists = []
-      for (var i = 0; i < result.length; i++) {
-        var row = result[i]
-        playlists.push({playlistId: row.playlistId, title: row.title, public: row.public,
-        numPosts: row.numPosts, genre: row.genre, followers: row.followers, dateTime: row.dateTime})
-      }
-      res.send({playlists: playlists})
+      res.send(result)
     }
   })
 })
@@ -1680,24 +1670,69 @@ app.post('/api/newPlaylist', (req, res) => {
   const genre = req.body.genre
   const description = req.body.description
 
-  conn.query('INSERT IGNORE INTO playlists (userId, title, url, genre, public, description) VALUES (?, ?, ?, ?, ?, ?)', [userId, title, url, genre, isPublic, description], function(err, result) {
+  conn.query('START TRANSACTION', [], function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      console.log(result.insertId);
-      if (!result.insertId) {
-        res.send({message: "Playlist url already exists"})
-      }
-      conn.query('INSERT IGNORE INTO playlistsPosts (playlistId, mediaId, playlistIndex) VALUES (?,?, 0)', [result.insertId, mediaId], function(err, result) {
+      conn.query('INSERT IGNORE INTO playlists (userId, title, url, genre, public, description) VALUES (?, ?, ?, ?, ?, ?)', [userId, title, url, genre, isPublic, description], function(err, result) {
         if (err) {
           console.log(err);
+          conn.query('ROLLBACK', [], function(err, result) {
+            if (err) {
+              console.log(err);
+            } else {
+              res.send({message: 'fail'})
+            }
+          })
         } else {
+          console.log(result.insertId);
           if (!result.insertId) {
-            res.send({message: "Couldn't add post to playlist"})
-          } else {
-            console.log("Created playlist successfully");
-            res.send({message: "success"})
+            conn.query('ROLLBACK', [], function(err, result) {
+              if (err) {
+                console.log(err);
+              } else {
+                res.send({message: "Playlist url already exists"})
+              }
+            })
           }
+          conn.query('INSERT IGNORE INTO playlistsPosts (playlistId, mediaId, playlistIndex) VALUES (?,?, 0)', [result.insertId, mediaId], function(err, result) {
+            if (err) {
+              console.log(err);
+              conn.query('ROLLBACK', [], function(err, result) {
+                if (err) {
+                  console.log(err);
+                } else {
+                  res.send({message: 'fail'})
+                }
+              })
+            } else {
+              if (!result.insertId) {
+                conn.query('ROLLBACK', [], function(err, result) {
+                  if (err) {
+                    console.log(err);
+                  } else {
+                    res.send({message: "Couldn't add post to playlist"})
+                  }
+                })
+              } else {
+                conn.query('COMMIT', [], function(err, result) {
+                  if (err) {
+                    conn.query('ROLLBACK', [], function(err, result) {
+                      if (err) {
+                        console.log(err);
+                      } else {
+                        res.send({message: "Couldn't add post to playlist"})
+                      }
+                    })
+                  } else {
+                    console.log("Transaction completed");
+                    console.log("Created playlist successfully");
+                    res.send({message: "success"})
+                  }
+                })
+              }
+            }
+          })
         }
       })
     }
@@ -1920,7 +1955,8 @@ app.post('/api/playlistComment', loggedIn, function(req, res) {
 
 app.post('/api/addToPlaylist', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/addToPlaylist');
-    conn.query('INSERT IGNORE INTO playlistsPosts (playlistId, mediaId, playlistIndex) VALUES ' +
+  console.log(req.body);
+  conn.query('INSERT IGNORE INTO playlistsPosts (playlistId, mediaId, playlistIndex) VALUES ' +
   '(:playlistId, :mediaId, :playlistIndex)', req.body, function(err, result) {
     if (err) {
       console.log(err);
@@ -1931,6 +1967,30 @@ app.post('/api/addToPlaylist', function(req, res) {
       } else {
         res.send({message: "success"})
       }
+    }
+  })
+})
+
+app.delete('/api/deletePost', loggedIn, function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/deletePost');
+  conn.query('DELETE FROM posts WHERE mediaId = :mediaId AND userId = :userId', {mediaId: req.body.mediaId, userId: req.user.userId}, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Deleted post successfully");
+      res.send({message: "success"})
+    }
+  })
+})
+
+app.delete('/api/deleteCollection', loggedIn, function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/deleteCollection');
+  conn.query('DELETE FROM playlists WHERE playlistId = :playlistId AND userId = :userId', {playlistId: req.body.playlistId, userId: req.user.userId}, function(err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Deleted collection successfully");
+      res.send({message: "success"})
     }
   })
 })
@@ -2148,26 +2208,13 @@ app.get('/api/:profile/:playlistId/playlistComments', function(req, res) {
   })
 })
 
-app.post('/api/editProfileInfo', function(req, res) {
+app.post('/api/editProfileInfo', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/editProfileInfo');
   const userId = req.user.userId;
   var body = req.body
   body.userId = userId
-  var updateQuery = ''
-  if (body.username) {
-    updateQuery += 'username = :username,'
-  }
-  if (body.profileName) {
-    updateQuery += 'profileName = :profileName,'
-  }
-  if (body.location != null) {
-    updateQuery += 'location = :location,'
-  }
-  if (body.description != null) {
-    updateQuery += 'description = :description,'
-  }
-  updateQuery = updateQuery.slice(0, -1)
-  conn.query('UPDATE users SET ' + updateQuery + ' WHERE userId=:userId', body, function(err, result) {
+  conn.query('UPDATE users SET username = :username, profileName = :profileName, location = :location, description = :description ' +
+  'WHERE userId=:userId', body, function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -2175,7 +2222,21 @@ app.post('/api/editProfileInfo', function(req, res) {
       res.send({message: 'success'})
     }
   })
+})
 
+app.post('/api/editPost', loggedIn, function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/editPost');
+  const userId = req.user.userId;
+  var body = req.body
+  body.userId = userId
+  Promise.all([editPostMetadata(body), editPostTags(body)])
+  .then(function(allData) {
+    console.log("Updated post successfully");
+    res.send({message: "success"})
+  })
+  .catch(e => {
+    console.log(e);
+  })
 })
 
 app.post('/api/updateProfileImage', function(req, res) {
@@ -2216,10 +2277,10 @@ app.post('/api/updateProfileImage', function(req, res) {
   })
 })
 
-app.post('/api/:profile/follow', function(req, res) {
-  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/follow');
-  var username = req.params.profile;
-  var userId = req.user.userId;
+app.post('/api/follow', function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/follow');
+  const username = req.body.username;
+  const userId = req.user.userId;
   conn.query('SELECT userId FROM users WHERE username=?', [username], function(err, result) {
     if (err) {
       console.log(err);
@@ -2242,10 +2303,10 @@ app.post('/api/:profile/follow', function(req, res) {
   })
 })
 
-app.post('/api/:profile/unfollow', function(req, res) {
-  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/unfollow');
-  var username = req.params.profile;
-  var userId = req.user.userId;
+app.post('/api/unfollow', function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/unfollow');
+  const username = req.body.username;
+  const userId = req.user.userId;
   conn.query('SELECT userId FROM users WHERE username=?', [username], function(err, result) {
     if (err) {
       console.log(err);
@@ -2268,33 +2329,6 @@ app.post('/api/:profile/unfollow', function(req, res) {
   })
 })
 
-// app.get('/api/:profile/playlist/:playlistId', function(request, response) {
-//   console.log('- Request received:', request.method.cyan, '/api/' + request.params.profile + '/playlist/' + request.params.playlistId);
-//   var username = request.params.profile;
-//   var playlistId = request.params.playlistId;
-//   conn.query('SELECT mediaId, dateTime FROM playlistsLikes WHERE playlistId=? ORDER BY dateTime DESC', playlistId, function(err, result) {
-//     if (err) {
-//       console.log(err);
-//     } else {
-//       var mediaIds = []
-//       var sources = []
-//       var question_query = ''
-//       for (var i = 0; i < result.length; i++) {
-//         mediaIds.push(result[i].mediaId)
-//         sources.push('posts')
-//         question_query += '?,'
-//       }
-//       question_query = question_query.slice(0, -1)
-//       Promise.all([getPosts(mediaIds, sources, question_query)])
-//       .then(function(allData) {
-//         res.send({posts: allData[0]})
-//       }).catch(e => {
-//         console.log(e);
-//       })
-//     }
-//   })
-// })
-
 app.post('/api/upload', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/upload');
   upload(req, res, function(err) {
@@ -2303,15 +2337,35 @@ app.post('/api/upload', loggedIn, function(req, res) {
       res.send({message: err.message})
     } else {
       storeImages(req.files).then(imageMetadata => {
-        console.log("imageMetadata is", imageMetadata);
-        Promise.all([uploadImageMetadata(req, imageMetadata)])
-        .then(function(allData) {
-          console.log("Records added successfully");
-          res.send({message: 'success'})
-        }).catch(e => {
-          console.log(e);
-          res.send({message: 'fail'})
+        conn.query('START TRANSACTION', [], function(err, result) {
+          if (err) {
+            console.log(err);
+          } else {
+            uploadImageMetadata(req, imageMetadata).then(function() {
+              conn.query('COMMIT', [], function(err, result) {
+                if (err) {
+                  conn.query('ROLLBACK', [], function(err, result) {
+                    console.log(err);
+                  })
+                } else {
+                  console.log("Records added successfully");
+                  console.log('Transaction Complete.');
+                  res.send({message: 'success'})
+                }
+              })
+            })
+            .catch(e => {
+              console.log(e);
+              conn.query('ROLLBACK', [], function(err, result) {
+                console.log(err);
+              })
+              res.send({message: 'fail'})
+            })
+          }
         })
+      })
+      .catch(e => {
+        console.log(e);
       })
     }
   })
@@ -2687,14 +2741,13 @@ function uploadImageMetadata(req, imageMetadata) {
       } else {
         if (JSON.parse(req.body.inputTags).length > 0) {
           Promise.all([postTagsFromUploadRevised(result.insertId, JSON.parse(req.body.inputTags)), insertPostImages(result.insertId, imageMetadata, JSON.parse(req.body.dimensions))])
-          .then(function(allData) {
+          .then(function() {
             return resolve({message: 'success'})
           }).catch(e => {
             return reject(e);
           })
         } else {
-          Promise.all([insertPostImages(result.insertId, imageMetadata, JSON.parse(req.body.dimensions))])
-          .then(function(allData) {
+          insertPostImages(result.insertId, imageMetadata, JSON.parse(req.body.dimensions)).then(function() {
             return resolve({message: 'success'})
           }).catch(e => {
             return reject(e);
@@ -2872,5 +2925,43 @@ function exploreHelper(type, userId, timePeriod) {
         return resolve(result)
       }
     })
+  })
+}
+
+function editPostMetadata(body) {
+  return new Promise(function(resolve, reject) {
+    conn.query('UPDATE posts SET title = :title, url = :url, genre = :genre, description = :description WHERE userId = :userId AND mediaId = :mediaId', body, function(err, result) {
+      if (err) {
+        return reject(err)
+      } else {
+        return resolve({message: "success"})
+      }
+    })
+  })
+}
+
+function editPostTags(body) {
+  return new Promise(function(resolve, reject) {
+    if (body.tags.length > 0) {
+      var insertTags = []
+      var insertTagQuery = ''
+      for (var i = 0; i < body.tags.length; i++) {
+        const tag = body.tags[i]
+        insertTags.push(tag.tagId, body.mediaId, tag.itemType, tag.itemBrand, tag.itemName, tag.itemLink, tag.original, tag.imageIndex, tag.x, tag.y)
+        insertTagQuery += '(?,?,?,?,?,?,?,?,?,?),'
+      }
+      insertTagQuery = insertTagQuery.slice(0, -1)
+      conn.query('INSERT INTO tags (tagId, mediaId, itemType, itemBrand, itemName, itemLink, original, imageIndex, x, y) VALUES ' +
+      insertTagQuery + ' ON DUPLICATE KEY UPDATE ' +
+      'itemType=VALUES(itemType),itemBrand=VALUES(itemBrand),itemName=VALUES(itemName),itemLink=VALUES(itemLink),original=VALUES(original),imageIndex=VALUES(imageIndex),x=VALUES(x),y=VALUES(y)', insertTags, function(err, result) {
+        if (err) {
+          return reject(err)
+        } else {
+          return resolve({message: "success"})
+        }
+      })
+    } else {
+      return resolve({message: "success"})
+    }
   })
 }

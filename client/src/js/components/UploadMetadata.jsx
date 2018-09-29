@@ -2,6 +2,7 @@ import React from 'react';
 import InputTag from './InputTag.jsx';
 import UploadImages from './UploadImages.jsx'
 import UploadPostMetadata from './UploadPostMetadata.jsx'
+import { Redirect } from 'react-router-dom'
 
 export default class UploadMetadata extends React.Component {
   constructor(props) {
@@ -14,10 +15,12 @@ export default class UploadMetadata extends React.Component {
       editTagIndex: -1,
       editTag: {itemType:'shirt', itemBrand: '', itemName: '', itemLink: '', original: false},
       carouselIndex: 0,
-      back: false
+      back: false,
+      submitted: false
     };
 
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.upload = this.upload.bind(this)
     this.handleClick = this.handleClick.bind(this)
     this.handleTagSave = this.handleTagSave.bind(this)
     this.handleTagCancel = this.handleTagCancel.bind(this)
@@ -50,6 +53,11 @@ export default class UploadMetadata extends React.Component {
     formData.append('inputTags', JSON.stringify(this.state.inputTags));
     formData.append('dimensions', JSON.stringify(this.props.dimensions))
 
+    this.upload(formData)
+    this.setState({submitted: true})
+  }
+
+  upload(formData) {
     fetch('/api/upload', {
       method: 'POST',
       credentials: 'include',
@@ -161,6 +169,12 @@ export default class UploadMetadata extends React.Component {
   }
 
   render() {
+    if (this.state.submitted) {
+      return (
+        <Redirect to='/' />
+      )
+    }
+
     var renderedCarousel = [];
     var renderedCarouslIndicators = []
     var length = this.props.files.length

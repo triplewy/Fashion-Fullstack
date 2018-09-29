@@ -113,8 +113,8 @@ export default class Routes extends React.Component {
   }
 
   render() {
-    const PrivateRoute = ({component: Component}) => (
-      <Route render={(props) => (this.state.user ? <Component {...props}/> : <Redirect to={{pathname: '/signup', state: {from: props.location}}} /> )} />
+    const PrivateRoute = ({component: Component, ...rest}) => (
+      <Route {...rest} render={(props) => (this.state.user ? <Component {...props}/> : <Redirect to={{pathname: '/signup', state: {from: props.location}}} /> )} />
     )
     return (
       <BrowserRouter>
@@ -133,7 +133,7 @@ export default class Routes extends React.Component {
             <Route exact path='/explore' component={Explore}/>
             <Route exact path='/explore/:genre' render={({match}) => <Explore genre={match.params.genre} />} />
             <Route exact path='/search' component={Search}/>
-            <Route exact path='/signup' render={(props) => <Signup loggedIn={this.setUser} {...props}/>} />
+            <Route exact path='/signup' render={(props) => <Signup loggedIn={this.setUser} user={this.state.user} {...props}/>} />
             <Route exact path='/genre/:genre' render={({match}) => <GenrePage genre={match.params.genre} />} />
             <Route exact path='/:profile' render={({match}) => <Profile profile={match.params.profile} setUser={this.setUser}/>} />
             <Route exact path='/:profile/:url' component={SinglePostPage}/>

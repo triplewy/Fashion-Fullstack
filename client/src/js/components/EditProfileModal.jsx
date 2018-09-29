@@ -1,6 +1,7 @@
 import React from 'react';
 import validator from 'validator';
 import {Modal} from 'react-bootstrap'
+import { Redirect } from 'react-router-dom'
 
 export default class EditProfileModal extends React.Component {
   constructor(props) {
@@ -12,7 +13,8 @@ export default class EditProfileModal extends React.Component {
         profileNameInput: this.props.profileInfo.profileName,
         locationInput: this.props.profileInfo.location,
         descriptionInput: this.props.profileInfo.description,
-        showModal: false
+        showModal: false,
+        redirect: false
       }
     } else {
       this.state = {
@@ -21,7 +23,8 @@ export default class EditProfileModal extends React.Component {
         profileNameInput: '',
         locationInput: '',
         descriptionInput: '',
-        showModal: false
+        showModal: false,
+        redirect: false
       }
     }
 
@@ -48,11 +51,12 @@ export default class EditProfileModal extends React.Component {
   }
 
   checkUsername(e) {
-    this.setState({usernameInput: e.target.value})
-    if (!validator.isAlphanumeric(e.target.value) && !e.target.value) {
+    const username = e.target.value.replace(/\W+/g, '-').toLowerCase()
+    this.setState({usernameInput: username})
+    if (!validator.isAlphanumeric(username) || !username || username.includes(" ")) {
       console.log("not valid username");
       this.setState({usernameIsValid: false})
-    } else if (e.target.value === this.props.profileInfo.username) {
+    } else if (username === this.props.profileInfo.username) {
       console.log("hello");
       this.setState({usernameIsValid: true})
     } else {
@@ -64,7 +68,7 @@ export default class EditProfileModal extends React.Component {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: e.target.value
+          username: username
         })
       })
       .then(res => res.json())
@@ -84,44 +88,37 @@ export default class EditProfileModal extends React.Component {
   }
 
   handleSave(e) {
-    var body = {}
-    const profile = this.props.profileInfo
-    if (this.state.usernameInput !== profile.username) {
-      body.username = this.state.usernameInput
-    }
-    if (this.state.profileNameInput !== profile.profileName) {
-      body.profileName = this.state.profileNameInput
-    }
-    if (this.state.locationInput !== profile.location) {
-      body.location = this.state.locationInput
-    }
-    if (this.state.descriptionInput !== profile.description) {
-      body.description = this.state.descriptionInput
-    }
-
-    if (Object.getOwnPropertyNames(body).length === 0) {
-      this.toggleModal()
-    } else {
-      fetch('/api/editProfileInfo', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(body)
+    fetch('/api/editProfileInfo', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        username: this.state.usernameInput,
+        profileName: this.state.profileNameInput,
+        location: this.state.locationInput,
+        description: this.state.descriptionInput
       })
-      .then(res => res.json())
-      .then(data => {
-        console.log(data);
-        if (data.message === 'success') {
-          this.props.fetchProfileInfo()
-          this.props.getStream()
-          this.toggleModal()
-          this.props.setUser({username: this.state.usernameInput, profileName: this.state.profileNameInput, profile_image_src: this.props.profileInfo.profile_image_src})
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      if (data.message === 'success') {
+        this.props.setUser({username: this.state.usernameInput, profileName: this.state.profileNameInput, profile_image_src: this.props.profileInfo.profile_image_src})
+        if (this.state.usernameInput === this.props.profileInfo.username) {
+          window.location.reload()
+        } else {
+          this.setState({redirect: true})
         }
-      })
-    }
+      } else {
+        console.log("didn't edit successfully");
+      }
+    })
+    .catch(e => {
+      console.log(e);
+    })
   }
 
   toggleModal(e) {
@@ -129,6 +126,11 @@ export default class EditProfileModal extends React.Component {
   }
 
   render() {
+    if (this.state.redirect) {
+      return (
+        <Redirect to={"/" + this.state.usernameInput} />
+      )
+    }
     const profile = this.props.profileInfo
     return (
       <div>

@@ -114,9 +114,16 @@ export default class Profile extends React.Component {
   }
 
   handleFollow(e) {
-    fetch('/api/' + this.props.profile + '/follow', {
+    fetch('/api/follow', {
       method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
       credentials: 'include',
+      body: JSON.stringify({
+        username: this.props.profile
+      })
     })
     .then(res => res.json())
     .then(data => {
@@ -135,9 +142,16 @@ export default class Profile extends React.Component {
   }
 
   handleUnfollow(e) {
-    fetch('/api/' + this.props.profile + '/unfollow', {
+    fetch('/api/unfollow', {
       method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
       credentials: 'include',
+      body: JSON.stringify({
+        username: this.props.profile
+      })
     })
     .then(res => res.json())
     .then(data => {

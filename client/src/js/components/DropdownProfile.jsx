@@ -23,7 +23,6 @@ export default class DropdownProfile extends React.Component {
   }
 
   fetchDropdownProfile() {
-    console.log("fetching dropdown profile data");
     fetch('/api/dropdownProfile/' + this.props.username, {
       credentials: 'include'
     })
@@ -40,9 +39,16 @@ export default class DropdownProfile extends React.Component {
 
   handleFollow(e) {
     e.stopPropagation()
-    fetch('/api/' + this.props.username + '/follow', {
+    fetch('/api/follow', {
       method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
       credentials: 'include',
+      body: JSON.stringify({
+        username: this.props.username
+      })
     })
     .then(res => res.json())
     .then(data => {
@@ -54,9 +60,16 @@ export default class DropdownProfile extends React.Component {
 
   handleUnfollow(e) {
     e.stopPropagation()
-    fetch('/api/' + this.props.username + '/unfollow', {
+    fetch('/api/unfollow', {
       method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
       credentials: 'include',
+      body: JSON.stringify({
+        username: this.props.username
+      })
     })
     .then(res => res.json())
     .then(data => {

@@ -16,12 +16,12 @@ export default class SinglePlaylistPage extends React.Component {
     console.log(props);
     if (this.props.location.state) {
       this.state = {
-        followers: this.props.location.state.playlistData.followers,
-        likes: this.props.location.state.playlistData.likes,
-        reposts: this.props.location.state.playlistData.reposts,
-        followed: this.props.location.state.playlistData.followed,
-        liked: this.props.location.state.playlistData.liked,
-        reposted: this.props.location.state.playlistData.reposted,
+        // followers: this.props.location.state.playlistData.followers,
+        // likes: this.props.location.state.playlistData.likes,
+        // reposts: this.props.location.state.playlistData.reposts,
+        // followed: this.props.location.state.playlistData.followed,
+        // liked: this.props.location.state.playlistData.liked,
+        // reposted: this.props.location.state.playlistData.reposted,
         tags: [],
         playlistIndex: 0,
         carouselIndex: 0,
@@ -29,12 +29,12 @@ export default class SinglePlaylistPage extends React.Component {
       };
     } else {
       this.state = {
-        followers: null,
-        likes: null,
-        reposts: null,
-        followed: false,
-        liked: false,
-        reposted: false,
+        // followers: null,
+        // likes: null,
+        // reposts: null,
+        // followed: false,
+        // liked: false,
+        // reposted: false,
         tags: [],
         playlistIndex: 0,
         carouselIndex: 0,
@@ -79,7 +79,14 @@ export default class SinglePlaylistPage extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      this.setState({views: data.views, likes: data.likes, reposts: data.reposts, liked: data.liked, reposted: data.reposted});
+      var playlist = this.state.playlist
+      playlist.views = data.views
+      playlist.likes = data.likes
+      playlist.reposts = data.reposts
+      playlist.liked = data.liked
+      playlist.reposted = data.reposted
+      this.setState({playlist: playlist})
+      // this.setState({views: data.views, likes: data.likes, reposts: data.reposts, liked: data.liked, reposted: data.reposted});
     })
     .catch((error) => {
       console.error(error);
@@ -104,7 +111,10 @@ export default class SinglePlaylistPage extends React.Component {
     .then(res => res.json())
     .then(data => {
       if (data.message === "success") {
-        this.setState({views: this.state.views + 1})
+        var playlist = this.state.playlist
+        playlist.views += 1
+        this.setState({playlist: playlist})
+        // this.setState({views: this.state.views + 1})
       } else {
         console.log(data.message);
       }
@@ -122,7 +132,8 @@ export default class SinglePlaylistPage extends React.Component {
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({playlist: data, followers: data.followers, likes: data.likes, reposts: data.reposts, followed: data.followed, liked: data.liked, reposted: data.reposted})
+      this.setState({playlist: data})
+      // this.setState({playlist: data, followers: data.followers, likes: data.likes, reposts: data.reposts, followed: data.followed, liked: data.liked, reposted: data.reposted})
       this.postVisit(data.posts[0].mediaId)
     })
     .catch((error) => {
@@ -154,11 +165,10 @@ export default class SinglePlaylistPage extends React.Component {
             <div className="center">
               <LinkContainer to={{ pathname: '/' + currentPost.username + '/' + currentPost.url}}>
                 <div className="image_wrapper">
-                  <CarouselImages singlePost={true} imageUrls={currentPost.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
+                  <CarouselImages singlePost imageUrls={currentPost.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
                 </div>
               </LinkContainer>
-              <PlaylistStatsHeader playlistId={playlist.playlistId} followers={this.state.followers} likes={this.state.likes} reposts={this.state.reposts}
-                followed={this.state.followed} liked={this.state.liked} reposted={this.state.reposted} isPoster={playlist.isPoster}/>
+              <PlaylistStatsHeader playlist={playlist}/>
             </div>
           </div>
           <div className="single_post_bottom">

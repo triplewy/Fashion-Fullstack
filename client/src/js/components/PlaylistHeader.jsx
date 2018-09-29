@@ -21,9 +21,9 @@ export default class PlaylistHeader extends React.Component {
               (!this.props.displayTime ? " ago" : "")}</p>
         }
         </div>
-        <div className="genre">
+        {/* <div className="genre">
           {this.props.genre && <Link to={"/explore/" + this.props.genre}>{this.props.genre.replace(/^\w/, c => c.toUpperCase())}</Link>}
-        </div>
+        </div> */}
       </div>
     );
   }

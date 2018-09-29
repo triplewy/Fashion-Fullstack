@@ -1,22 +1,24 @@
 import React from 'react';
+import PlaylistMoreDropdown from './PlaylistMoreDropdown.jsx'
 import like_icon from 'images/heart-icon.png'
 import like_icon_liked from 'images/heart-icon-liked.png'
 import repost_icon from 'images/repost-icon.png'
 import repost_icon_reposted from 'images/repost-icon-reposted.png'
 import followers_icon_notFollowed from 'images/followers-icon-notFollowed.png'
 import followers_icon_followed from 'images/followers-icon-followed.png'
-import more_icon from 'images/more-icon.png'
 
 export default class StatsHeader extends React.Component {
   constructor(props) {
     super(props);
+
+    const playlist = this.props.playlist
     this.state = {
-      likes: this.props.likes,
-      reposts: this.props.reposts,
-      followers: this.props.followers,
-      liked: this.props.liked,
-      reposted: this.props.reposted,
-      followed: this.props.followed,
+      likes: playlist.likes,
+      reposts: playlist.reposts,
+      followers: playlist.followers,
+      liked: playlist.liked,
+      reposted: playlist.reposted,
+      followed: playlist.followed,
     };
 
     this.handleLike = this.handleLike.bind(this);
@@ -27,8 +29,15 @@ export default class StatsHeader extends React.Component {
     this.handleUnfollow = this.handleUnfollow.bind(this);
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.playlist !== prevProps.playlist) {
+      const playlist = this.props.playlist
+      this.setState({likes: playlist.likes, reposts: playlist.reposts, followers: playlist.followers,
+        liked: playlist.liked, reposted: playlist.reposted, followed: playlist.followed})
+    }
+  }
+
   handleLike(e) {
-    console.log("playlistId is", this.props.playlistId);
     fetch('/api/playlistLike', {
       method: 'POST',
       headers: {
@@ -37,7 +46,7 @@ export default class StatsHeader extends React.Component {
       },
       credentials: 'include',
       body: JSON.stringify({
-        playlistId: this.props.playlistId,
+        playlistId: this.props.playlist.playlistId,
       })
     })
     .then(res => res.json())
@@ -62,7 +71,7 @@ export default class StatsHeader extends React.Component {
       },
       credentials: 'include',
       body: JSON.stringify({
-        playlistId: this.props.playlistId,
+        playlistId: this.props.playlist.playlistId,
       })
     })
     .then(res => res.json())
@@ -87,7 +96,7 @@ export default class StatsHeader extends React.Component {
       },
       credentials: 'include',
       body: JSON.stringify({
-        playlistId: this.props.playlistId,
+        playlistId: this.props.playlist.playlistId,
       })
     })
     .then(res => res.json())
@@ -112,7 +121,7 @@ export default class StatsHeader extends React.Component {
       },
       credentials: 'include',
       body: JSON.stringify({
-        playlistId: this.props.playlistId,
+        playlistId: this.props.playlist.playlistId,
       })
     })
     .then(res => res.json())
@@ -137,7 +146,7 @@ export default class StatsHeader extends React.Component {
       },
       credentials: 'include',
       body: JSON.stringify({
-        playlistId: this.props.playlistId,
+        playlistId: this.props.playlist.playlistId,
       })
     })
     .then(res => res.json())
@@ -162,7 +171,7 @@ export default class StatsHeader extends React.Component {
       },
       credentials: 'include',
       body: JSON.stringify({
-        playlistId: this.props.playlistId,
+        playlistId: this.props.playlist.playlistId,
       })
     })
     .then(res => res.json())
@@ -179,38 +188,25 @@ export default class StatsHeader extends React.Component {
   }
 
   render() {
-    var stats_header_style = "stats_header"
-    if (this.props.is_collection) {
-      stats_header_style = "collection_stats_header";
-    }
-
+    const isPoster = this.props.playlist.isPoster
     return (
-      <div id={stats_header_style}>
-        <button id="followers" onClick={this.state.followed ? this.handleUnfollow : this.handleFollow} disabled={this.props.isPoster}>
-          <img id="follower_icon" alt="follower icon" src={this.state.followed ? followers_icon_followed : followers_icon_notFollowed}></img>
-          <p className="stats_number" id="follower_number">{this.state.followers}</p>
+      <div id="stats_header">
+        <button onClick={this.state.followed ? this.handleUnfollow : this.handleFollow} disabled={isPoster}>
+          <div style={{backgroundImage: this.state.followed ? 'url(' + followers_icon_followed + ')' : 'url(' + followers_icon_notFollowed + ')'}}/>
+          <p className="stats_number">{this.state.followers}</p>
         </button>
-        <button id="likes" onClick={this.state.liked ? this.handleUnlike : this.handleLike}>
-          <img id="like_icon" alt="like icon" src={this.state.liked ? like_icon_liked : like_icon}></img>
-          <p className="stats_number" id="like_number">{this.state.likes}</p>
+        <button onClick={this.state.liked ? this.handleUnlike : this.handleLike}>
+          <div style={{backgroundImage: this.state.liked ? 'url(' + like_icon_liked + ')' : 'url(' + like_icon + ')'}}/>
+          <p className="stats_number">{this.state.likes}</p>
         </button>
-        <button id="reposts" onClick={this.state.reposted ? this.handleUnrepost : this.handleRepost} disabled={this.props.isPoster}>
-          <img id="repost_icon" alt="repost icon" src={this.state.reposted ? repost_icon_reposted : repost_icon}></img>
-          <p className="stats_number" id="repost_number">{this.state.reposts}</p>
+        <button onClick={this.state.reposted ? this.handleUnrepost : this.handleRepost} disabled={isPoster}>
+          <div style={{backgroundImage: this.state.reposted ? 'url(' + repost_icon_reposted + ')' : 'url(' + repost_icon + ')'}}/>
+          <p className="stats_number">{this.state.reposts}</p>
         </button>
         <div id="non_stat_div">
-          <div className="btn-group">
-            <button id="more" type="button" data-toggle="dropdown">
-              <img id="more_icon" alt="more icon" src={more_icon}></img>
-            </button>
-            <ul className="dropdown-menu">
-              <li className="form-group">
-                Yo
-              </li>
-            </ul>
-          </div>
+          <PlaylistMoreDropdown playlist={this.props.playlist} />
         </div>
-    </div>
-    );
+      </div>
+    )
   }
 }

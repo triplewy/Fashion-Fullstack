@@ -40,11 +40,13 @@ export default class AlbumTetrisBlock extends React.Component {
     if (window.scrollY + window.innerHeight >= this.state.bottom && !this.state.seen) {
       var now = new Date()
       var nowISOString = now.toISOString()
-      var view = {playlistId: this.props.playlist.playlistId, explore:true, dateTime: nowISOString}
+      const playlist = this.props.playlist
+      var view = {playlistId: playlist.playlistId, mediaId: playlist.posts[this.state.playlistIndex].mediaId, explore:true, dateTime: nowISOString}
       if (Cookie.get('collectionsViews')) {
         var arr = JSON.parse(Cookie.get('collectionsViews'));
         arr.push(view)
         if (arr.length > 9) {
+          Cookie.set('collectionsViews', [])
           fetch('/api/storeCollectionsViews', {
             method: 'POST',
             headers: {
@@ -60,7 +62,6 @@ export default class AlbumTetrisBlock extends React.Component {
           .then(data => {
             if (data.message === "success") {
               console.log("success");
-              Cookie.set('collectionsViews', [])
             } else {
               console.log(data.message);
             }
@@ -68,8 +69,9 @@ export default class AlbumTetrisBlock extends React.Component {
           .catch((error) => {
             console.error(error);
           });
+        } else {
+          Cookie.set('collectionsViews', arr)
         }
-        Cookie.set('collectionsViews', arr)
       } else {
         var newArr = [view]
         Cookie.set('collectionsViews', JSON.stringify(newArr))
@@ -122,8 +124,7 @@ export default class AlbumTetrisBlock extends React.Component {
                   <p>{playlist.title}</p>
               </div>
               <div className="block_stats" style={{opacity: this.state.entered ? 1 : 0}}>
-                <PlaylistStatsHeader playlistId={playlist.playlistId} followers={playlist.followers} likes={playlist.likes} reposts={playlist.reposts}
-                  followed={playlist.followed} reposted={playlist.reposted} liked={playlist.liked} isPoster={playlist.isPoster}/>
+                <PlaylistStatsHeader playlist={playlist}/>
               </div>
           </div>
         </LinkContainer>

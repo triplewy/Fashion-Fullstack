@@ -34,8 +34,10 @@ export default class ProfileInfo extends React.Component {
           </div>
         </div> */}
         {this.props.isProfile &&
-          <EditProfileModal profileInfo={this.props.profileInfo} readImageFile={this.props.readImageFile}
-            fetchProfileInfo={this.props.fetchProfileInfo} getStream={this.props.getStream} setUser={this.props.setUser}/>
+          <EditProfileModal
+            profileInfo={this.props.profileInfo}
+            readImageFile={this.props.readImageFile}
+            setUser={this.props.setUser}/>
         }
         {/* <div className="type_selector_dropdown_div">
           <div className="profile_dropdown_div" id="about">

@@ -9,6 +9,7 @@ import googleLogo from 'images/google-logo.png'
 export default class Signup extends React.Component {
   constructor(props) {
     super(props);
+    console.log("signup page props are", props);
     this.state = {
       loginUsername: '',
       loginPassword: '',
@@ -19,9 +20,7 @@ export default class Signup extends React.Component {
       emailIsValid: false,
       usernameIsValid: false,
       passwordIsValid: false,
-      passwordErrorMessage: '',
-      redirect: false,
-      redirectUrl: props.location.state ? props.location.state.from.pathname : '/'
+      passwordErrorMessage: ''
     };
 
     this.handleKeyPress = this.handleKeyPress.bind(this);
@@ -36,10 +35,6 @@ export default class Signup extends React.Component {
 
   componentDidMount() {
     window.scrollTo(0, 0)
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.setState({redirectUrl: nextProps.location.state ? nextProps.location.state.from.pathname : '/'})
   }
 
   handleChange(e) {
@@ -80,7 +75,6 @@ export default class Signup extends React.Component {
       if (data.message === 'not logged in') {
       } else {
         this.props.loggedIn(data)
-        this.setState({redirect: true})
       }
     })
     .catch(function(err) {
@@ -118,7 +112,6 @@ export default class Signup extends React.Component {
     .then(data => {
       if (data.message === 'success') {
         this.props.loggedIn()
-        this.setState({redirect: true})
       }
     }).catch(function(err) {
         console.log(err);
@@ -205,9 +198,9 @@ export default class Signup extends React.Component {
   }
 
   render() {
-    if (this.state.redirect) {
+    if (this.props.user) {
       return (
-        <Redirect to={this.state.redirectUrl} />
+        <Redirect to={this.props.location.state ? this.props.location.state.from.pathname : '/'} />
       )
     }
     return (

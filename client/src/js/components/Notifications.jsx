@@ -56,9 +56,16 @@ export default class Notifications extends React.Component {
   }
 
   handleFollow(profile, index) {
-    fetch('/api/' + profile + '/follow', {
+    fetch('/api/follow', {
       method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
       credentials: 'include',
+      body: JSON.stringify({
+        username: profile
+      })
     })
     .then(res => res.json())
     .then(data => {
@@ -78,9 +85,16 @@ export default class Notifications extends React.Component {
   }
 
   handleUnfollow(profile, index) {
-    fetch('/api/' + profile + '/unfollow', {
+    fetch('/api/unfollow', {
       method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
       credentials: 'include',
+      body: JSON.stringify({
+        username: profile
+      })
     })
     .then(res => res.json())
     .then(data => {

@@ -69,21 +69,17 @@ export default class TotalPostsStats extends React.Component {
       return (
         <div>
           <div className="total_stats_div">
-            {/* <div>
-              <p>{stats.postsViews}</p>
-              <div className="stats_icon" style={{backgroundImage: 'url(' + view_icon + ')'}} />
-            </div> */}
             <div>
-              <p>{stats.likes}</p>
               <div className="stats_icon" style={{backgroundImage: 'url(' + like_icon + ')'}} />
+              <p>{stats.likes}</p>
             </div>
             <div>
-              <p>{stats.reposts}</p>
               <div className="stats_icon" style={{backgroundImage: 'url(' + repost_icon + ')'}} />
+              <p>{stats.reposts}</p>
             </div>
             <div>
-              <p>{stats.comments}</p>
               <div className="stats_icon" style={{backgroundImage: 'url(' + comment_icon + ')'}} />
+              <p>{stats.comments}</p>
             </div>
           </div>
           <div className="total_views">

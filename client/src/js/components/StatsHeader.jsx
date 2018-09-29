@@ -1,38 +1,44 @@
 import React from 'react';
 import PlaylistModal from './PlaylistModal.jsx'
+import MoreDropdown from './MoreDropdown.jsx'
 import view_icon_revised from 'images/view-icon-revised.png'
 import like_icon from 'images/heart-icon.png'
 import like_icon_hover from 'images/heart-icon-hover.png'
 import like_icon_liked from 'images/heart-icon-liked.png'
 import repost_icon from 'images/repost-icon.png'
 import repost_icon_reposted from 'images/repost-icon-reposted.png'
-import plus_icon from 'images/plus-icon.png'
-import more_icon from 'images/more-icon.png'
 
 export default class StatsHeader extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      views: this.props.views,
-      likes: this.props.likes,
-      reposts: this.props.reposts,
-      liked: this.props.liked,
-      reposted: this.props.reposted,
-      playlists: [],
-      showModal: false
-    };
+
+    const post = this.props.post
+    if (post) {
+      this.state = {
+        likes: post.likes,
+        reposts: post.reposts,
+        liked: post.liked,
+        reposted: post.reposted
+      };
+    } else {
+      this.state = {
+        likes: 0,
+        reposts: 0,
+        liked: false,
+        reposted: false
+      };
+    }
 
     this.handleLike = this.handleLike.bind(this);
     this.handleUnlike = this.handleUnlike.bind(this);
     this.handleRepost = this.handleRepost.bind(this);
     this.handleUnrepost = this.handleUnrepost.bind(this);
-    this.showModal = this.showModal.bind(this)
-    this.closeModal = this.closeModal.bind(this)
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props !== prevProps) {
-      this.setState({views: this.props.views, likes: this.props.likes, reposts: this.props.reposts, liked: this.props.liked, reposted: this.props.reposted})
+    if (this.props.post !== prevProps.post) {
+      const post = this.props.post
+      this.setState({likes: post.likes, reposts: post.reposts, liked: post.liked, reposted: post.reposted})
     }
   }
 
@@ -45,7 +51,7 @@ export default class StatsHeader extends React.Component {
       },
       credentials: 'include',
       body: JSON.stringify({
-        mediaId: this.props.mediaId,
+        mediaId: this.props.post.mediaId,
       })
     })
     .then(res => res.json())
@@ -62,7 +68,6 @@ export default class StatsHeader extends React.Component {
   }
 
   handleUnlike(e) {
-    console.log("props Id is", this.props.mediaId);
     fetch('/api/unlike', {
       method: 'POST',
       headers: {
@@ -71,7 +76,7 @@ export default class StatsHeader extends React.Component {
       },
       credentials: 'include',
       body: JSON.stringify({
-        mediaId: this.props.mediaId,
+        mediaId: this.props.post.mediaId,
       })
     })
     .then(res => res.json())
@@ -96,7 +101,7 @@ export default class StatsHeader extends React.Component {
       },
       credentials: 'include',
       body: JSON.stringify({
-        mediaId: this.props.mediaId,
+        mediaId: this.props.post.mediaId,
       })
     })
     .then(res => res.json())
@@ -113,7 +118,6 @@ export default class StatsHeader extends React.Component {
   }
 
   handleUnrepost(e) {
-    console.log("unrepost");
     fetch('/api/unrepost', {
       method: 'POST',
       headers: {
@@ -122,7 +126,7 @@ export default class StatsHeader extends React.Component {
       },
       credentials: 'include',
       body: JSON.stringify({
-        mediaId: this.props.mediaId,
+        mediaId: this.props.post.mediaId,
       })
     })
     .then(res => res.json())
@@ -138,51 +142,24 @@ export default class StatsHeader extends React.Component {
     });
   }
 
-  showModal(e) {
-    this.setState({showModal: true})
-  }
-
-  closeModal(e) {
-    this.setState({showModal: false})
-  }
-
   render() {
-    var stats_header_style = "stats_header"
-    if (this.props.is_collection) {
-      stats_header_style = "collection_stats_header";
-    }
-
     return (
-      <div id={stats_header_style}>
-        <button id="views">
-          <img id="views_icon" alt="view icon" src={view_icon_revised}></img>
-          <p className="stats_number" id="view_number">{this.state.views}</p>
-        </button>
+      <div id="stats_header">
+        <div id="views">
+          <div style={{backgroundImage: 'url(' + view_icon_revised + ')'}}/>
+          <p className="stats_number">{this.props.post.views}</p>
+        </div>
         <button id="likes" onClick={this.state.liked ? this.handleUnlike : this.handleLike}>
-          <img id="like_icon" alt="like icon" src={this.state.liked ? like_icon_liked : like_icon}></img>
-          <p className="stats_number" id="like_number">{this.state.likes}</p>
+          <div style={{backgroundImage: this.state.liked ? 'url(' + like_icon_liked + ')' : 'url(' + like_icon + ')'}}/>
+          <p className="stats_number">{this.state.likes}</p>
         </button>
         <button id="reposts" onClick={this.state.reposted ? this.handleUnrepost : this.handleRepost} disabled={this.props.isPoster}>
-          <img id="repost_icon" alt="repost icon" src={this.state.reposted ? repost_icon_reposted : repost_icon}></img>
-          <p className="stats_number" id="repost_number">{this.state.reposts}</p>
+          <div style={{backgroundImage: this.state.reposted ? 'url(' + repost_icon_reposted + ')' : 'url(' + repost_icon + ')'}}/>
+          <p className="stats_number">{this.state.reposts}</p>
         </button>
         <div id="non_stat_div">
-          <div id="add_playlist_wrapper">
-            <button id="add_to_playlist" onClick={this.showModal}>
-              <img id="add_to_playlist_icon" alt="add icon" src={plus_icon}></img>
-            </button>
-            <PlaylistModal mediaId={this.props.mediaId} showModal={this.state.showModal} closeModal={this.closeModal}/>
-          </div>
-          <div className="btn-group">
-            <button id="more" type="button" data-toggle="dropdown">
-              <img id="more_icon" alt="more icon" src={more_icon}></img>
-            </button>
-            <ul className="dropdown-menu">
-              <li className="form-group">
-                Yo
-              </li>
-            </ul>
-          </div>
+          <PlaylistModal mediaId={this.props.post.mediaId} />
+          <MoreDropdown post={this.props.post} />
       </div>
     </div>
     );

@@ -1,4 +1,3 @@
-// Create a new React component here!import React from 'react';
 import React from 'react';
 import shirt from 'images/shirt-icon.png'
 import jacket from 'images/jacket-icon.png'

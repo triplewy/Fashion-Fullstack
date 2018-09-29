@@ -1,5 +1,6 @@
 import React from 'react';
 import Autosuggest from 'react-autosuggest';
+import { Overlay, Tooltip } from 'react-bootstrap'
 
 function escapeRegexCharacters(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -31,12 +32,12 @@ export default class InputTag extends React.Component {
     this.state = {
       topBrands: [],
       brandSuggestions: [],
+
       itemType: 'shirt',
       itemBrand: '',
       itemName: '',
       itemLink: '',
-      original: false,
-      index: -1
+      original: false
     }
 
     this.handleChange = this.handleChange.bind(this);
@@ -65,8 +66,7 @@ export default class InputTag extends React.Component {
         itemBrand: this.props.tag.itemBrand,
         itemName: this.props.tag.itemName,
         itemLink: this.props.tag.itemLink,
-        original: this.props.tag.original,
-        index: this.props.tag.index,
+        original: this.props.tag.original
       });
     }
   }
@@ -85,8 +85,8 @@ export default class InputTag extends React.Component {
   }
 
   saveTag(e) {
-    this.props.handleTagSave(this.state.itemType, this.state.itemBrand, this.state.itemName, this.state.itemLink.replace(/^https?\:\/\//i, ""), this.state.original);
-    this.setState({itemType: 'shirt', itemBrand: '', itemName: '', itemLink: '', original: false, index: -1});
+    this.props.handleTagSave(this.state.itemType, this.state.itemBrand, this.state.itemName, this.state.itemLink.replace(/^https?\:\/\//i, ""), this.state.original, e);
+    this.setState({itemType: 'shirt', itemBrand: '', itemName: '', itemLink: '', original: false});
   }
 
   onChange = (event, { newValue, method }) => {
@@ -139,6 +139,14 @@ export default class InputTag extends React.Component {
             <input type="text" name="itemLink" value={this.state.itemLink} onChange={this.handleChange}></input>
             <button id="form_cancel" type="button" onClick={this.cancelTag}>Cancel</button>
             <button id="save_tag_button" type="button" onClick={this.saveTag}>Save</button>
+            <Overlay
+              show={this.props.showOverlay}
+              container={this}
+              placement="right"
+              target={this.props.target}
+            >
+              <Tooltip id="tooltip" className="tooltip" >Can't have more than 5 tags</Tooltip>
+            </Overlay>
           </div>
         </div>
       );

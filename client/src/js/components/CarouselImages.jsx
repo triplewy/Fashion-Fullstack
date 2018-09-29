@@ -35,7 +35,8 @@ export default class CarouselImages extends React.Component {
         }
         return (
           <div className="post_image" style={{backgroundImage: 'url(' + this.props.imageUrls[0].imageUrl + ')',
-            backgroundSize: width + "px " + height + "px", width: width, height: height,
+            // backgroundSize: width + "px " + height + "px",
+            width: width, height: height,
             borderRadius: this.props.singlePost ? "8px" : ""}} />
         )
       } else {
@@ -52,7 +53,8 @@ export default class CarouselImages extends React.Component {
           return (
             <Carousel.Item key={index}>
               <div className="post_image" style={{backgroundImage: 'url(' + item.imageUrl + ')',
-                backgroundSize: width + "px " + height + "px", width: width, height: height,
+                // backgroundSize: width + "px " + height + "px",
+                width: width, height: height,
                 borderRadius: this.props.singlePost ? "8px" : ""}} />
             </Carousel.Item>
           )

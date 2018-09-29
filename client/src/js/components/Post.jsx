@@ -113,10 +113,7 @@ export default class Post extends React.Component {
               <CarouselImages imageUrls={post.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
             </div>
           </LinkContainer>
-          <div id="stats_wrapper">
-            <StatsHeader mediaId={post.mediaId} views={post.views} likes={post.likes} reposts={post.reposts}
-              reposted={post.reposted} liked={post.liked} isPoster={post.isPoster}/>
-          </div>
+          <StatsHeader post={post}/>
         </div>
         <div id="tags_div_wrapper">
           <div id="tags_div_flexbox">

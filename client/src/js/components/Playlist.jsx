@@ -1,9 +1,7 @@
 import React from 'react';
 import Tags from './Tags.jsx'
 import RepostHeader from './RepostHeader.jsx'
-import MediaHeader from './MediaHeader.jsx'
 import PlaylistHeader from './PlaylistHeader.jsx'
-import StatsHeader from './StatsHeader.jsx'
 import PlaylistPosts from './PlaylistPosts.jsx'
 import Comments from './Comments.jsx'
 import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
@@ -11,7 +9,6 @@ import CarouselImages from './CarouselImages.jsx'
 import { Link } from 'react-router-dom';
 import { LinkContainer } from 'react-router-bootstrap'
 import Cookie from 'js-cookie'
-import view_icon from 'images/view-icon-revised.png'
 
 
 export default class Playlist extends React.Component {
@@ -143,15 +140,15 @@ export default class Playlist extends React.Component {
               }
             </div>
         </LinkContainer>
-        <div id="stats_wrapper">
-          <PlaylistStatsHeader playlistId={playlist.playlistId} likes={playlist.likes} reposts={playlist.reposts} followers={playlist.followers}
-          reposted={playlist.reposted} liked={playlist.liked} followed={playlist.followed} isPoster={playlist.isPoster}/>
-        </div>
+        <PlaylistStatsHeader playlist={playlist}/>
         </div>
           <div id="tags_div_wrapper">
             <div id="tags_div_flexbox">
               <div id="title">
                 <p id="title_text">{playlist.title}</p>
+                <div className="genre">
+                  {playlist.genre && <Link to={"/explore/" + playlist.genre}>{playlist.genre.replace(/^\w/, c => c.toUpperCase())}</Link>}
+                </div>
               </div>
               <Tags tags={this.state.tags}/>
               <div id="description_wrapper">

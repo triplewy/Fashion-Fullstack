@@ -45,6 +45,7 @@ export default class ImageTetris extends React.Component {
         var arr = JSON.parse(Cookie.get('postsViews'));
         arr.push(view)
         if (arr.length > 9) {
+          Cookie.set('postsViews', [])
           fetch('/api/storePostsViews', {
             method: 'POST',
             headers: {
@@ -60,7 +61,6 @@ export default class ImageTetris extends React.Component {
           .then(data => {
             if (data.message === "success") {
               console.log("success");
-              Cookie.set('postsViews', [])
             } else {
               console.log(data.message);
             }
@@ -68,8 +68,9 @@ export default class ImageTetris extends React.Component {
           .catch((error) => {
             console.error(error);
           });
+        } else {
+          Cookie.set('postsViews', arr)
         }
-        Cookie.set('postsViews', arr)
       } else {
         var newArr = [view]
         Cookie.set('postsViews', JSON.stringify(newArr))
@@ -125,8 +126,7 @@ export default class ImageTetris extends React.Component {
           <p>{post.title}</p>
         </div>
         <div className="block_stats" style={{opacity: this.state.entered ? 1 : 0}}>
-          <StatsHeader mediaId={post.mediaId} views={post.views} likes={post.likes} reposts={post.reposts}
-            reposted={post.reposted} liked={post.liked} isPoster={post.isPoster}/>
+          <StatsHeader post={post}/>
         </div>
       </div>
     );

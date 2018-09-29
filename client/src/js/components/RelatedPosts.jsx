@@ -44,9 +44,9 @@ export default class RelatedPosts extends React.Component {
       var renderedPosts = [];
       for (var i = 0; i < relatedPosts.length; i++) {
         if (i%2) {
-          renderedCol2.push([<ImageTetrisBlock post={relatedPosts[i]} relatedPosts />])
+          renderedCol2.push([<ImageTetrisBlock key={i} post={relatedPosts[i]} relatedPosts />])
         } else {
-          renderedCol1.push([<ImageTetrisBlock post={relatedPosts[i]} relatedPosts />])
+          renderedCol1.push([<ImageTetrisBlock key={i} post={relatedPosts[i]} relatedPosts />])
         }
       }
       // renderedPosts = relatedPosts.map((item, index) => {
