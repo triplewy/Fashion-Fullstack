@@ -34,7 +34,7 @@ export default class LoginModal extends React.Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal} onHide={this.props.closeModal}>
+      <Modal show={this.props.showModal} onHide={this.props.toggleLoginModal}>
         <Modal.Header closeButton>
           <Modal.Title>Login</Modal.Title>
         </Modal.Header>
@@ -54,8 +54,8 @@ export default class LoginModal extends React.Component {
               name="username" onChange={this.handleChange} value={this.state.username}></input>
             <input type="password" placeholder="Password" name="password" onChange={this.handleChange}
             onKeyPress={this.handleKeyPress} value={this.state.password}></input>
-            <button onClick={this.handleLogin}>Login</button>
-            <Link to="/signup">Create an account</Link>
+            <button onClick={this.props.handleLogin}>Login</button>
+            <Link to="/signup" onClick={this.props.toggleLoginModal}>Create an account</Link>
           </div>
         </Modal.Body>
       </Modal>

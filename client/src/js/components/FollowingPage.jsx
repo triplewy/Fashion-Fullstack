@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link, Redirect } from 'react-router-dom';
+import ProfileHover from './ProfileHover.jsx'
 import TypeSelector from './TypeSelector.jsx'
 import { Dropdown } from 'react-bootstrap'
 
 export default class FollowersPage extends React.Component {
   constructor(props) {
     super(props);
-
     this.state = {
       users: [],
       orderByArray: ['Most Recent', 'Most Followers'],
@@ -25,13 +25,13 @@ export default class FollowersPage extends React.Component {
   }
 
   fetchFollowing(orderBy) {
-    fetch('/api/following/' + orderBy, {
+    fetch('/api' + this.props.match.url + '/' + orderBy, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({users: data.following});
+      this.setState({users: data});
     })
     .catch((error) => {
       console.error(error);
@@ -54,20 +54,14 @@ export default class FollowersPage extends React.Component {
     if (this.state.users) {
       renderedUsers = this.state.users.map((item, index) => {
         return (
-          <div className="followers_profile" key={index}>
-            <Link to={"/" + item.username}>
-              <div>
-                <img alt="" src={item.profile_image_src}></img>
-              </div>
-              <strong>{item.profileName}</strong>
-            </Link>
-          </div>
+          <ProfileHover key={index} classStyle="followers_profile" username={item.username} profileName={item.profileName}
+            profile_image_src={item.profile_image_src} />
         )
       });
     }
     if (this.state.redirect) {
       return (
-        <Redirect to="/you/followers" />
+        <Redirect to={'/' + this.props.match.params.profile + '/followers'} />
       )
     }
     return (

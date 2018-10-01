@@ -64,6 +64,14 @@ export default class EditPostModalMetadata extends React.Component {
   }
 
   handleSave() {
+    var original = false;
+    for (var i = 0; i < this.props.tags.length; i++) {
+      if (this.props.tags[i].original) {
+        original = true;
+        break;
+      }
+    }
+
     fetch('/api/editPost', {
       method: 'POST',
       headers: {
@@ -77,6 +85,7 @@ export default class EditPostModalMetadata extends React.Component {
         url: this.state.urlInput,
         genre: this.state.genreInput,
         description: this.state.descriptionInput,
+        original: original,
         tags: this.props.tags
       })
     })

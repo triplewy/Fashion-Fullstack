@@ -84,6 +84,7 @@ export default class NotificationsPage extends React.Component {
     }
     return (
       <div id="white_background_wrapper">
+        <p className="page_title">Notifications</p>
         <ul className="notificationsPage_list">
           {renderedNotifications}
         </ul>

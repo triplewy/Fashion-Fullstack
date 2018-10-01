@@ -54,6 +54,10 @@ export default class DropdownProfile extends React.Component {
     .then(data => {
       if (data.message === 'success') {
         this.setState({userFollowed: true, userFollowers: this.state.userFollowers + 1})
+      } else if (data.message === "not logged in") {
+        this.props.toggleLoginModal()
+      } else {
+        console.log(data);
       }
     })
   }
@@ -75,6 +79,10 @@ export default class DropdownProfile extends React.Component {
     .then(data => {
       if (data.message === 'success') {
         this.setState({userFollowed: false, userFollowers: this.state.userFollowers - 1})
+      } else if (data.message === "not logged in") {
+        this.props.toggleLoginModal()
+      } else {
+        console.log(data);
       }
     })
   }

@@ -13,13 +13,15 @@ export default class ProfileInfo extends React.Component {
   }
 
   render() {
+    const profileInfo = this.props.profileInfo
+
     return (
       <div className="profile_section">
-        <Link to="/you/followers" className="profile_section_item">
+        <Link to={'/' + profileInfo.username + '/followers'} className="profile_section_item">
           <div className="profile_info_icon" style={{backgroundImage: 'url(' + profile_followers_icon + ')'}} />
           <p className="profile_info_text" id="profile_info_followers">{this.props.profileInfo.followers}</p>
         </Link>
-        <Link to="/you/following" className="profile_section_item">
+        <Link to={'/' + profileInfo.username + '/following'} className="profile_section_item">
         <div className="profile_info_icon" style={{backgroundImage: 'url(' + profile_following_icon + ')'}} />
           <p className="profile_info_text" id="profile_info_following">{this.props.profileInfo.following}</p>
         </Link>
@@ -35,7 +37,7 @@ export default class ProfileInfo extends React.Component {
         </div> */}
         {this.props.isProfile &&
           <EditProfileModal
-            profileInfo={this.props.profileInfo}
+            profileInfo={profileInfo}
             readImageFile={this.props.readImageFile}
             setUser={this.props.setUser}/>
         }

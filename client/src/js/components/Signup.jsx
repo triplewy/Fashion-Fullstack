@@ -205,7 +205,7 @@ export default class Signup extends React.Component {
     }
     return (
       <div id="white_background_wrapper">
-        <div className="signup_div" >
+        {/* <div className="signup_div" >
           <p className="modal-title">Login</p>
           <div className="welcome_text">
             <p>Use Google, Facebook, or Reddit to login</p>
@@ -224,7 +224,7 @@ export default class Signup extends React.Component {
             onKeyPress={this.handleKeyPress} value={this.state.loginPassword}></input>
             <button onClick={this.handleLogin}>Login</button>
           </div>
-        </div>
+        </div> */}
         <div className="signup_div">
           <div className="signup_form_div">
             <p className="modal-title">Sign Up</p>

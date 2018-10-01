@@ -1,5 +1,6 @@
 import React from 'react';
 import PlaylistDeleteModal from './PlaylistDeleteModal.jsx'
+import EditCollectionModal from './EditCollectionModal.jsx'
 import { Dropdown } from 'react-bootstrap'
 import more_icon from 'images/more-icon.png'
 import report_icon from 'images/report-icon.png'
@@ -21,15 +22,8 @@ export default class PlaylistMoreDropdown extends React.Component {
           <div className="more_icon" style={{backgroundImage: 'url(' + more_icon + ')'}} />
         </Dropdown.Toggle>
         <Dropdown.Menu className="more_dropdown_menu">
-          <li>
-            <div style={{backgroundImage: 'url(' + report_icon + ')'}} />
-            <p>Report</p>
-          </li>
           {isPoster ?
-            <li>
-              <div style={{backgroundImage: 'url(' + edit_icon + ')'}} />
-              <p>Edit</p>
-            </li>
+            <EditCollectionModal collection={this.props.playlist} />
             :
             null
           }

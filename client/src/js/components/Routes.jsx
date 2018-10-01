@@ -25,18 +25,21 @@ import NotificationsPage from './NotificationsPage.jsx'
 import FollowersPage from './FollowersPage.jsx'
 import FollowingPage from './FollowingPage.jsx'
 import GenrePage from './GenrePage.jsx'
+import ErrorPage from './ErrorPage.jsx'
 
 
 export default class Routes extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      user: null
+      user: null,
+      showLoginModal: false
     }
 
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this)
     this.setUser = this.setUser.bind(this)
+    this.toggleLoginModal = this.toggleLoginModal.bind(this)
   }
 
   componentDidMount() {
@@ -79,7 +82,7 @@ export default class Routes extends React.Component {
       if (data.message === 'not logged in') {
         this.setState({user: null});
       } else {
-        this.setState({user: data})
+        this.setState({user: data, showLoginModal: false})
       }
     })
     .catch(function(err) {
@@ -112,6 +115,10 @@ export default class Routes extends React.Component {
     this.setState({user: user})
   }
 
+  toggleLoginModal() {
+    this.setState({showLoginModal: !this.state.showLoginModal})
+  }
+
   render() {
     const PrivateRoute = ({component: Component, ...rest}) => (
       <Route {...rest} render={(props) => (this.state.user ? <Component {...props}/> : <Redirect to={{pathname: '/signup', state: {from: props.location}}} /> )} />
@@ -119,26 +126,35 @@ export default class Routes extends React.Component {
     return (
       <BrowserRouter>
         <div>
-          <Navbar user={this.state.user} handleLogin={this.handleLogin} handleLogout={this.handleLogout}/>
-          <Switch>
-            <Route exact path='/' component={this.state.user ? Stream : Home}/>
-            <PrivateRoute exact path='/upload' component={UploadDropzone} />}/>
-            <PrivateRoute exact path='/you/likes/posts' component={LikesPosts} />
-            <PrivateRoute exact path='/you/likes/albums' component={LikesAlbums} />
-            <PrivateRoute exact path='/you/stats' component={Stats} />
-            <PrivateRoute exact path='/you/notifications' component={NotificationsPage} />
-            <PrivateRoute exact path='/you/followers' component={FollowersPage} />
-            <PrivateRoute exact path='/you/following' component={FollowingPage} />
-            <Route path='/verify' component={Verify} />
-            <Route exact path='/explore' component={Explore}/>
-            <Route exact path='/explore/:genre' render={({match}) => <Explore genre={match.params.genre} />} />
-            <Route exact path='/search' component={Search}/>
-            <Route exact path='/signup' render={(props) => <Signup loggedIn={this.setUser} user={this.state.user} {...props}/>} />
-            <Route exact path='/genre/:genre' render={({match}) => <GenrePage genre={match.params.genre} />} />
-            <Route exact path='/:profile' render={({match}) => <Profile profile={match.params.profile} setUser={this.setUser}/>} />
-            <Route exact path='/:profile/:url' component={SinglePostPage}/>
-            <Route exact path='/:profile/album/:url' component={SinglePlaylistPage}/>
-          </Switch>
+          <Navbar
+            user={this.state.user}
+            showLoginModal={this.state.showLoginModal}
+            handleLogin={this.handleLogin}
+            handleLogout={this.handleLogout}
+            toggleLoginModal={this.toggleLoginModal}
+          />
+          <div className="pageBody">
+            <Switch>
+              <Route exact path='/' render={(props) => Cookie.get('username') ? <Stream {...props}/> : <Home toggleLoginModal={this.toggleLoginModal} {...props}/>} />
+              <PrivateRoute exact path='/upload' component={UploadDropzone} />}/>
+              <PrivateRoute exact path='/you/likes/posts' component={LikesPosts} />
+              <PrivateRoute exact path='/you/likes/albums' component={LikesAlbums} />
+              <PrivateRoute exact path='/you/stats' component={Stats} />
+              <PrivateRoute exact path='/you/notifications' component={NotificationsPage} />
+              <PrivateRoute exact path='/explore' component={Explore}/>
+              <Route path='/verify' component={Verify} />
+              <Route exact path='/explore/:genre' render={({match}) => <Explore genre={match.params.genre} />} />
+              <Route exact path='/search' component={Search}/>
+              <Route exact path='/signup' render={(props) => <Signup loggedIn={this.setUser} user={this.state.user} {...props}/>} />
+              <Route exact path='/genre/:genre' render={({match}) => <GenrePage genre={match.params.genre} />} />
+              <Route exact path='/:profile' render={({match}) => <Profile profile={match.params.profile} setUser={this.setUser}/>} />
+              <Route exact path='/:profile/followers' component={FollowersPage} />
+              <Route exact path='/:profile/following' component={FollowingPage} />
+              <Route exact path='/:profile/:url' component={SinglePostPage}/>
+              <Route exact path='/:profile/album/:url' component={SinglePlaylistPage}/>
+              <Route component={ErrorPage} />
+            </Switch>
+          </div>
         </div>
       </BrowserRouter>
     )

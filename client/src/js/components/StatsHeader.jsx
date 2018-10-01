@@ -58,6 +58,8 @@ export default class StatsHeader extends React.Component {
     .then(data => {
       if (data.message === "success") {
         this.setState({likes: this.state.likes + 1, liked: true})
+      } else if (data.message === "not logged in") {
+        this.props.toggleLoginModal()
       } else {
         console.log(data.message);
       }
@@ -83,6 +85,8 @@ export default class StatsHeader extends React.Component {
     .then(data => {
       if (data.message === "success") {
         this.setState({likes: this.state.likes - 1, liked: false})
+      } else if (data.message === "not logged in") {
+        this.props.toggleLoginModal()
       } else {
         console.log(data.message);
       }
@@ -108,6 +112,8 @@ export default class StatsHeader extends React.Component {
     .then(data => {
       if (data.message === "success") {
         this.setState({reposts: this.state.reposts + 1, reposted: true})
+      } else if (data.message === "not logged in") {
+        this.props.toggleLoginModal()
       } else {
         console.log(data.message);
       }
@@ -133,6 +139,8 @@ export default class StatsHeader extends React.Component {
     .then(data => {
       if (data.message === "success") {
         this.setState({reposts: this.state.reposts - 1, reposted: false})
+      } else if (data.message === "not logged in") {
+        this.props.toggleLoginModal()
       } else {
         console.log(data.message);
       }
@@ -158,7 +166,7 @@ export default class StatsHeader extends React.Component {
           <p className="stats_number">{this.state.reposts}</p>
         </button>
         <div id="non_stat_div">
-          <PlaylistModal mediaId={this.props.post.mediaId} />
+          <PlaylistModal mediaId={this.props.post.mediaId} toggleLoginModal={this.props.toggleLoginModal}/>
           <MoreDropdown post={this.props.post} />
       </div>
     </div>

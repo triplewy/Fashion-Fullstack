@@ -3,6 +3,7 @@ import RenderedPosts from './RenderedPosts.jsx'
 import TypeSelector from './TypeSelector.jsx'
 import EditProfileModal from './EditProfileModal.jsx'
 import ProfileInfo from './ProfileInfo.jsx'
+import ErrorPage from './ErrorPage.jsx'
 import Cookie from 'js-cookie'
 // import * as loadImage from 'blueimp-load-image'
 
@@ -15,6 +16,7 @@ export default class Profile extends React.Component {
       profileInfo: {},
       isProfile: false,
       type_selector_value: 0,
+      error: false
     };
 
     this.toggle_type = this.toggle_type.bind(this);
@@ -211,7 +213,11 @@ export default class Profile extends React.Component {
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({profileInfo: data.profile, isProfile: data.isUser})
+      if (data.message === "error") {
+        this.setState({error: true})
+      } else {
+        this.setState({profileInfo: data.profile, isProfile: data.isUser})
+      }
     })
     .catch((error) => {
       console.error(error);
@@ -238,7 +244,11 @@ export default class Profile extends React.Component {
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({streamData: data.stream});
+      if (data.message === "error") {
+        this.setState({error: true})
+      } else {
+        this.setState({streamData: data.stream});
+      }
     })
     .catch((error) => {
       console.error(error);
@@ -361,59 +371,65 @@ export default class Profile extends React.Component {
   }
 
   render() {
-    return (
-      <div>
-        <div id="white_background_wrapper">
-          <div id="profile_banner">
-            <div className="profile_info">
-              <div id="profile_info_image_div">
-                <div className="edit_profile_image" style={{backgroundImage: 'url(' + this.state.profileInfo.profile_image_src + ')'}}>
-                {this.state.isProfile &&
-                  <div>
-                    <label htmlFor="input_image_button">Update</label>
-                    <input id="input_image_button" type="file" name="post_pic" accept="image/*"
-                      onChange={this.readImageFile}></input>
+    if (this.state.error) {
+      return (
+        <ErrorPage />
+      )
+    } else {
+      return (
+        <div>
+          <div id="white_background_wrapper">
+            <div id="profile_banner">
+              <div className="profile_info">
+                <div id="profile_info_image_div">
+                  <div className="edit_profile_image" style={{backgroundImage: 'url(' + this.state.profileInfo.profile_image_src + ')'}}>
+                  {this.state.isProfile &&
+                    <div>
+                      <label htmlFor="input_image_button">Update</label>
+                      <input id="input_image_button" type="file" name="post_pic" accept="image/*"
+                        onChange={this.readImageFile}></input>
+                    </div>
+                  }
                   </div>
-                }
+                </div>
+                <div className="profile_info_text_div">
+                  <div>
+                    <p id="profile_info_username">{this.state.profileInfo.profileName}</p>
+                    <p id="profile_info_location">{this.state.profileInfo.location}</p>
+                    {!this.state.isProfile &&
+                      <button id={this.state.profileInfo.isFollowing ? "following_button" : "follow_button"}
+                        onClick={this.state.profileInfo.isFollowing ? this.handleUnfollow : this.handleFollow}>
+                        {this.state.profileInfo.isFollowing ? 'Following' : 'Follow'}
+                      </button>
+                    }
+                  </div>
                 </div>
               </div>
-              <div className="profile_info_text_div">
+              <div className="profile_info_description_div">
                 <div>
-                  <p id="profile_info_username">{this.state.profileInfo.profileName}</p>
-                  <p id="profile_info_location">{this.state.profileInfo.location}</p>
-                  {!this.state.isProfile &&
-                    <button id={this.state.profileInfo.isFollowing ? "following_button" : "follow_button"}
-                      onClick={this.state.profileInfo.isFollowing ? this.handleUnfollow : this.handleFollow}>
-                      {this.state.profileInfo.isFollowing ? 'Following' : 'Follow'}
-                    </button>
+                  <div className="profile_info_description_title">About</div>
+                  {this.state.profileInfo.description &&
+                  <div>
+                    <p id="description">{this.state.profileInfo.description.split('\n').map((item, key) => {
+                      return <span key={key}>{item}<br/></span>})}
+                    </p>
+                  </div>
                   }
                 </div>
               </div>
             </div>
-            <div className="profile_info_description_div">
-              <div>
-                <div className="profile_info_description_title">About</div>
-                {this.state.profileInfo.description &&
-                <div>
-                  <p id="description">{this.state.profileInfo.description.split('\n').map((item, key) => {
-                    return <span key={key}>{item}<br/></span>})}
-                  </p>
-                </div>
-                }
-              </div>
+            <div id="content_wrapper">
+              <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Posts", "Collections", "Reposts"]}
+              type_selector_value={this.state.type_selector_value}
+              right={<ProfileInfo profileInfo={this.state.profileInfo} isProfile={this.state.isProfile} fetchProfileInfo={this.fetchProfileInfo}
+                readImageFile={this.readImageFile} getStream={this.getStream} setUser={this.props.setUser}/> } />
+              {this.state.streamData &&
+                <RenderedPosts streamData={this.state.streamData} />
+              }
             </div>
           </div>
-          <div id="content_wrapper">
-            <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Posts", "Collections", "Reposts"]}
-            type_selector_value={this.state.type_selector_value}
-            right={<ProfileInfo profileInfo={this.state.profileInfo} isProfile={this.state.isProfile} fetchProfileInfo={this.fetchProfileInfo}
-              readImageFile={this.readImageFile} getStream={this.getStream} setUser={this.props.setUser}/> } />
-            {this.state.streamData &&
-              <RenderedPosts streamData={this.state.streamData} />
-            }
-          </div>
         </div>
-      </div>
-    );
+      )
+    }
   }
 }

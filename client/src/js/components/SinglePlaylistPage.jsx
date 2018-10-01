@@ -6,6 +6,7 @@ import RelatedCollections from './RelatedCollections.jsx'
 import PlaylistPosts from './PlaylistPosts.jsx'
 import PlaylistStatsHeader from './PlaylistStatsHeader.jsx'
 import ProfileHover from './ProfileHover.jsx'
+import ErrorPage from './ErrorPage.jsx'
 import { dateDiffInDays } from './DateHelper.js'
 import { LinkContainer } from 'react-router-bootstrap'
 import { Link } from 'react-router-dom';
@@ -25,7 +26,8 @@ export default class SinglePlaylistPage extends React.Component {
         tags: [],
         playlistIndex: 0,
         carouselIndex: 0,
-        playlist: this.props.location.state.playlistData
+        playlist: this.props.location.state.playlistData,
+        error: false
       };
     } else {
       this.state = {
@@ -38,7 +40,8 @@ export default class SinglePlaylistPage extends React.Component {
         tags: [],
         playlistIndex: 0,
         carouselIndex: 0,
-        playlist: null
+        playlist: null,
+        error: false
       };
     }
 
@@ -132,9 +135,12 @@ export default class SinglePlaylistPage extends React.Component {
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({playlist: data})
-      // this.setState({playlist: data, followers: data.followers, likes: data.likes, reposts: data.reposts, followed: data.followed, liked: data.liked, reposted: data.reposted})
-      this.postVisit(data.posts[0].mediaId)
+      if (data.message === 'error') {
+        this.setState({error: true})
+      } else {
+        this.setState({playlist: data})
+        this.postVisit(data.posts[0].mediaId)
+      }
     })
     .catch((error) => {
       console.error(error);
@@ -188,6 +194,10 @@ export default class SinglePlaylistPage extends React.Component {
           </div>
         </div>
       );
+    } else if (this.state.error) {
+      return (
+        <ErrorPage />
+      )
     } else {
       return (
         <div id="white_background_wrapper">

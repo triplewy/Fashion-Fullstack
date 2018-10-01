@@ -16,6 +16,7 @@ export default class UploadMetadata extends React.Component {
       editTag: {itemType:'shirt', itemBrand: '', itemName: '', itemLink: '', original: false},
       carouselIndex: 0,
       back: false,
+      progress: 0,
       submitted: false
     };
 
@@ -54,32 +55,52 @@ export default class UploadMetadata extends React.Component {
     formData.append('dimensions', JSON.stringify(this.props.dimensions))
 
     this.upload(formData)
-    this.setState({submitted: true})
   }
 
   upload(formData) {
-    fetch('/api/upload', {
-      method: 'POST',
-      credentials: 'include',
-      body: formData
-    })
-    .then(response => {
-      console.log(response);
-      if (response.status === 400) {
-        console.log("not logged in");
-      } else {
-        return response.json()
-      }
-    })
-    .then(data => {
-      console.log(data.message);
-      if (data.message === 'success') {
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
 
+    xhr.onreadystatechange = () => {
+     if(xhr.readyState === 4 && xhr.status === 200){
+         console.log(xhr.responseText);
+         this.setState({submitted: true})
       }
-    })
-    .catch(e => {
-      console.log(e);
-    })
+    }
+
+    xhr.upload.onprogress = (e) => {
+      // it will never come inside here
+      console.log("loaded", e.loaded);
+      console.log("total", e.total);
+      this.setState({progress: e.loaded/e.total})
+    }
+
+    xhr.open('POST','/api/upload');
+    xhr.send(formData)
+
+
+    // fetch('/api/upload', {
+    //   method: 'POST',
+    //   credentials: 'include',
+    //   body: formData
+    // })
+    // .then(response => {
+    //   console.log(response);
+    //   if (response.status === 400) {
+    //     console.log("not logged in");
+    //   } else {
+    //     return response.json()
+    //   }
+    // })
+    // .then(data => {
+    //   console.log(data.message);
+    //   if (data.message === 'success') {
+    //
+    //   }
+    // })
+    // .catch(e => {
+    //   console.log(e);
+    // })
   }
 
   handleClick(e) {
@@ -238,6 +259,9 @@ export default class UploadMetadata extends React.Component {
               carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
           </div>
           <div id="upload_disclaimer">
+            <div className="upload_progress_bar_div">
+              <div className="upload_progress_bar" style={{width: this.state.progress + '%'}}></div>
+            </div>
             <p>Descriptive info and stuff to make the page slightly longer vertically</p>
           </div>
         </div>

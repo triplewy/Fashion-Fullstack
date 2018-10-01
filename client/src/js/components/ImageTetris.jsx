@@ -16,9 +16,9 @@ export default class ImageTetris extends React.Component {
     if (posts.length > 0) {
       for (var i = 0; i < posts.length; i++) {
         if (i < 3) {
-          renderedColumns.push([<ImageTetrisBlock key={i} post={posts[i]} explore={this.props.explore} />])
+          renderedColumns.push([<ImageTetrisBlock key={i} post={posts[i]} explore={this.props.explore} toggleLoginModal={this.props.toggleLoginModal} />])
         } else {
-          renderedColumns[i%3].push(<ImageTetrisBlock key={i} post={posts[i]} explore={this.props.explore} />)
+          renderedColumns[i%3].push(<ImageTetrisBlock key={i} post={posts[i]} explore={this.props.explore} toggleLoginModal={this.props.toggleLoginModal} />)
         }
       }
     }

@@ -57,8 +57,9 @@ export default class PlaylistPosts extends React.Component {
 
   render() {
     var renderedPlaylistPosts = [];
-    if (this.props.posts) {
-      renderedPlaylistPosts = this.props.posts.map((item, index) => {
+    var posts = this.props.posts
+    if (posts) {
+      renderedPlaylistPosts = posts.map((item, index) => {
         return (
           <li key={index} value={index} className={(this.props.playlistIndex === index) ? 'selected' : ''}
                 disabled={(this.props.playlistIndex === index)} onClick={this.handleClick.bind(this, index, item.mediaId)}>

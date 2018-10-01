@@ -7,24 +7,17 @@ import ProfileHover from './ProfileHover.jsx'
 import {Link} from 'react-router-dom'
 import {dateDiffInDays} from './DateHelper.js'
 import { setAspectRatioNotification } from './aspectRatio.js'
-import Cookie from 'js-cookie'
 
 export default class NotificationItem extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      item: this.props.item,
-      index: this.props.index
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({item: nextProps.item, index: nextProps.index})
-  }
-
   render() {
-    var item = this.state.item
-    var index = this.state.index
+    var item = this.props.item
+    var index = this.props.index
     if (item.post) {
       item = item.post
       var [width, height] = setAspectRatioNotification(item.image.width, item.image.height)
@@ -38,9 +31,8 @@ export default class NotificationItem extends React.Component {
                 style={{backgroundImage: 'url(' + (item.activity === 0 ? like_icon_liked : (item.activity === 1 ? repost_icon_reposted : comment_icon)) + ')'}} />
             </div>
             <div className="post_link">
-              <Link to={"/" + Cookie.get('username') + "/" + item.url} onClick={this.props.closeDropdown}>
-                <div  alt="" style={{backgroundImage: 'url(' + item.image.imageUrl + ')', width: width, height: height}} className="notification_post_image" />
-                {/* <p>{item.title}</p> */}
+              <Link to={"/" + item.postUsername + "/" + item.postUrl} onClick={this.props.closeDropdown}>
+                <div alt="" style={{backgroundImage: 'url(' + item.image.imageUrl + ')', width: width, height: height}} className="notification_post_image" />
               </Link>
             </div>
             <div className="notification_date">
@@ -56,7 +48,6 @@ export default class NotificationItem extends React.Component {
       )
     } else if (item.playlist) {
       item = item.playlist
-      // var [width, height] = setAspectRatioNotification(item.image.width, item.image.height)
       return (
         <li key={this.props.index} eventkey={this.props.index}>
           <div>
@@ -67,8 +58,7 @@ export default class NotificationItem extends React.Component {
                 style={{backgroundImage: 'url(' + (item.activity === 0 ? like_icon_liked : (item.activity === 1 ? repost_icon_reposted : (item.activity === 2 ? comment_icon : follow_icon))) + ')'}} />
             </div>
             <div className="post_link">
-              <Link to={"/" + Cookie.get('username') + "/album/" + item.url} onClick={this.props.closeDropdown}>
-              {/* <div alt="" style={{backgroundImage: 'url(' + item.image.imageUrl + ')', width: width, height: height}} className="notification_collection_image" /> */}
+              <Link to={"/" + item.playlistUsermame + "/album/" + item.playlistUrl} onClick={this.props.closeDropdown}>
                 <p>{item.title}</p>
               </Link>
             </div>
@@ -83,7 +73,36 @@ export default class NotificationItem extends React.Component {
           }
         </li>
       )
-
+    } else if (item.playlistPost) {
+      item = item.playlistPost
+      const [width, height] = setAspectRatioNotification(item.image.width, item.image.height)
+      return (
+        <li key={this.props.index} eventkey={this.props.index}>
+          <div>
+            <ProfileHover classStyle={"post_profile_link"} username={item.username} profileName={item.profileName}
+              profile_image_src={item.profile_image_src} onClick={this.props.closeDropdown}/>
+            <div>
+              <p>added</p>
+            </div>
+            <div className="post_link">
+              <Link to={"/" + item.postUsername + "/" + item.postUrl} onClick={this.props.closeDropdown}>
+                <div alt="" style={{backgroundImage: 'url(' + item.image.imageUrl + ')', width: width, height: height}} className="notification_post_image" />
+              </Link>
+            </div>
+            <div>
+              <p>to</p>
+            </div>
+            <div className="post_link">
+              <Link to={"/" + item.playlistUsermame + "/album/" + item.playlistUrl} onClick={this.props.closeDropdown}>
+                <p>{item.title}</p>
+              </Link>
+            </div>
+            <div className="notification_date">
+              <p>{dateDiffInDays(new Date(item.dateTime))}</p>
+            </div>
+          </div>
+        </li>
+      )
     } else {
       item = item.follow
       return (

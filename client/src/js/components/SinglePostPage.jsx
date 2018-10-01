@@ -5,9 +5,11 @@ import SinglePostPageComments from './SinglePostPageComments.jsx'
 import RelatedPosts from './RelatedPosts.jsx'
 import StatsHeader from './StatsHeader.jsx'
 import ProfileHover from './ProfileHover.jsx'
+import ErrorPage from './ErrorPage.jsx'
 import { dateDiffInDays } from './DateHelper.js'
 import { LinkContainer } from 'react-router-bootstrap'
 import { Link } from 'react-router-dom';
+
 
 export default class SinglePostPage extends React.Component {
   constructor(props) {
@@ -23,7 +25,8 @@ export default class SinglePostPage extends React.Component {
         tags: this.props.location.state.postData.tags,
         carouselIndex: 0,
         post: this.props.location.state.postData,
-        relatedPosts: []
+        relatedPosts: [],
+        error: false
       };
     } else {
       this.state = {
@@ -35,7 +38,8 @@ export default class SinglePostPage extends React.Component {
         tags: null,
         carouselIndex: 0,
         post: null,
-        relatedPosts: []
+        relatedPosts: [],
+        error: false
       };
     }
 
@@ -116,7 +120,7 @@ export default class SinglePostPage extends React.Component {
       },
       credentials: 'include',
       body: JSON.stringify({
-        view: view,
+        view: view
       })
     })
     .then(res => res.json())
@@ -142,9 +146,12 @@ export default class SinglePostPage extends React.Component {
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({post: data})
-      // this.setState({post: data, views: data.views, likes: data.likes, reposts: data.reposts, liked: data.liked, reposted: data.reposted})
-      this.postVisit(data.mediaId)
+      if (data.message === "error") {
+        this.setState({error: true})
+      } else {
+        this.setState({post: data})
+        this.postVisit(data.mediaId)
+      }
     })
     .catch((error) => {
       console.error(error);
@@ -190,6 +197,10 @@ export default class SinglePostPage extends React.Component {
           </div>
         </div>
       );
+    } else if (this.state.error) {
+      return (
+        <ErrorPage />
+      )
     } else {
       return (
         <div id="white_background_wrapper">

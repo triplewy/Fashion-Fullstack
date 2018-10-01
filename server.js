@@ -65,10 +65,6 @@ passport.deserializeUser(function(user, done) {
   done(null, user);
 })
 
-var connectedUserIds = []
-var usersToSockets = {}
-var socketsToUsers = {}
-
 var io = socketIO(server)
 
 setTimeout(function () {
@@ -242,10 +238,12 @@ conn.query('DROP TABLE IF EXISTS playlistsComments');
 conn.query('DROP TABLE IF EXISTS postsNotifications')
 conn.query('DROP TABLE IF EXISTS playlistsNotifications')
 conn.query('DROP TABLE IF EXISTS followingNotifications')
+conn.query('DROP TABLE IF EXISTS playlistsPostsNotifications')
 conn.query('DROP TABLE IF EXISTS following');
 conn.query('DROP TABLE IF EXISTS logins')
 conn.query('DROP TABLE IF EXISTS linksClicks')
 conn.query('DROP TABLE IF EXISTS profilesVisits')
+conn.query('DROP PROCEDURE IF EXISTS markNotificationsAsRead')
 conn.query('SET foreign_key_checks = 1')
 
 conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255) NOT NULL UNIQUE, profileName TEXT NOT NULL, profile_image_src VARCHAR(255), ' +
@@ -274,6 +272,9 @@ conn.query('CREATE TABLE IF NOT EXISTS postsNotifications (notificationId INTEGE
 conn.query('CREATE TABLE IF NOT EXISTS playlistsNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, playlistId INTEGER NOT NULL, activity INTEGER NOT NULL, comment TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
 'FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId), FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE)')
 
+conn.query('CREATE TABLE IF NOT EXISTS playlistsPostsNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
+'FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId), FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE)')
+
 conn.query('CREATE TABLE IF NOT EXISTS tags (tagId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, itemType TEXT NOT NULL, itemName TEXT, itemBrand TEXT, itemLink VARCHAR(255), original BOOLEAN NOT NULL DEFAULT FALSE, x INTEGER NOT NULL, y INTEGER NOT NULL, imageIndex INTEGER NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE)');
 
 conn.query('CREATE TABLE IF NOT EXISTS reposts (repostId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT, profile_image_src VARCHAR(255), dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, active BOOLEAN NOT NULL DEFAULT TRUE, ' +
@@ -281,12 +282,19 @@ conn.query('CREATE TABLE IF NOT EXISTS reposts (repostId INTEGER AUTO_INCREMENT 
 
 conn.query('CREATE TABLE IF NOT EXISTS likes (likeId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS views (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, reposterId INTEGER, viewerId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, IP_Address TEXT, explore BOOLEAN, dateTime DATETIME NOT NULL, ' +
-'FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (reposterId) REFERENCES users(userId), FOREIGN KEY (viewerId) REFERENCES users(userId), FOREIGN KEY (mediaUserId) REFERENCES users(userId), UNIQUE(mediaId, viewerId, dateTime))');
+conn.query('CREATE TABLE IF NOT EXISTS views (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, reposterId INTEGER, viewerId INTEGER, ' +
+// 'viewerId INTEGER NOT NULL, ' +
+'mediaUserId INTEGER NOT NULL, IP_Address TEXT, explore BOOLEAN, dateTime DATETIME NOT NULL, ' +
+// 'FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, ' +
+'FOREIGN KEY (reposterId) REFERENCES users(userId), ' +
+// 'FOREIGN KEY (viewerId) REFERENCES users(userId), ' +
+'FOREIGN KEY (mediaUserId) REFERENCES users(userId)' +
+// ', UNIQUE(mediaId, viewerId, dateTime)' +
+')');
 
 conn.query('CREATE TABLE IF NOT EXISTS comments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId))');
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsPosts (playlistPostId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, playlistIndex INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY(mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, UNIQUE(playlistId, mediaId), UNIQUE(playlistId, playlistIndex))');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsPosts (playlistPostId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, playlistIndex INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY(mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, UNIQUE KEY (playlistId, mediaId))');
 
 conn.query('CREATE TABLE IF NOT EXISTS playlistsFollowers (playlistFollowId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
 
@@ -297,8 +305,14 @@ conn.query('CREATE TABLE IF NOT EXISTS playlistsLikes (likeId INTEGER AUTO_INCRE
 
 conn.query('CREATE TABLE IF NOT EXISTS playlistsComments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId))')
 
-conn.query('CREATE TABLE IF NOT EXISTS playlistsViews (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, reposterId INTEGER, viewerId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, IP_Address TEXT, explore BOOLEAN, dateTime DATETIME NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, ' +
-'FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (reposterId) REFERENCES users(userId), FOREIGN KEY (viewerId) REFERENCES users(userId), FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (playlistUserId) REFERENCES users(userId), UNIQUE(mediaId, viewerId, dateTime))');
+conn.query('CREATE TABLE IF NOT EXISTS playlistsViews (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, reposterId INTEGER, viewerId INTEGER, mediaUserId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, IP_Address TEXT, explore BOOLEAN, dateTime DATETIME NOT NULL, ' +
+// 'FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), ' +
+// 'FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, ' +
+'FOREIGN KEY (reposterId) REFERENCES users(userId), ' +
+// 'FOREIGN KEY (viewerId) REFERENCES users(userId), ' +
+'FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (playlistUserId) REFERENCES users(userId)' +
+// ', UNIQUE(mediaId, viewerId, dateTime)' +
+')');
 
 conn.query('CREATE TABLE IF NOT EXISTS following (followingId INTEGER AUTO_INCREMENT PRIMARY KEY, followerUserId INTEGER NOT NULL, followingUserId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (followerUserId) REFERENCES users(userId), FOREIGN KEY (followingUserId) REFERENCES users(userId), UNIQUE(followerUserId, followingUserId))')
 
@@ -418,13 +432,13 @@ conn.query('CREATE TRIGGER after_playlistsComments_delete AFTER DELETE ON playli
 'UPDATE playlists SET comments = (SELECT COUNT(*) FROM playlistsComments WHERE playlistId=OLD.playlistId) WHERE playlistId=OLD.playlistId; ' +
 'DELETE FROM playlistsNotifications WHERE senderId=OLD.userId AND playlistId=OLD.playlistId AND activity=2; END;')
 
-conn.query('CREATE TRIGGER after_postNotifications_update AFTER UPDATE ON postsNotifications FOR EACH ROW BEGIN ' +
-'UPDATE playlistsNotifications SET unread=0 WHERE receiverId=NEW.receiverId; ' +
-'UPDATE followingNotifications SET unread=0 WHERE receiverId=NEW.receiverId; END;')
+// conn.query('CREATE TRIGGER after_postNotifications_update AFTER UPDATE ON postsNotifications FOR EACH ROW BEGIN ' +
+// 'UPDATE playlistsNotifications SET unread=0 WHERE receiverId=NEW.receiverId; ' +
+// 'UPDATE followingNotifications SET unread=0 WHERE receiverId=NEW.receiverId; END;')
 
 conn.query('CREATE TRIGGER before_views_insert BEFORE INSERT ON views FOR EACH ROW BEGIN ' +
 'DECLARE mediaUserId INTEGER; SET mediaUserId = (SELECT userId FROM posts WHERE mediaId = NEW.mediaId LIMIT 1); ' +
-'IF (NEW.viewerId != mediaUserId) THEN SET NEW.mediaUserId = mediaUserId; END IF; END;')
+'IF (NEW.viewerId != mediaUserId OR NEW.viewerId IS NULL) THEN SET NEW.mediaUserId = mediaUserId; END IF; END;')
 
 conn.query('CREATE TRIGGER after_views_insert AFTER INSERT ON views FOR EACH ROW BEGIN ' +
 // 'UPDATE posts SET views = views + 1 WHERE mediaId=NEW.mediaId; END;')
@@ -476,60 +490,77 @@ conn.query('CREATE TRIGGER after_users_update AFTER UPDATE ON users FOR EACH ROW
 'END IF; END;')
 
 conn.query('CREATE TRIGGER after_playlistsPosts_insert AFTER INSERT ON playlistsPosts FOR EACH ROW BEGIN ' +
-'DECLARE oldDisplayTime DATETIME; SELECT displayTime INTO oldDisplayTime FROM playlists WHERE playlistId=NEW.playlistId; ' +
+'DECLARE oldDisplayTime DATETIME; DECLARE playlistUserId INTEGER; SELECT displayTime, userId INTO oldDisplayTime, playlistUserId FROM playlists WHERE playlistId=NEW.playlistId; ' +
+'INSERT INTO playlistsPostsNotifications (senderId, receiverId, playlistId, mediaId, dateTime) VALUES (playlistUserId, (SELECT userId FROM posts WHERE mediaId=NEW.mediaId), NEW.playlistId, NEW.mediaId, NEW.dateTime); ' +
 'IF (NEW.playlistIndex != 0 AND (oldDisplayTime IS NULL OR NEW.dateTime > oldDisplayTime)) THEN ' +
 'UPDATE playlists SET displayTime = DATE_ADD(NEW.dateTime, INTERVAL 1 DAY), postsAdded = 1 WHERE playlistId=NEW.playlistId; ' +
 'ELSE UPDATE playlists SET postsAdded = (postsAdded + 1) WHERE playlistId=NEW.playlistId; END IF; END;')
 
+conn.query('CREATE TRIGGER after_playlistsPosts_delete AFTER DELETE ON playlistsPosts FOR EACH ROW BEGIN ' +
+'DELETE FROM playlistsPostsNotifications WHERE playlistId = OLD.playlistId AND mediaId = OLD.mediaId; END;')
+
+conn.query('CREATE PROCEDURE markNotificationsAsRead (IN notificationsUserId INTEGER) BEGIN ' +
+'UPDATE postsNotifications SET unread = 0 WHERE receiverId = notificationsUserId;' +
+'UPDATE playlistsNotifications SET unread = 0 WHERE receiverId = notificationsUserId; ' +
+'UPDATE followingNotifications SET unread = 0 WHERE receiverId = notificationsUserId; ' +
+'UPDATE playlistsPostsNotifications SET unread = 0 WHERE receiverId = notificationsUserId; END;')
+
+var usersToSockets = {}
+var connectedUserIds = []
+var pollingQuery = ''
+
 io.on('connection', socket => {
   console.log("User connected");
-  var userId = socket.request.user.userId;
+  const userId = socket.request.user.userId;
   usersToSockets[userId] = socket
-  connectedUserIds.push(userId)
-  socketsToUsers[socket] = userId
-  if (connectedUserIds.length) {
-    pollingLoop(connectedUserIds);
+  connectedUserIds = []
+  pollingQuery = ''
+
+  for (var user in usersToSockets) {
+    console.log("user is", user);
+    connectedUserIds.push(user)
+    pollingQuery += '?,'
   }
+
+  pollingQuery = pollingQuery.slice(0, -1)
+  pollingLoop();
+
 
   socket.on('receive notifications', function() {
     console.log("receive notifications received");
-
  })
 
   socket.on('disconnect', () => {
-    var userId = socketsToUsers[socket]
-    var userIndex = connectedUserIds.indexOf(userId);
-    connectedUserIds.splice(userIndex, 1);
-    delete socketsToUsers[socket]
+    const userId = socket.request.user.userId
+    console.log("deleted socket userId is", userId);
+    delete usersToSockets[userId]
+
+    connectedUserIds = []
+    pollingQuery = ''
+    for (var user in usersToSockets) {
+      connectedUserIds.push(user)
+      pollingQuery += '?,'
+    }
+    pollingQuery = pollingQuery.slice(0, -1)
     console.log('user disconnected')
   })
 })
 
-function pollingLoop(userIds) {
-  if (userIds.length > 0) {
-    var question_query = ''
-    for (var i = 0; i < userIds.length; i++) {
-      question_query += '?,'
-    }
-    question_query = question_query.slice(0, -1)
-
-
-    conn.query('SELECT receiverId, COUNT(*) AS numUnreadNotifications FROM (' +
-    'SELECT a.receiverId FROM postsNotifications AS a WHERE a.receiverId IN (' + question_query + ') AND a.unread=1 UNION ALL ' +
-    'SELECT b.receiverId FROM playlistsNotifications AS b WHERE b.receiverId IN (' + question_query + ') AND b.unread=1 UNION ALL ' +
-    'SELECT c.receiverId FROM followingNotifications AS c WHERE c.receiverId IN (' + question_query + ') AND c.unread=1) AS t GROUP BY receiverId', userIds.concat(userIds).concat(userIds), function(err, result) {
+function pollingLoop() {
+  if (connectedUserIds.length > 0) {
+    conn.query('SELECT receiverId, COUNT(*) > 0 AS unreadNotifications FROM (' +
+    'SELECT a.receiverId FROM postsNotifications AS a WHERE a.receiverId IN (' + pollingQuery + ') AND a.unread=1 UNION ALL ' +
+    'SELECT b.receiverId FROM playlistsNotifications AS b WHERE b.receiverId IN (' + pollingQuery + ') AND b.unread=1 UNION ALL ' +
+    'SELECT c.receiverId FROM followingNotifications AS c WHERE c.receiverId IN (' + pollingQuery + ') AND c.unread=1 UNION ALL ' +
+    'SELECT d.receiverId FROM playlistsPostsNotifications AS d WHERE d.receiverId IN (' + pollingQuery + ') AND d.unread=1) AS t GROUP BY receiverId', connectedUserIds.concat(connectedUserIds).concat(connectedUserIds).concat(connectedUserIds), function(err, result) {
       if (err) {
         console.log(err);
       } else {
         for (var i = 0; i < result.length; i++) {
-          // console.log(result[i]);
-          // if (result[i].numUnreadNotifications > 0) {
-            // console.log("emitted");
-            usersToSockets[result[i].receiverId].emit('unread notifications', result[i].numUnreadNotifications)
-          // }
+          usersToSockets[result[i].receiverId].emit('unread notifications', result[i].unreadNotifications)
         }
-        if (connectedUserIds.length) {
-          setTimeout(function() {pollingLoop(connectedUserIds)}, POLLING_INTERVAL);
+        if (connectedUserIds.length > 0) {
+          setTimeout(function() {pollingLoop()}, POLLING_INTERVAL);
         } else {
           console.log('The server timer was stopped because there are no more socket connections on the app')
         }
@@ -804,9 +835,12 @@ app.get('/api/navbar', loggedIn, (req, res) => {
   })
 })
 
-app.get('/api/dropdownProfile/:username', loggedIn, (req, res) => {
+app.get('/api/dropdownProfile/:username', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/dropdownProfile/' + req.params.username);
-  var userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   var username = req.params.username
   conn.query('SELECT userId, followers, location, ' +
   '(SELECT COUNT(*) FROM following WHERE followerUserId = :userId AND followingUserId = users.userId) > 0 AS isFollowing, ' +
@@ -826,30 +860,28 @@ app.get('/api/dropdownProfile/:username', loggedIn, (req, res) => {
   })
 })
 
-app.get('/api/followers/:orderBy', loggedIn, (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/followers/' + req.params.orderBy);
-  var userId = req.user.userId
-  var orderBy = orderFollowers(req.params.orderBy)
+app.get('/api/:username/followers/:orderBy', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/' + req.params.username + '/followers/' + req.params.orderBy);
+  const orderBy = orderFollowers(req.params.orderBy)
   conn.query('SELECT a.username, a.profileName, a.profile_image_src FROM following INNER JOIN users AS a ON a.userId = following.followerUserId ' +
-  'WHERE followingUserId = ? ' + orderBy, [userId], function(err, result) {
+  'WHERE followingUserId = (SELECT userId FROM users WHERE username = :username LIMIT 1) ' + orderBy, {username: req.params.username}, function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      res.send({followers: result})
+      res.send(result)
     }
   })
 })
 
-app.get('/api/following/:orderBy', loggedIn, (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/following/' + req.params.orderBy);
-  var userId = req.user.userId
-  var orderBy = orderFollowers(req.params.orderBy)
+app.get('/api/:username/following/:orderBy', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/' + req.params.username + '/following/' + req.params.orderBy);
+  const orderBy = orderFollowers(req.params.orderBy)
   conn.query('SELECT a.username, a.profileName, a.profile_image_src FROM following INNER JOIN users AS a ON a.userId = following.followingUserId ' +
-  'WHERE followerUserId = ? ' + orderBy, [userId], function(err, result) {
+  'WHERE followerUserId = (SELECT userId FROM users WHERE username = :username LIMIT 1) ' + orderBy, {username: req.params.username}, function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      res.send({following: result})
+      res.send(result)
     }
   })
 })
@@ -858,56 +890,24 @@ app.get('/api/notificationsDropdown/:unread', loggedIn, (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/notificationsDropdown/' + req.params.unread);
   var userId = req.user.userId
   var numUnreads = parseInt(req.params.unread, 10)
-  if (isNaN(numUnreads) || numUnreads <= 3) {
-    numUnreads = 3;
+  if (isNaN(numUnreads)) {
+    numUnreads = 5;
   }
-  conn.query('UPDATE postsNotifications SET unread=0 WHERE receiverId=?', [userId], function(err, result) {
-    if (err) {
-      console.log(err);
-    } else {
-      conn.query('SELECT a.mediaId, null AS playlistId, c.title, c.url, a.activity, a.comment, b.username, ' +
-      'JSON_OBJECT(\'imageUrl\', d.imageUrl, \'width\', d.width, \'height\', d.height) AS image, ' +
-      'b.profileName, b.profile_image_src, null AS isFollowing, a.dateTime FROM postsNotifications AS a ' +
-      'INNER JOIN users AS b ON b.userId = a.senderId INNER JOIN posts AS c ON c.mediaId = a.mediaId ' +
-      'INNER JOIN postsImages AS d ON d.mediaId = a.mediaId AND d.imageIndex = 0 WHERE receiverId=:userId ' +
-      'UNION ALL ' +
-      'SELECT null AS mediaId, a.playlistId AS playlistId, c.title, c.url, a.activity, a.comment, b.username, ' +
-      'null AS image, ' +
-      'b.profileName, b.profile_image_src, null AS isFollowing, a.dateTime FROM playlistsNotifications AS a ' +
-      'INNER JOIN users AS b ON b.userId = a.senderId INNER JOIN playlists AS c ON c.playlistId = a.playlistId ' +
-      'WHERE receiverId=:userId ' +
-      'UNION ALL ' +
-      'SELECT null AS mediaId, null AS playlistId, null AS title, null AS url, null AS activity, null AS comment, b.username, null AS image, b.profileName, ' +
-      'b.profile_image_src, (SELECT COUNT(*) FROM following WHERE followerUserId=:userId AND followingUserId = b.userId) > 0 AS isFollowing,  a.dateTime FROM followingNotifications AS a ' +
-      'INNER JOIN users AS b ON b.userId = a.senderId WHERE receiverId=:userId ' +
-      'ORDER BY dateTime DESC LIMIT :numUnreads', {userId: userId, numUnreads: numUnreads}, function(err, result) {
-        if (err) {
-          console.log(err);
-        } else {
-          var notifications = []
-          for (var i = 0; i < result.length; i++) {
-            var row = result[i]
-            if (row.image) {
-              row.image = JSON.parse(row.image)
-            }
-            if (row.mediaId) {
-              notifications.push({post: row})
-            } else if (row.playlistId){
-              notifications.push({playlist: row})
-            } else {
-              notifications.push({follow: row})
-            }
-          }
-          res.send({notifications: notifications});
-        }
-      })
-    }
+  Promise.all([getNotifications(userId, numUnreads), markNotificationsAsRead(userId)])
+  .then(function(allData) {
+    res.send(allData[0])
+  })
+  .catch(e => {
+    console.log(e);
   })
 })
 
 app.get('/api/postTags/:mediaId', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/postTags/' + req.params.mediaId);
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   const mediaId = req.params.mediaId
 
   conn.query('SELECT tagId, itemType, itemName, itemBrand, itemLink, original, x, y, imageIndex ' +
@@ -922,7 +922,10 @@ app.get('/api/postTags/:mediaId', (req, res) => {
 
 app.get('/api/postStats/:mediaId', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/postStats/' + req.params.mediaId);
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   const mediaId = req.params.mediaId
 
   conn.query('SELECT views, likes, reposts, ' +
@@ -1176,7 +1179,10 @@ app.get('/api/homeOriginal', loggedIn, (req, res) => {
 
 app.get('/api/explore/hot', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/explore/hot');
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   exploreHelper(0, userId).then(function(result) {
     res.send(result)
   }).catch(e => {
@@ -1186,7 +1192,10 @@ app.get('/api/explore/hot', (req, res) => {
 
 app.get('/api/explore/new', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/explore/new');
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   exploreHelper(1, userId).then(function(result) {
     res.send(result)
   }).catch(e => {
@@ -1196,11 +1205,14 @@ app.get('/api/explore/new', (req, res) => {
 
 app.get('/api/explore/top/:timePeriod', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/explore/top/'  + req.params.timePeriod);
-  const userId = req.user.userId
-  const now = new Date()
-  const timePeriod = getTimePeriod(req.params.timePeriod)
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
+  const timePeriod = getTimePeriod(req.params.timePeriod).toISOString()
   if (timePeriod) {
-    exploreHelper(2, userId, {now: now, timePeriod: timePeriod}).then(function(result) {
+    console.log("timePeriod is", timePeriod);
+    exploreHelper(2, userId, timePeriod).then(function(result) {
       res.send(result)
     }).catch(e => {
       console.log(e);
@@ -1216,11 +1228,14 @@ app.get('/api/explore/top/:timePeriod', (req, res) => {
 
 app.get('/api/explore/random/:timePeriod', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/explore/random/' + req.params.timePeriod);
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   const now = new Date()
-  const timePeriod = getTimePeriod(req.params.timePeriod)
+  const timePeriod = getTimePeriod(req.params.timePeriod).toISOString()
   if (timePeriod) {
-    exploreHelper(3, userId, {now: now, timePeriod: timePeriod}).then(function(result) {
+    exploreHelper(3, userId, timePeriod).then(function(result) {
       res.send(result)
     }).catch(e => {
       console.log(e);
@@ -1236,7 +1251,10 @@ app.get('/api/explore/random/:timePeriod', (req, res) => {
 
 app.get('/api/explore/hot/:genre', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/explore/hot/' + req.params.genre);
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   conn.query('SELECT *, a.images, b.username, b.profileName, b.profile_image_src, (posts.userId = :userId) AS isPoster, ' +
   '(LOG(10, GREATEST(1, posts.views/10 + posts.likes)) + UNIX_TIMESTAMP(posts.dateTime)/45000) AS hotScore, ' +
   '((SELECT COUNT(*) FROM reposts WHERE userId=:userId AND mediaId = posts.mediaId AND active = 1) > 0) AS reposted, ' +
@@ -1311,7 +1329,7 @@ app.get('/api/explore/random/:genre/:timePeriod', (req, res) => {
   })
 })
 
-app.get('/api/urlAvailable/:url', (req, res) => {
+app.get('/api/urlAvailable/:url', loggedIn, (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/urlAvailable/' + req.params.url);
   const userId = req.user.userId
   conn.query('SELECT 1 FROM posts WHERE userId=? AND url=?', [userId, req.params.url], function(err, result) {
@@ -1324,7 +1342,7 @@ app.get('/api/urlAvailable/:url', (req, res) => {
   })
 })
 
-app.get('/api/urlAvailable/collection/:url', (req, res) => {
+app.get('/api/urlAvailable/collection/:url', loggedIn, (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/urlAvailable/' + req.params.url);
   const userId = req.user.userId
   conn.query('SELECT 1 FROM playlists WHERE userId=:userId AND url=:url', {userId: userId, url: req.params.url}, function(err, result) {
@@ -1379,7 +1397,10 @@ app.get('/api/genre/:genre/:timePeriod', (req, res) => {
 
 app.get('/api/post/:username/:url', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/post/' + req.params.username + '/' + req.params.url);
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   const username = req.params.username
   const url = req.params.url
   conn.query('SELECT a.*, a.dateTime AS uploadDate, b.imageUrls, c.postTags, ' +
@@ -1392,18 +1413,27 @@ app.get('/api/post/:username/:url', (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      result[0].imageUrls = JSON.parse(result[0].imageUrls)
-      if (result[0].postTags) {
-        result[0].postTags = JSON.parse(result[0].postTags)
+      if (result[0]) {
+        if (result[0].imageUrls) {
+          result[0].imageUrls = JSON.parse(result[0].imageUrls)
+        }
+        if (result[0].postTags) {
+          result[0].postTags = JSON.parse(result[0].postTags)
+        }
+        res.send(result[0])
+      } else {
+        res.send({message: "error"})
       }
-      res.send(result[0])
     }
   })
 })
 
 app.get('/api/relatedPosts/:username/:url', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/relatedPosts/' + req.params.username + '/' + req.params.url);
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   const username = req.params.username
   const url = req.params.url
   conn.query('SELECT userId, dateTime AS uploadDate FROM posts WHERE username = :username AND url = :url LIMIT 1', {username: username, url: url}, function(err, result) {
@@ -1423,7 +1453,6 @@ app.get('/api/relatedPosts/:username/:url', (req, res) => {
         if (err) {
           console.log(err);
         } else {
-          console.log(relatedPosts);
           for (var i = 0; i < relatedPosts.length; i++) {
             relatedPosts[i].imageUrls = JSON.parse(relatedPosts[i].imageUrls)
           }
@@ -1436,7 +1465,10 @@ app.get('/api/relatedPosts/:username/:url', (req, res) => {
 
 app.get('/api/:username/album/:url', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/album/' + req.params.username + '/' + req.params.url);
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   const username = req.params.username
   const url = req.params.url
   conn.query('SELECT a.*, a.dateTime AS uploadDate, ' +
@@ -1453,15 +1485,23 @@ app.get('/api/:username/album/:url', (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      result[0].posts = JSON.parse(result[0].posts)
-      res.send(result[0])
+      if (result[0]) {
+        result[0].posts = JSON.parse(result[0].posts)
+        res.send(result[0])
+      } else {
+        res.send({message: 'error'})
+      }
+
     }
   })
 })
 
 app.get('/api/relatedCollections/:username/album/:url', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/relatedCollections/' + req.params.username + '/' + req.params.url);
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   const username = req.params.username
   const url = req.params.url
   conn.query('SELECT userId, dateTime AS uploadDate FROM playlists WHERE username = :username AND url = :url LIMIT 1', {username: username, url: url}, function(err, result) {
@@ -1497,7 +1537,7 @@ app.get('/api/relatedCollections/:username/album/:url', (req, res) => {
   })
 })
 
-app.get('/api/getPlaylists', (req, res) => {
+app.get('/api/getPlaylists', loggedIn, (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/getPlaylists');
   var userId = req.user.userId;
   conn.query('SELECT a.playlistId, a.title, a.followers, a.public, COUNT(b.playlistPostId) AS numPosts, MAX(b.playlistIndex) AS biggestPlaylistIndex ' +
@@ -1513,7 +1553,10 @@ app.get('/api/getPlaylists', (req, res) => {
 
 app.get('/api/playlistPost/:mediaId', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/playlistPost/' + req.params.mediaId);
-  var userId = req.user.userId;
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   var mediaId = req.params.mediaId
   conn.query('SELECT (SELECT COUNT(*) FROM views WHERE mediaId = a.mediaId) AS views, a.likes, a.reposts, ' +
   'JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', b.imageUrl, \'width\', b.width, \'height\', b.height, \'imageIndex\', b.imageIndex)) AS imageUrls, ' +
@@ -1533,7 +1576,10 @@ app.get('/api/playlistPost/:mediaId', (req, res) => {
 
 app.post('/api/profileVisit', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/profileVisit');
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   const username = req.body.username
   conn.query('INSERT IGNORE INTO profilesVisits (visitUserId, profileUserId) VALUES (?, (SELECT userId FROM users WHERE username = ? LIMIT 1))',
   [userId, username], function(err, result) {
@@ -1564,7 +1610,10 @@ app.post('/api/linkClick', (req, res) => {
 
 app.post('/api/postVisit', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/postVisit');
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   const view = req.body.view
 
   conn.query('INSERT IGNORE INTO views (mediaId, viewerId, dateTime) VALUES ' +
@@ -1606,7 +1655,10 @@ app.post('/api/collectionPostVisit', (req, res) => {
 
 app.post('/api/storeCollectionsViews', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/storeCollectionsViews');
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   const reqViews = req.body.views
   var question_query = ''
   var views = []
@@ -1634,7 +1686,10 @@ app.post('/api/storeCollectionsViews', (req, res) => {
 
 app.post('/api/storePostsViews', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/storePostsViews');
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   const reqViews = req.body.views
   var question_query = ''
   var views = []
@@ -1660,7 +1715,7 @@ app.post('/api/storePostsViews', (req, res) => {
   })
 })
 
-app.post('/api/newPlaylist', (req, res) => {
+app.post('/api/newPlaylist', loggedIn, (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/newPlaylist');
   const userId = req.user.userId
   const mediaId = req.body.mediaId
@@ -1775,13 +1830,6 @@ app.post('/api/repost', loggedIn, function(req, res) {
       }
     }
   })
-  // Promise.all([addToCollection(req, 'reposts', 'mediaId')])
-  // .then(function(allData) {
-  //   res.send(allData[0])
-  // }).catch(err => {
-  //   console.log(err);
-  //   res.send({message: 'failed'})
-  // })
 })
 
 app.post('/api/unrepost', loggedIn, function(req, res) {
@@ -1798,13 +1846,6 @@ app.post('/api/unrepost', loggedIn, function(req, res) {
       }
     }
   })
-  // Promise.all([removeFromCollection(req, 'reposts', 'mediaId')])
-  // .then(function(allData) {
-  //   res.send(allData[0])
-  // }).catch(err => {
-  //   console.log(err);
-  //   res.send({message: 'failed'})
-  // })
 })
 
 app.post('/api/playlistLike', loggedIn, function(req, res) {
@@ -1843,13 +1884,6 @@ app.post('/api/playlistRepost', loggedIn, function(req, res) {
       }
     }
   })
-  // Promise.all([addToCollection(req, 'playlistsReposts', 'playlistId')])
-  // .then(function(allData) {
-  //   res.send(allData[0])
-  // }).catch(err => {
-  //   console.log(err);
-  //   res.send({message: 'failed'})
-  // })
 })
 
 app.post('/api/playlistUnrepost', loggedIn, function(req, res) {
@@ -1866,13 +1900,6 @@ app.post('/api/playlistUnrepost', loggedIn, function(req, res) {
       }
     }
   })
-  // Promise.all([removeFromCollection(req, 'playlistsReposts', 'playlistId')])
-  // .then(function(allData) {
-  //   res.send(allData[0])
-  // }).catch(err => {
-  //   console.log(err);
-  //   res.send({message: 'failed'})
-  // })
 })
 
 app.post('/api/playlistFollow', loggedIn, function(req, res) {
@@ -1953,7 +1980,7 @@ app.post('/api/playlistComment', loggedIn, function(req, res) {
   })
 })
 
-app.post('/api/addToPlaylist', function(req, res) {
+app.post('/api/addToPlaylist', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/addToPlaylist');
   console.log(req.body);
   conn.query('INSERT IGNORE INTO playlistsPosts (playlistId, mediaId, playlistIndex) VALUES ' +
@@ -1995,7 +2022,7 @@ app.delete('/api/deleteCollection', loggedIn, function(req, res) {
   })
 })
 
-app.get('/api/you/likes/posts', function(req, res) {
+app.get('/api/you/likes/posts', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/you/likes/posts');
   var userId = req.user.userId;
   conn.query('SELECT b.*, b.dateTime AS uploadDate, c.imageUrls, a.dateTime AS likeTime, true AS liked, ' +
@@ -2015,7 +2042,7 @@ app.get('/api/you/likes/posts', function(req, res) {
   })
 })
 
-app.get('/api/you/likes/albums', function(req, res) {
+app.get('/api/you/likes/albums', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/you/likes/albums');
   const userId = req.user.userId;
   conn.query('SELECT b.*, b.dateTime AS uploadDate, a.dateTime AS likeTime, true AS liked, (b.userId = :userId) AS isPoster, ' +
@@ -2041,7 +2068,10 @@ app.get('/api/you/likes/albums', function(req, res) {
 
 app.get('/api/:profile/info', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/info');
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   const username = req.params.profile
   conn.query('SELECT a.*, ' +
   '((SELECT COUNT(*) FROM following WHERE followingUserId = a.userId AND followerUserId = :userId) > 0) AS isFollowing, ' +
@@ -2051,34 +2081,49 @@ app.get('/api/:profile/info', (req, res) => {
       console.log(err);
     } else {
       const row = result[0]
-      const isUser = (row.userId == userId)
-      res.send({profile: row, isUser: isUser})
+      if (row) {
+        const isUser = (row.userId == userId)
+        res.send({profile: row, isUser: isUser})
+      } else {
+        res.send({message: "error"})
+      }
+
     }
   })
 })
 
 app.get('/api/:profile/stream', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/stream');
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   const username = req.params.profile;
-  const userId = req.user.userId;
   conn.query('SELECT userId FROM users WHERE username = ? LIMIT 1', [username], function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      getStream(userId, result[0].userId, true, false, false, false, false)
-      .then(function(data) {
-        res.send(data)
-      }).catch(err => {
-        console.log(err);
-      })
+      if (result[0]) {
+        getStream(userId, result[0].userId, true, false, false, false, false)
+        .then(function(data) {
+          res.send(data)
+        }).catch(err => {
+          console.log(err);
+        })
+      } else {
+        res.send({message: "error"})
+      }
     }
   })
 })
 
 app.get('/api/:profile/userDetails', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/userDetails');
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   var username = req.params.profile;
-  var userId = req.user.userId;
 
   conn.query('SELECT *, (SELECT COUNT(*) FROM posts WHERE userId=(SELECT userId FROM users WHERE username=?)) AS numPosts ' +
   'FROM users WHERE username=?', [username, username], function(err, result) {
@@ -2094,35 +2139,20 @@ app.get('/api/:profile/userDetails', (req, res) => {
   })
 })
 
-app.get('/api/:profile/stream', loggedIn, (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/stream');
-  var username = req.params.profile;
-  var userId = req.user.userId;
-  conn.query('SELECT userId FROM users WHERE username=?', [username], function(err, result) {
-    if (err) {
-      console.log(err);
-    } else {
-      Promise.all([getStream(userId, result[0].userId, true, false, false, false, false)])
-      .then(function(allData) {
-        res.send(allData[0])
-      }).catch(err => {
-        console.log(err);
-      })
-    }
-  })
-})
-
-app.get('/api/:profile/streamOriginal', loggedIn, (req, res) => {
+app.get('/api/:profile/streamOriginal', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/streamOriginal');
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   var username = req.params.profile;
-  var userId = req.user.userId;
   conn.query('SELECT userId FROM users WHERE username=?', [username], function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      Promise.all([getStream(userId, result[0].userId, true, true, false, false, false)])
+      getStream(userId, result[0].userId, true, true, false, false, false)
       .then(function(allData) {
-        res.send(allData[0])
+        res.send(allData)
       }).catch(err => {
         console.log(err);
       })
@@ -2130,17 +2160,20 @@ app.get('/api/:profile/streamOriginal', loggedIn, (req, res) => {
   })
 })
 
-app.get('/api/:profile/streamPosts', loggedIn, (req, res) => {
+app.get('/api/:profile/streamPosts', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/streamPosts');
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   var username = req.params.profile;
-  var userId = req.user.userId;
   conn.query('SELECT userId FROM users WHERE username=?', [username], function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      Promise.all([getStream(userId, result[0].userId, true, false, true, false, false)])
+      getStream(userId, result[0].userId, true, false, true, false, false)
       .then(function(allData) {
-        res.send(allData[0])
+        res.send(allData)
       }).catch(err => {
         console.log(err);
       })
@@ -2148,17 +2181,20 @@ app.get('/api/:profile/streamPosts', loggedIn, (req, res) => {
   })
 })
 
-app.get('/api/:profile/streamPlaylists', loggedIn, (req, res) => {
+app.get('/api/:profile/streamPlaylists', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/streamPlaylists');
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   var username = req.params.profile;
-  var userId = req.user.userId;
   conn.query('SELECT userId FROM users WHERE username=?', [username], function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      Promise.all([getStream(userId, result[0].userId, true, false, false, true, false)])
+      getStream(userId, result[0].userId, true, false, false, true, false)
       .then(function(allData) {
-        res.send(allData[0])
+        res.send(allData)
       }).catch(err => {
         console.log(err);
       })
@@ -2166,17 +2202,20 @@ app.get('/api/:profile/streamPlaylists', loggedIn, (req, res) => {
   })
 })
 
-app.get('/api/:profile/streamReposts', loggedIn, (req, res) => {
+app.get('/api/:profile/streamReposts', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/streamReposts');
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   var username = req.params.profile;
-  var userId = req.user.userId;
   conn.query('SELECT userId FROM users WHERE username=?', [username], function(err, result) {
     if (err) {
       console.log(err);
     } else {
-      Promise.all([getStream(userId, result[0].userId, true, false, false, false, true)])
+      getStream(userId, result[0].userId, true, false, false, false, true)
       .then(function(allData) {
-        res.send(allData[0])
+        res.send(allData)
       }).catch(err => {
         console.log(err);
       })
@@ -2188,9 +2227,9 @@ app.get('/api/:profile/:mediaId/comments', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/' + req.params.mediaId + '/comments');
   var username = req.params.profile;
   var mediaId = req.params.mediaId;
-  Promise.all([getPostComments(mediaId)])
+  getPostComments(mediaId)
   .then(function(allData) {
-    res.send({comments: allData[0][mediaId]})
+    res.send({comments: allData[mediaId]})
   }).catch(err => {
     console.log(err);
   })
@@ -2200,9 +2239,9 @@ app.get('/api/:profile/:playlistId/playlistComments', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/' + req.params.playlistId + '/playlistComments');
   var username = req.params.profile;
   var playlistId = req.params.playlistId;
-  Promise.all([getPlaylistsComments(playlistId)])
+  getPlaylistsComments(playlistId)
   .then(function(allData) {
-    res.send({comments: allData[0][playlistId]})
+    res.send({comments: allData[playlistId]})
   }).catch(err => {
     console.log(err);
   })
@@ -2239,7 +2278,22 @@ app.post('/api/editPost', loggedIn, function(req, res) {
   })
 })
 
-app.post('/api/updateProfileImage', function(req, res) {
+app.post('/api/editCollection', loggedIn, function(req, res) {
+  console.log('- Request received:', req.method.cyan, '/api/editCollection');
+  const userId = req.user.userId;
+  var body = req.body
+  body.userId = userId
+  Promise.all([editCollectionMetadata(body), deleteCollectionPosts(body.deletedPosts), editCollectionPostsOrder(body)])
+  .then(function(allData) {
+    console.log("Updated collection successfully");
+    res.send({message: "success"})
+  })
+  .catch(e => {
+    console.log(e);
+  })
+})
+
+app.post('/api/updateProfileImage', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/updateProfileImage');
   const userId = req.user.userId;
   upload(req, res, function(err) {
@@ -2277,7 +2331,7 @@ app.post('/api/updateProfileImage', function(req, res) {
   })
 })
 
-app.post('/api/follow', function(req, res) {
+app.post('/api/follow', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/follow');
   const username = req.body.username;
   const userId = req.user.userId;
@@ -2303,7 +2357,7 @@ app.post('/api/follow', function(req, res) {
   })
 })
 
-app.post('/api/unfollow', function(req, res) {
+app.post('/api/unfollow', loggedIn, function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/unfollow');
   const username = req.body.username;
   const userId = req.user.userId;
@@ -2903,18 +2957,16 @@ function exploreHelper(type, userId, timePeriod) {
         orderBy = 'ORDER BY hotScore '
     }
 
-    var values = {userId: userId}
     var timePeriodQuery = ''
     if (timePeriod) {
-      timePeriodQuery = 'WHERE a.dateTime BETWEEN :timePeriod AND :now '
-      values = {userId: userId, now: timePeriod.now, timePeriod: timePeriod.timePeriod}
+      timePeriodQuery = 'WHERE a.dateTime BETWEEN :timePeriod AND NOW() '
     }
 
     conn.query('SELECT a.*, a.dateTime AS uploadDate, b.imageUrls, (a.userId = :userId) AS isPoster, ' + hotScore +
     '((SELECT COUNT(*) FROM reposts WHERE userId=:userId AND mediaId = a.mediaId AND active = 1) > 0) AS reposted, ' +
     '((SELECT COUNT(*) FROM likes WHERE userId=:userId AND mediaId = a.mediaId) > 0) AS liked FROM posts AS a ' +
     'INNER JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', imageUrl, \'width\', width, \'height\', height, \'imageIndex\', imageIndex)) AS imageUrls FROM postsImages GROUP BY mediaId) b ON b.mediaId = a.mediaId ' +
-    timePeriodQuery + 'GROUP BY mediaId ' + orderBy + 'DESC LIMIT 24', values, function(err, result) {
+    timePeriodQuery + 'GROUP BY mediaId ' + orderBy + 'DESC LIMIT 24', {userId: userId, timePeriod: timePeriod}, function(err, result) {
       if (err) {
         console.log(err);
         return reject(err)
@@ -2930,7 +2982,7 @@ function exploreHelper(type, userId, timePeriod) {
 
 function editPostMetadata(body) {
   return new Promise(function(resolve, reject) {
-    conn.query('UPDATE posts SET title = :title, url = :url, genre = :genre, description = :description WHERE userId = :userId AND mediaId = :mediaId', body, function(err, result) {
+    conn.query('UPDATE posts SET title = :title, url = :url, genre = :genre, description = :description, original = :original WHERE userId = :userId AND mediaId = :mediaId', body, function(err, result) {
       if (err) {
         return reject(err)
       } else {
@@ -2963,5 +3015,147 @@ function editPostTags(body) {
     } else {
       return resolve({message: "success"})
     }
+  })
+}
+
+function editCollectionMetadata(body) {
+  return new Promise(function(resolve, reject) {
+    conn.query('UPDATE playlists SET title = :title, url = :url, genre = :genre, description = :description WHERE userId = :userId AND playlistId = :playlistId', body, function(err, result) {
+      if (err) {
+        return reject(err)
+      } else {
+        return resolve({message: "success"})
+      }
+    })
+  })
+}
+
+function editCollectionPostsOrder(body) {
+  return new Promise(function(resolve, reject) {
+    const posts = body.posts
+    const playlistId = body.playlistId
+    if (posts.length > 0) {
+      var insertPosts = []
+      var insertPostQuery = ''
+      for (var i = 0; i < posts.length; i++) {
+        const post = posts[i]
+        insertPosts.push(playlistId, post.mediaId, post.playlistIndex)
+        insertPostQuery += '(?,?,?),'
+      }
+      insertPostQuery = insertPostQuery.slice(0, -1)
+      conn.query('INSERT INTO playlistsPosts (playlistId, mediaId, playlistIndex) VALUES ' +
+      insertPostQuery + ' ON DUPLICATE KEY UPDATE playlistIndex = VALUES(playlistIndex)', insertPosts, function(err, result) {
+        if (err) {
+          return reject(err)
+        } else {
+          return resolve({message: "success"})
+        }
+      })
+    } else {
+      return resolve({message: "success"})
+    }
+  })
+}
+
+function deleteCollectionPosts(deletedPosts) {
+  return new Promise(function(resolve, reject) {
+    if (deletedPosts.length > 0) {
+      var deletePostQuery = ''
+      for (var i = 0; i < deletedPosts.length; i++) {
+        deletePostQuery += '(?),'
+      }
+      deletePostQuery = deletePostQuery.slice(0, -1)
+      conn.query('DELETE FROM playlistsPosts WHERE (mediaId) IN (' + deletePostQuery + ')', deletedPosts, function(err, result) {
+        if (err) {
+          return reject(err)
+        } else {
+          return resolve({message: "success"})
+        }
+      })
+    } else {
+      return resolve({message: "success"})
+    }
+  })
+}
+
+function markNotificationsAsRead(userId) {
+  return new Promise(function(resolve, reject) {
+    conn.query('CALL markNotificationsAsRead(:userId)', {userId: userId}, function(err, result) {
+      if (err) {
+        return reject(err)
+      } else {
+        return resolve({message: "success"})
+      }
+    })
+  })
+}
+
+function getNotifications(userId, numUnreads) {
+  return new Promise(function(resolve, reject) {
+    conn.query('SELECT ' +
+    'b.username, b.profileName, b.profile_image_src, ' +
+    'a.activity, a.comment, null AS isFollowing, ' +
+    'c.mediaId, c.url AS postUrl, JSON_OBJECT(\'imageUrl\', d.imageUrl, \'width\', d.width, \'height\', d.height) AS image, c.username AS postUsername, ' +
+    'null AS playlistId, null AS playlistUrl, null AS title, null AS playlistUsermame, ' +
+    'a.dateTime ' +
+    'FROM postsNotifications AS a ' +
+    'INNER JOIN users AS b ON b.userId = a.senderId INNER JOIN posts AS c ON c.mediaId = a.mediaId ' +
+    'INNER JOIN postsImages AS d ON d.mediaId = a.mediaId AND d.imageIndex = 0 ' +
+    'WHERE receiverId=:userId ' +
+    'UNION ALL ' +
+    'SELECT b.username, b.profileName, b.profile_image_src, ' +
+    'a.activity, a.comment, null AS isFollowing, ' +
+    'null AS mediaId, null AS postUrl, null AS image, null AS postUsername, ' +
+    'c.playlistId, c.url AS playlistUrl, c.title, c.username AS playlistUsermame, ' +
+    'a.dateTime ' +
+    'FROM playlistsNotifications AS a ' +
+    'INNER JOIN users AS b ON b.userId = a.senderId INNER JOIN playlists AS c ON c.playlistId = a.playlistId ' +
+    'WHERE receiverId=:userId ' +
+    'UNION ALL ' +
+    'SELECT b.username, b.profileName, b.profile_image_src, ' +
+    'null AS activity, null AS comment, (SELECT COUNT(*) FROM following WHERE followerUserId=:userId AND followingUserId = b.userId) > 0 AS isFollowing, ' +
+    'null AS mediaId, null AS postUrl, null AS image, null AS postUsername, ' +
+    'null AS playlistId, null AS playlistUrl, null AS title, null AS playlistUsermame, ' +
+    'a.dateTime ' +
+    'FROM followingNotifications AS a ' +
+    'INNER JOIN users AS b ON b.userId = a.senderId ' +
+    'WHERE receiverId=:userId ' +
+    'UNION ALL ' +
+    'SELECT b.username, b.profileName, b.profile_image_src, ' +
+    'null AS activity, null AS comment, null AS isFollowing, ' +
+    'c.mediaId, c.url AS postUrl, JSON_OBJECT(\'imageUrl\', d.imageUrl, \'width\', d.width, \'height\', d.height) AS image, c.username AS postUsername, ' +
+    'e.playlistId, e.url AS playlistUrl, e.title, e.username AS playlistUsermame, ' +
+    'a.dateTime ' +
+    'FROM playlistsPostsNotifications AS a ' +
+    'INNER JOIN users AS b ON b.userId = a.senderId INNER JOIN posts AS c ON c.mediaId = a.mediaId ' +
+    'INNER JOIN postsImages AS d ON d.mediaId = a.mediaId AND d.imageIndex = 0 ' +
+    'INNER JOIN playlists AS e ON e.playlistId = a.playlistId ' +
+    'WHERE receiverId = :userId ' +
+    'ORDER BY dateTime DESC LIMIT :numUnreads', {userId: userId, numUnreads: numUnreads}, function(err, result) {
+      if (err) {
+        return reject(err);
+      } else {
+        var notifications = []
+        for (var i = 0; i < result.length; i++) {
+          var row = result[i]
+          if (row.mediaId && row.playlistId) {
+            if (row.image) {
+              row.image = JSON.parse(row.image)
+            }
+            notifications.push({playlistPost: row})
+          } else if (row.mediaId) {
+            notifications.push({post: row})
+            if (row.image) {
+              row.image = JSON.parse(row.image)
+            }
+          } else if (row.playlistId){
+            notifications.push({playlist: row})
+          } else {
+            notifications.push({follow: row})
+          }
+        }
+        return resolve({notifications: notifications})
+      }
+    })
   })
 }

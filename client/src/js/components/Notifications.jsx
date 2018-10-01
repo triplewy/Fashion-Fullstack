@@ -10,11 +10,12 @@ export default class Notifications extends React.Component {
     super(props);
     this.state = {
       endpoint: 'http://localhost:8081',
-      unread: 0,
+      unread: false,
       notifications: [],
       open: false
     };
 
+    this.send = this.send.bind(this)
     this.getNotifications = this.getNotifications.bind(this)
     this.handleFollow = this.handleFollow.bind(this)
     this.handleUnfollow = this.handleUnfollow.bind(this)
@@ -23,15 +24,23 @@ export default class Notifications extends React.Component {
 
   componentDidMount() {
     console.log("notifications mounted");
-    this.send()
+    // this.send()
     var socket = socketIOClient(this.state.endpoint);
-    socket.on('unread notifications', numUnreads => {
-      console.log("unread received");
-      if (numUnreads !== this.state.unread) {
-        this.setState({unread: numUnreads})
-      }
+    socket.emit('receive notifications')
+    socket.on('unread notifications', unreadNotifications => {
+      this.setState({unread: unreadNotifications})
     })
   }
+
+  // componentDidUpdate(prevProps) {
+  //   if (this.props !== prevProps) {
+  //     this.send()
+  //     var socket = socketIOClient(this.state.endpoint);
+  //     socket.on('unread notifications', unreadNotifications => {
+  //       this.setState({unread: unreadNotifications})
+  //     })
+  //   }
+  // }
 
   send() {
     var socket = socketIOClient(this.state.endpoint);
@@ -41,13 +50,13 @@ export default class Notifications extends React.Component {
   getNotifications() {
     if (!this.state.open) {
       this.setState({open: true})
-      fetch('/api/notificationsDropdown/' + this.state.unread, {
+      fetch('/api/notificationsDropdown/5', {
         credentials: 'include'
       })
       .then(res => res.json())
       .then(data => {
         console.log(data);
-        this.setState({notifications: data.notifications, unread: 0})
+        this.setState({notifications: data.notifications, unread: false})
       })
     } else {
       this.setState({open: false})
@@ -130,15 +139,16 @@ export default class Notifications extends React.Component {
     return (
       <Dropdown id="notifications_dropdown" open={this.state.open} onToggle={this.getNotifications} pullRight={true}>
         <Dropdown.Toggle noCaret={true}>
-          <img id="notifications_icon" alt="notifications icon" src={notification_icon}></img>
-          <div className={this.state.unread ? 'notification_cirlce_show' : 'notification_cirlce_hide'}>
-            {this.state.unread}
+          <div className="notifications_icon" style={{backgroundImage: 'url(' + notification_icon + ')'}}>
+            <div className="notification_cirlce" style={{opacity: this.state.unread ? 1 : 0}}>
+              {/* {this.state.unread} */}
+            </div>
           </div>
         </Dropdown.Toggle>
         <Dropdown.Menu>
           <ul className="notifications_list">
             {renderedNotifications}
-            <Link to="/you/notifications">
+            <Link to="/you/notifications" onClick={this.closeDropdown}>
               <li id="see_all_notifications">
                   <p>All Notifications</p>
               </li>

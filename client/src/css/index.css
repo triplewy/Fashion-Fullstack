@@ -23,6 +23,10 @@ p {
   /* font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; */
 }
 
+a {
+  text-decoration: none;
+}
+
 a:hover {
   text-decoration: none;
 }
@@ -251,6 +255,16 @@ div.dropdown {
 .tooltip > .tooltip-arrow {
 }
 
+.pageBody {
+  margin-top: 80px;
+}
+
+.jumbotron {
+  padding: 80px 10%;
+  margin: 0 0;
+  background-color: transparent;
+}
+
 #app {
   padding:0 0;
   margin:0 0;
@@ -266,7 +280,7 @@ div.dropdown {
   top: 0;
   background-color: white;
   width: 100%;
-  height: 70px;
+  height: 80px;
   color: black;
   z-index: 1;
   padding: 0 10%;
@@ -296,29 +310,33 @@ div.dropdown {
 }
 
 .banner_section {
-  height: 100%;
 }
 
 #banner_left {
+  display: flex;
+  width: 25%;
 }
 
 #banner_center {
-  -webkit-flex: auto;
-  flex: auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 0;
 }
 
 #banner_right {
+  display: flex;
+  width: 40%;
 }
 
 #banner_title {
-  display: inline-block;
+  margin: auto 0;
 }
 
 #banner_title h1 {
-  line-height: 70px;
-  font-weight: bold;
-  font-size: 24px;
   margin: 0 0;
+  font-weight: 500;
+  font-size: 24px;
 }
 
 #banner_title:hover {
@@ -327,17 +345,14 @@ div.dropdown {
 
 #search_bar_div {
   display: flex;
-  justify-content: space-between;
-  border:1px solid #ccc;
-  border-radius: 4px;
-  height: 30px;
-  margin: 20px 20%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin: auto 0;
 }
 
 #search_bar {
-  -webkit-flex: auto;
-  flex: auto;
-  height: 100%;
+  flex: 1;
+  height: 30px;
   padding: 5px 10px;
   background-color: transparent;
   border: 0;
@@ -345,9 +360,6 @@ div.dropdown {
 }
 
 #search_bar_button {
-  display: inline-block;
-  float: right;
-  height: 100%;
   padding: 0 8px;
   border: 0;
   background-color: transparent;
@@ -360,8 +372,7 @@ div.dropdown {
 }
 
 #banner_user_div {
-  display: inline-block;
-  height: 100%;
+  margin-left: auto;
 }
 
 #banner_user_div>div {
@@ -413,9 +424,11 @@ div.dropdown {
   background-color: transparent;
 }
 
-#notifications_icon {
+.notifications_icon {
+  position: relative;
   height: 30px;
-  padding: 0 0;
+  width: 30px;
+  background-size: cover;
 }
 
 #banner_hr {
@@ -427,15 +440,15 @@ div.dropdown {
 #white_background_wrapper {
   display: block;
   position: relative;
-  overflow: hidden;
+  overflow: auto;
   z-index: 0;
   /* width: 1250px; */
   /* width: 1100px; */
-  width: 100%;
+  /* width: 100%; */
   min-height: 706px;
   /* margin: 0 auto; */
   padding: 0 10%;
-  margin: 70px 0;
+  /* margin: 20px 0; */
   background-color: white;
 }
 
@@ -461,8 +474,7 @@ div.dropdown {
   display: flex;
   position: relative;
   height: 40px;
-  margin-bottom: 20px;
-  margin-top: 20px;
+  margin: 25px 0;
   color: black;
   z-index: 1;
   font-size: 21px;
@@ -583,11 +595,12 @@ div.dropdown {
 }
 
 #user_name {
-  display: inline-block;
+  /* display: inline-block; */
+  margin: auto 0;
   margin-left: 5px;
   font-size: 12px;
   font-weight: 400;
-  padding: 16px 0;
+  /* padding: 16px 0; */
 }
 
 #genre_button {
@@ -611,12 +624,12 @@ div.dropdown {
 }
 
 #profile_image_div {
-  display: inline-block;
+  /* display: inline-block; */
   height: 50px;
   width: 50px;
   background-size: cover;
   border-radius: 50%;
-  vertical-align: middle;
+  /* vertical-align: middle; */
 }
 
 .image_wrapper {
@@ -1687,6 +1700,7 @@ div.dropdown {
 }
 
 #time_period_list li {
+  width: 120px;
   padding: 10px 10px;
   cursor: pointer;
 }
@@ -1940,6 +1954,35 @@ div.dropdown {
   margin: auto 5px;
 }
 
+#playlist_posts_modal {
+  /* margin: 30px 0; */
+  padding: 20px 0;
+  background-color: #f1f1f1;
+  border-radius: 8px;
+  overflow: scroll;
+  /* display: flex; */
+  /* flex-direction: column; */
+  /* position: relative; */
+}
+
+.playlist_post_drag {
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 8px 10px;
+  height: 40px;
+  font-weight: 300;
+  font-size: 12px;
+  -webkit-transition: box-shadow 0.4s ease-in;
+  transition: box-shadow 0.4s ease-in;
+}
+
+.playlist_post_drag>div {
+  display: inline-block;
+  /* vertical-align: top; */
+}
+
+
 .playlist_post_stat {
   display: inline-block;
   padding-right: 10px;
@@ -2080,7 +2123,7 @@ div.dropdown {
   vertical-align: middle;
   min-width: 600px;
   width: auto;
-  margin-bottom: 100px;
+  /* margin-bottom: 100px; */
 }
 
 #comments_wrapper {
@@ -2572,15 +2615,11 @@ div.dropdown {
 }
 
 .signup_div {
-  display: inline-block;
-  width: 50%;
-  vertical-align: top;
-  margin: 50px 0;
+  display: flex;
+  margin: 30px 0;
 }
 
 .signup_form_div {
-  display: block;
-  width: 300px;
   margin: 0 auto;
 }
 
@@ -2590,33 +2629,22 @@ div.dropdown {
   padding: 0 10px;
 }
 
-#notifications_dropdown {
-  height: 70px;
+#navbar_profile_dropdown {
+  display: flex;
 }
 
-.notification_cirlce_show {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: red;
-  top: 20px;
-  right: -10px;
-  color: white;
-  text-align: center;
-  -webkit-transition: opacity 1s ease;
-  transition: opacity 1s ease;
+#navbar_profile_dropdown>div {
+  margin: auto 0;
 }
 
-.notification_cirlce_hide {
-  opacity: 0;
+.notification_cirlce {
   position: absolute;
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   background-color: red;
-  top: 20px;
-  right: -10px;
+  top: 0;
+  right: 0;
   color: white;
   text-align: center;
   -webkit-transition: opacity 1s ease;
@@ -2706,13 +2734,37 @@ div.dropdown {
 }
 
 .notificationsPage_list {
+  margin-top: 20px;
   list-style: none;
   padding: 0 0;
 }
 
-.notificationsPage_list li {
+.notificationsPage_list li>div {
+  display: flex;
   padding: 10px 10px;
-  font-size: 12px;
+  font-size: 16px;
+  font-weight: 300;
+}
+
+.notificationsPage_list li>div>div {
+  margin: auto 0;
+  margin-right: 20px;
+}
+
+.notificationsPage_list li>div>div.notification_date {
+  margin-left: auto;
+}
+
+.notificationsPage_list li>div>div.post_link div {
+  background-size: cover;
+  border-radius: 6px;
+}
+
+.notificationsPage_list li>div>div>div.activity_type {
+  height: 50px;
+  width: 50px;
+  background-size: cover;
+  border-radius: 6px;
 }
 
 .notificationsPage_list button {
@@ -2899,7 +2951,6 @@ div.dropdown {
 }
 
 #image_list_wrapper {
-  float: right;
 }
 
 #upload_image_list {
@@ -3193,6 +3244,28 @@ div.dropdown {
 .delete_modal_body>div>button.continue:hover {
   background-color: #C24750;
   color: white;
+}
+
+.edit_collection_div {
+  display: flex;
+}
+
+.edit_collection_div>div>.post_image {
+  border-radius: 8px;
+}
+
+.edit_collection_div>div div.post_image {
+  border-radius: 8px;
+}
+
+.upload_progress_bar_div {
+  display: block;
+}
+
+.upload_progress_bar {
+  height: 10px;
+  border-radius: 8px;
+  background-color: green;
 }
 
 @media only screen and (max-width: 1300px) {

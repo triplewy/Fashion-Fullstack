@@ -12,15 +12,12 @@ export default class Navbar extends React.Component {
       search_value: '',
       search_redirect: false,
       showNavbar: true,
-      lastScrollY: 0,
-      showLoginModal: false,
+      lastScrollY: 0
     };
 
     this.onChange = this.onChange.bind(this);
     this.searchSubmit = this.searchSubmit.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
-    this.showLoginModal = this.showLoginModal.bind(this)
-    this.closeLoginModal = this.closeLoginModal.bind(this)
     // this.fetchNavbar = this.fetchNavbar.bind(this)
   }
 
@@ -58,14 +55,6 @@ export default class Navbar extends React.Component {
     } else {
       this.setState({lastScrollY: currentScrollY})
     }
-  }
-
-  showLoginModal(e) {
-    this.setState({showLoginModal: true})
-  }
-
-  closeLoginModal(e) {
-    this.setState({showLoginModal: false})
   }
 
   // fetchNavbar() {
@@ -127,8 +116,12 @@ export default class Navbar extends React.Component {
               </div>
             :
             <div id="banner_user_div">
-              <button id="banner_login_button" onClick={this.showLoginModal}>Login</button>
-              <LoginModal showModal={this.state.showLoginModal} closeModal={this.closeLoginModal} handleLogin={this.props.handleLogin}/>
+              <button id="banner_login_button" onClick={this.props.toggleLoginModal}>Login</button>
+              <LoginModal
+                showModal={this.props.showLoginModal}
+                toggleLoginModal={this.props.toggleLoginModal}
+                handleLogin={this.props.handleLogin}
+              />
               <Link to={"/signup"}>
                 <button id="signup_button" className="banner_button">Sign Up</button>
               </Link>

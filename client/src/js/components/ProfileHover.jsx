@@ -27,7 +27,7 @@ export default class ProfileHover extends React.Component {
             <strong>{this.props.profileName}</strong>
           </div>
         </Link>
-        <DropdownProfile username={this.props.username} load={this.state.loadHoverData}/>
+        <DropdownProfile username={this.props.username} load={this.state.loadHoverData} toggleLoginModal={this.props.toggleLoginModal}/>
       </div>
     );
   }

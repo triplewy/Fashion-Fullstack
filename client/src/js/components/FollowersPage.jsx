@@ -7,7 +7,7 @@ import { Dropdown } from 'react-bootstrap'
 export default class FollowersPage extends React.Component {
   constructor(props) {
     super(props);
-
+    console.log(this.props);
     this.state = {
       users: [],
       orderByArray: ['Most Recent', 'Most Followers'],
@@ -25,13 +25,13 @@ export default class FollowersPage extends React.Component {
   }
 
   fetchFollowers(orderBy) {
-    fetch('/api/followers/' + orderBy, {
+    fetch('/api' + this.props.match.url + '/' + orderBy, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({users: data.followers});
+      this.setState({users: data});
     })
     .catch((error) => {
       console.error(error);
@@ -61,7 +61,7 @@ export default class FollowersPage extends React.Component {
     }
     if (this.state.redirect) {
       return (
-        <Redirect to="/you/following" />
+        <Redirect to={'/' + this.props.match.params.profile + '/following'} />
       )
     }
     return (
@@ -77,7 +77,8 @@ export default class FollowersPage extends React.Component {
               <li onClick={this.toggleOrder.bind(this, 1)}>Most Followers</li>
             </Dropdown.Menu>
           </Dropdown>
-        }/>
+        }
+      />
         {renderedUsers}
       </div>
     );

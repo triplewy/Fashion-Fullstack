@@ -43,7 +43,12 @@ export default class PlaylistModal extends React.Component {
   }
 
   showModal(e) {
-    this.setState({showModal: true})
+    e.stopPropagation()
+    if (this.props.toggleLoginModal) {
+      this.props.toggleLoginModal()
+    } else {
+      this.setState({showModal: true})
+    }
   }
 
   closeModal(e) {

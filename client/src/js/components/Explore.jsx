@@ -142,7 +142,11 @@ export default class Explore extends React.Component {
   render() {
     return (
       <div id="white_background_wrapper">
-        <p className="page_title">Explore</p>
+        {this.props.home ?
+          null
+          :
+          <p className="page_title">Explore</p>
+        }
         <TypeSelector toggle_type={this.toggle_type} types={["Hot", "New", "Top", "Random"]}
         type_selector_value={this.state.type_selector_value}
         right={
@@ -151,7 +155,7 @@ export default class Explore extends React.Component {
             {this.state.type_selector_value > 1 ? <TimePeriod toggleTime={this.toggleTime}/> : null}
           </div>
         }/>
-        <ImageTetris posts={this.state.posts} explore />
+        <ImageTetris posts={this.state.posts} explore toggleLoginModal={this.props.toggleLoginModal}/>
     </div>
     );
   }
