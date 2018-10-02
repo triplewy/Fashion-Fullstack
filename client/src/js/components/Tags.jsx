@@ -1,6 +1,12 @@
 import React from 'react';
+import cap from 'images/cap-icon.png'
+import hat from 'images/hat-icon.png'
+import eyewear from 'images/eyewear-icon.png'
 import shirt from 'images/shirt-icon.png'
 import jacket from 'images/jacket-icon.png'
+import sweater from 'images/sweater-icon.png'
+import bag from 'images/bag-icon.png'
+import pants from 'images/pants-icon.png'
 import shorts from 'images/shorts-icon.png'
 import shoes from 'images/shoes-icon.png'
 import link_icon from 'images/link-icon.png'
@@ -12,14 +18,10 @@ export default class Tags extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      displayTagLocation: -1,
-      displayClickTagLocation: -2,
       selectedTagIndex: -1
     };
 
     this.renderClothingIcon = this.renderClothingIcon.bind(this);
-    this.showTagLocation = this.showTagLocation.bind(this)
-    this.showClickTagLocation = this.showClickTagLocation.bind(this)
     this.clickLink = this.clickLink.bind(this)
   }
 
@@ -33,28 +35,31 @@ export default class Tags extends React.Component {
         return shorts;
       case 'shoes':
         return shoes;
+      case 'pants':
+        return pants;
+      case 'sweater':
+        return sweater;
+      case 'cap':
+        return cap;
+      case 'hat':
+        return hat;
+      case 'bag':
+        return bag;
+      case 'eyewear':
+        return eyewear;
       default:
         return null;
       }
     }
 
-  showTagLocation(index) {
-    if (this.state.displayClickTagLocation !== index) {
-      this.setState({displayTagLocation: index})
-    }
-  }
-
-  showClickTagLocation(index) {
-    if (this.state.displayClickTagLocation === index) {
-      this.setState({displayClickTagLocation: -2, selectedTagIndex: index})
+  setCarouselIndex(index, imageIndex, x, y) {
+    if (this.state.selectedTagIndex === index) {
+      this.setState({selectedTagIndex: -1})
+      this.props.setTagCarouselIndex(imageIndex, 0 , 0, false)
     } else {
-      this.setState({displayClickTagLocation: index, selectedTagIndex: index})
+      this.setState({selectedTagIndex: index})
+      this.props.setTagCarouselIndex(imageIndex, x, y, true)
     }
-  }
-
-  setCarouselIndex(index, imageIndex) {
-    this.setState({selectedTagIndex: index})
-    this.props.setCarouselIndex(imageIndex)
   }
 
   clickLink() {
@@ -85,16 +90,9 @@ export default class Tags extends React.Component {
       renderedTags = this.props.tags.map((item, index) => {
           return (
             <li key={index} className={(this.state.selectedTagIndex === index && this.props.carouselIndex === item.imageIndex) ? "active" : ""}>
-              {/* <div id="tag_location" style={{'left': item.x, 'top': item.y,
-                'display': this.state.displayTagLocation === index ? 'block' : 'none'}}>
-              </div>
-              <div id="click_tag_location" style={{'left': item.x, 'top': item.y,
-                'display': this.state.displayClickTagLocation === index ? 'block' : 'none'}}>
-                  <div id="inner_circle"></div>
-              </div> */}
               <div className="tag_image" alt="clothing item"
                 style={{backgroundImage: 'url(' + this.renderClothingIcon(item.itemType) + ')'}} />
-              <div className="tags_text_div" onClick={this.setCarouselIndex.bind(this, index, item.imageIndex)}>
+              <div className="tags_text_div" onClick={this.setCarouselIndex.bind(this, index, item.imageIndex, item.x, item.y)}>
                 <p className="tag_brand">{item.itemBrand}</p>
                 <p className="tag_name">{item.itemName}</p>
               </div>

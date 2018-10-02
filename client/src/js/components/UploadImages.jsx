@@ -79,9 +79,9 @@ export default class UploadImages extends React.Component {
         loadImageOptions.orientation = data.exif.get('Orientation')
       }
       loadImage(file, (canvas) => {
-        file.preview = canvas.toDataURL(file.type)
+        file.imageUrl = canvas.toDataURL(file.type)
         var files = this.state.files
-        files[index] = {file: file, preview: file.preview}
+        files[index] = {file: file, imageUrl: file.imageUrl}
         this.setState({files: files})
       }, loadImageOptions)
     })
@@ -175,8 +175,14 @@ export default class UploadImages extends React.Component {
 
   render() {
     if (this.state.continue) {
+      var files = this.state.files
+      const dimensions = this.state.dimensions
+      for (var i = 0; i < files.length; i++) {
+        files[i].width = dimensions[i].original.width
+        files[i].height = dimensions[i].original.height
+      }
       return (
-        <UploadMetadata files={this.state.files} dimensions={this.state.dimensions} />
+        <UploadMetadata files={files} dimensions={this.state.dimensions} />
       )
     } else {
       var renderedList = [];
@@ -195,7 +201,7 @@ export default class UploadImages extends React.Component {
                     {...provided.dragHandleProps}
                     onClick={this.setCurrentImageIndex.bind(this, index)}
                   >
-                    <div style={{backgroundImage: 'url(' + this.state.files[index].preview + ')',
+                    <div style={{backgroundImage: 'url(' + this.state.files[index].imageUrl + ')',
                       backgroundSize: (width + "px " + height + "px"), width: width, height: height,
                       position: "relative"}}>
                       <button className="remove_image_button" onClick={this.removeImage.bind(this, index)}
@@ -236,16 +242,13 @@ export default class UploadImages extends React.Component {
               <div id="edit_image_wrapper">
                 {renderedEditTool}
                 {(dimensions && file) ?
-                  <div className="post_image" style={{backgroundImage: 'url(' + file.preview + ')',
-                    backgroundSize: (dimensions.display.width + "px " + dimensions.display.height + "px"),
-                    width: dimensions.display.width, height: dimensions.display.height,
-                    cursor: "move", backgroundPosition: (this.state.shift.x + "px " + this.state.shift.y + "px")}}
-                    onMouseDown={this.handleMouseDown} onMouseUp={this.handleMouseUp} onMouseMove={this.handleMouseMove}/>
+                  <div className="post_image" style={{backgroundImage: 'url(' + file.imageUrl + ')',
+                    width: dimensions.display.width, height: dimensions.display.height}}/>
                     :
                   <div className="post_image" style={{width: 660, height: 660}}/>
                   }
               </div>
-              <div id="edit_tools_wrapper">
+              {/* <div id="edit_tools_wrapper">
                 <ul id="edit_tools">
                   <li onClick={this.setToolIndex.bind(this, 0)} className={this.state.editToolIndex === 0 ? "active" : ""}>
                     Resize
@@ -257,7 +260,7 @@ export default class UploadImages extends React.Component {
                     Brightness
                   </li>
                 </ul>
-              </div>
+              </div> */}
               <div id="image_list_wrapper">
                 <DragDropContext onDragEnd={this.onDragEnd}>
                   <Droppable droppableId="droppable">

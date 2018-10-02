@@ -40,7 +40,7 @@ export default class RenderedPosts extends React.Component {
         } else if (item.playlistId) {
           var posts = item.posts
           posts.sort(function(a, b) {
-            return a.playlistIndex - b.playlistIndex;
+            return b.playlistIndex - a.playlistIndex;
           })
           item.posts = posts
           return (

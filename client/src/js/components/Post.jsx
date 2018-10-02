@@ -15,12 +15,17 @@ export default class Post extends React.Component {
     this.state = {
       carouselIndex: 0,
       bottom: 0,
-      seen: false
+      seen: false,
+
+      displayTagLocation: false,
+      tagX: 0,
+      tagY: 0
     };
 
     this.myRef = React.createRef()
     this.handleScroll = this.handleScroll.bind(this)
     this.setCarouselIndex = this.setCarouselIndex.bind(this)
+    this.setTagCarouselIndex = this.setTagCarouselIndex.bind(this)
   }
 
 
@@ -95,6 +100,14 @@ export default class Post extends React.Component {
     this.setState({carouselIndex: index})
   }
 
+  setTagCarouselIndex(index, x, y, show) {
+    if (show) {
+      this.setState({carouselIndex: index, tagX: x, tagY: y, displayTagLocation: show})
+    } else {
+      this.setState({displayTagLocation: show})
+    }
+  }
+
   render() {
     const post = this.props.post
     return (
@@ -110,6 +123,7 @@ export default class Post extends React.Component {
             }
           <LinkContainer to={{ pathname: '/' + post.username + '/' + post.url, state: { postData: post}}}>
             <div className="image_wrapper">
+              <div className="tag_location" style={{left: this.state.tagX + '%', top: this.state.tagY + '%', opacity: this.state.displayTagLocation ? 1 : 0}} />
               <CarouselImages imageUrls={post.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
             </div>
           </LinkContainer>
@@ -126,7 +140,11 @@ export default class Post extends React.Component {
                 {post.genre && <Link to={"/explore/" + post.genre}>{post.genre.replace(/^\w/, c => c.toUpperCase())}</Link>}
               </div>
             </div>
-            <Tags mediaId={post.mediaId} tags={post.tags} modify={false} setCarouselIndex={this.setCarouselIndex} carouselIndex={this.state.carouselIndex}/>
+            <Tags
+              mediaId={post.mediaId}
+              tags={post.tags}
+              setTagCarouselIndex={this.setTagCarouselIndex} 
+              carouselIndex={this.state.carouselIndex}/>
             {post.description &&
             <div id="description_wrapper">
               <p id="description">{post.description.split('\n').map((item, key) => {

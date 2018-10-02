@@ -26,7 +26,11 @@ export default class SinglePostPage extends React.Component {
         carouselIndex: 0,
         post: this.props.location.state.postData,
         relatedPosts: [],
-        error: false
+        error: false,
+
+        displayTagLocation: false,
+        tagX: 0,
+        tagY: 0
       };
     } else {
       this.state = {
@@ -39,20 +43,27 @@ export default class SinglePostPage extends React.Component {
         carouselIndex: 0,
         post: null,
         relatedPosts: [],
-        error: false
+        error: false,
+
+        displayTagLocation: false,
+        tagX: 0,
+        tagY: 0
       };
     }
 
-
+    this.componentCleanup = this.componentCleanup.bind(this)
     this.fetchStats = this.fetchStats.bind(this)
     this.fetchTags = this.fetchTags.bind(this)
     this.postVisit = this.postVisit.bind(this)
     this.fetchPost = this.fetchPost.bind(this)
     this.setCarouselIndex = this.setCarouselIndex.bind(this)
+    this.setTagCarouselIndex = this.setTagCarouselIndex.bind(this)
   }
 
   componentDidMount() {
+    console.log("mounted");
     window.scrollTo(0, 0)
+    window.addEventListener('beforeunload', this.componentCleanup);
     if (this.state.post) {
       this.fetchStats(this.state.post.mediaId)
       this.postVisit(this.state.post.mediaId)
@@ -69,6 +80,17 @@ export default class SinglePostPage extends React.Component {
       window.scrollTo(0,0)
       this.fetchPost()
     }
+  }
+
+  componentWillUnmount() {
+    console.log("unmounting");
+    window.removeEventListener('beforeunload', this.componentCleanup);
+  }
+
+  componentCleanup() {
+    console.log("YOOOOOOOO");
+    this.fetchPost()
+    return "unloading"
   }
 
   setCarouselIndex(index) {
@@ -149,13 +171,21 @@ export default class SinglePostPage extends React.Component {
       if (data.message === "error") {
         this.setState({error: true})
       } else {
-        this.setState({post: data})
+        this.setState({post: data, tags: data.tags})
         this.postVisit(data.mediaId)
       }
     })
     .catch((error) => {
       console.error(error);
     });
+  }
+
+  setTagCarouselIndex(index, x, y, show) {
+    if (show) {
+      this.setState({carouselIndex: index, tagX: x, tagY: y, displayTagLocation: show})
+    } else {
+      this.setState({displayTagLocation: show})
+    }
   }
 
   render() {
@@ -178,14 +208,23 @@ export default class SinglePostPage extends React.Component {
           </div>
           <div className="single_post_wrapper">
             <div className="center">
-              <CarouselImages singlePost imageUrls={post.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
+              <div style={{position: 'relative'}}>
+                <div className="tag_location" style={{left: this.state.tagX + '%', top: this.state.tagY + '%', opacity: this.state.displayTagLocation ? 1 : 0}} />
+                <CarouselImages singlePost imageUrls={post.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
+              </div>
               <StatsHeader post={post}/>
             </div>
           </div>
           <div className="single_post_bottom">
             <RelatedPosts url={this.props.match.url} />
             <div className="right_bottom">
-              <Tags mediaId={post.mediaId} tags={this.state.tags} setCarouselIndex={this.setCarouselIndex} carouselIndex={this.state.carouselIndex}/>
+              <p>Post Info</p>
+              <Tags
+                mediaId={post.mediaId}
+                tags={this.state.tags}
+                setTagCarouselIndex={this.setTagCarouselIndex}
+                carouselIndex={this.state.carouselIndex}
+              />
               {post.description &&
                 <div id="description_wrapper">
                   <p id="description">{post.description.split('\n').map((item, key) => {

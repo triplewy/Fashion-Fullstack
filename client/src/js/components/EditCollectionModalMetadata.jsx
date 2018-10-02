@@ -199,14 +199,14 @@ export default class EditCollectionModalMetadata extends React.Component {
         return (
           <Draggable key={index} draggableId={"post_drag" + index} index={index}>
             {(provided, snapshot) => (
-              <div
+              <li
                 disabled={(this.state.playlistIndex === index)}
                 ref={provided.innerRef}
                 {...provided.draggableProps}
                 {...provided.dragHandleProps}
                 onClick={this.props.setPlaylistIndex.bind(this, index)}
               >
-                <div className="playlist_post_drag">
+                {/* <div className="playlist_post_drag"> */}
                   <ProfileHover username={item.username} profileName={item.profileName} classStyle={"post_profile_link"}/>
                   <div className="playlist_post_title">
                     <p>{item.title}</p>
@@ -228,8 +228,8 @@ export default class EditCollectionModalMetadata extends React.Component {
                   >
                     <Tooltip id="tooltip" className="tooltip" >Must have at least 1 post in collection</Tooltip>
                   </Overlay>
-                </div>
-              </div>
+                </li>
+              // </div>
             )}
           </Draggable>
         )
@@ -260,6 +260,7 @@ export default class EditCollectionModalMetadata extends React.Component {
         <textarea type="text" autoComplete="off" rows="5" name="descriptionInput" onChange={this.handleChange} value={this.state.descriptionInput}
           style={{border: this.state.descriptionInput === collection.description ? "" : "1px solid green"}}></textarea>
         <p id="tags_input"><span>Posts</span></p>
+        <p>Drag to reorder</p>
         <DragDropContext onDragEnd={this.onDragEnd}>
           <Droppable droppableId="droppable">
             {(provided, snapshot) => (

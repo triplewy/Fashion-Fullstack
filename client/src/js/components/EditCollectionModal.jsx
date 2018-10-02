@@ -47,7 +47,7 @@ export default class EditCollectionModal extends React.Component {
     const [removedPosts] = posts.splice(startIndex, 1);
     posts.splice(endIndex, 0, removedPosts);
     for (var i = 0; i < posts.length; i++) {
-      posts[i].playlistIndex = i;
+      posts[i].playlistIndex = posts.length - 1 - i;
     }
     this.setState({posts: posts, playlistIndex: endIndex})
   }

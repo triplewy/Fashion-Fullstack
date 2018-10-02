@@ -107,7 +107,7 @@ export default class InputTag extends React.Component {
     const value = this.state.itemBrand
     const inputProps = {value, onChange: this.onChange}
       return (
-        <div id="tags_input_box" style={{'left': this.props.left, 'top': this.props.top, 'display': this.props.display}}>
+        <div id="tags_input_box" style={{'left': this.props.left + '%', 'top': this.props.top + '%', 'display': this.props.display}}>
           <div id="input_tag_div">
             <div id="input_tag_position"/>
             <div>
@@ -122,6 +122,10 @@ export default class InputTag extends React.Component {
               <option value="jacket">Jacket</option>
               <option value="sweater">Sweater</option>
               <option value="pants">Pants</option>
+              <option value="cap">Cap</option>
+              <option value="hat">Hat</option>
+              <option value="eyewear">Eyewear</option>
+              <option value="bag">Bag</option>
             </select>
             <p id="tag_brand_input">Brand</p>
             <Autosuggest

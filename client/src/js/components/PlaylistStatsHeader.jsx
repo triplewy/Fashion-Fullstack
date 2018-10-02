@@ -1,5 +1,6 @@
 import React from 'react';
 import PlaylistMoreDropdown from './PlaylistMoreDropdown.jsx'
+import NotLoggedInOverlay from './NotLoggedInOverlay.jsx'
 import like_icon from 'images/heart-icon.png'
 import like_icon_liked from 'images/heart-icon-liked.png'
 import repost_icon from 'images/repost-icon.png'
@@ -19,6 +20,9 @@ export default class StatsHeader extends React.Component {
       liked: playlist.liked,
       reposted: playlist.reposted,
       followed: playlist.followed,
+
+      showOverlay: false,
+      target: null
     };
 
     this.handleLike = this.handleLike.bind(this);
@@ -27,6 +31,7 @@ export default class StatsHeader extends React.Component {
     this.handleUnrepost = this.handleUnrepost.bind(this);
     this.handleFollow = this.handleFollow.bind(this);
     this.handleUnfollow = this.handleUnfollow.bind(this);
+    this.showOverlay = this.showOverlay.bind(this)
   }
 
   componentDidUpdate(prevProps) {
@@ -38,6 +43,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleLike(e) {
+    const target = e.target
     fetch('/api/playlistLike', {
       method: 'POST',
       headers: {
@@ -53,6 +59,8 @@ export default class StatsHeader extends React.Component {
     .then(data => {
       if (data.message === "success") {
         this.setState({likes: this.state.likes + 1, liked: true})
+      } else if (data.message === "not logged in") {
+        this.showOverlay(target)
       } else {
         console.log(data.message);
       }
@@ -63,6 +71,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleUnlike(e) {
+    const target = e.target
     fetch('/api/playlistUnlike', {
       method: 'POST',
       headers: {
@@ -78,6 +87,8 @@ export default class StatsHeader extends React.Component {
     .then(data => {
       if (data.message === "success") {
         this.setState({likes: this.state.likes - 1, liked: false})
+      } else if (data.message === "not logged in") {
+        this.showOverlay(target)
       } else {
         console.log(data.message);
       }
@@ -88,6 +99,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleRepost(e) {
+    const target = e.target
     fetch('/api/playlistRepost', {
       method: 'POST',
       headers: {
@@ -103,6 +115,8 @@ export default class StatsHeader extends React.Component {
     .then(data => {
       if (data.message === "success") {
         this.setState({reposts: this.state.reposts + 1, reposted: true})
+      } else if (data.message === "not logged in") {
+        this.showOverlay(target)
       } else {
         console.log(data.message);
       }
@@ -113,6 +127,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleUnrepost(e) {
+    const target = e.target
     fetch('/api/playlistUnrepost', {
       method: 'POST',
       headers: {
@@ -128,6 +143,8 @@ export default class StatsHeader extends React.Component {
     .then(data => {
       if (data.message === "success") {
         this.setState({reposts: this.state.reposts - 1, reposted: false})
+      } else if (data.message === "not logged in") {
+        this.showOverlay(target)
       } else {
         console.log(data.message);
       }
@@ -138,6 +155,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleFollow(e) {
+    const target = e.target
     fetch('/api/playlistFollow', {
       method: 'POST',
       headers: {
@@ -153,6 +171,8 @@ export default class StatsHeader extends React.Component {
     .then(data => {
       if (data.message === "success") {
         this.setState({followers: this.state.followers + 1, followed: true})
+      } else if (data.message === "not logged in") {
+        this.showOverlay(target)
       } else {
         console.log(data.message);
       }
@@ -163,6 +183,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleUnfollow(e) {
+    const target = e.target
     fetch('/api/playlistUnfollow', {
       method: 'POST',
       headers: {
@@ -178,6 +199,8 @@ export default class StatsHeader extends React.Component {
     .then(data => {
       if (data.message === "success") {
         this.setState({followers: this.state.followers - 1, followed: false})
+      } else if (data.message === "not logged in") {
+        this.showOverlay(target)
       } else {
         console.log(data.message);
       }
@@ -185,6 +208,13 @@ export default class StatsHeader extends React.Component {
     .catch((error) => {
       console.error(error);
     });
+  }
+
+  showOverlay(target) {
+    this.setState({showOverlay: true, target: target})
+    setTimeout(function() {
+      this.setState({showOverlay: false})
+    }.bind(this), 2000)
   }
 
   render() {
@@ -203,6 +233,7 @@ export default class StatsHeader extends React.Component {
           <div style={{backgroundImage: this.state.reposted ? 'url(' + repost_icon_reposted + ')' : 'url(' + repost_icon + ')'}}/>
           <p className="stats_number">{this.state.reposts}</p>
         </button>
+        <NotLoggedInOverlay showOverlay={this.state.showOverlay} target={this.state.target} />
         <div id="non_stat_div">
           <PlaylistMoreDropdown playlist={this.props.playlist} />
         </div>

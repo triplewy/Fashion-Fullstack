@@ -11,11 +11,14 @@ export default class EditPostModal extends React.Component {
     super(props);
     this.state = {
       tags: null,
+      deletedTags: [],
       tagX: 0,
       tagY: 0,
       displayInputTag: 'none',
       editTagIndex: -1,
       editTag: {itemType:'shirt', itemBrand: '', itemName: '', itemLink: '', original: false},
+
+      displayTagLocation: false,
 
       showOverlay: false,
       target: null,
@@ -33,6 +36,7 @@ export default class EditPostModal extends React.Component {
     this.closeModal = this.closeModal.bind(this)
     this.handleClick = this.handleClick.bind(this)
     this.setCarouselIndex = this.setCarouselIndex.bind(this)
+    this.setTagCarouselIndex = this.setTagCarouselIndex.bind(this)
   }
 
   componentDidMount() {
@@ -95,8 +99,11 @@ export default class EditPostModal extends React.Component {
 
   handleTagDelete(index) {
     var tempTags = this.state.tags
+    var tempDeletedTags = this.state.deletedTags
+    const deletedTag = tempTags[index]
     tempTags.splice(index, 1)
-    this.setState({tags: tempTags})
+    tempDeletedTags.push(deletedTag)
+    this.setState({tags: tempTags, deletedTags: tempDeletedTags})
   }
 
   handleTagEdit(index) {
@@ -123,8 +130,8 @@ export default class EditPostModal extends React.Component {
   handleClick(e) {
     if (e.target.className === "post_image") {
       var bounds = e.target.getBoundingClientRect();
-      var x = e.clientX - bounds.left;
-      var y = e.clientY - bounds.top;
+      var x = (e.clientX - bounds.left)/bounds.width * 100;
+      var y = (e.clientY - bounds.top)/bounds.height * 100;
       this.setState({
         tagX: x,
         tagY: y,
@@ -135,6 +142,15 @@ export default class EditPostModal extends React.Component {
 
   setCarouselIndex(index) {
     this.setState({carouselIndex: index})
+  }
+
+  setTagCarouselIndex(index, x, y, show) {
+    if (show) {
+      console.log(x + ', ' + y);
+      this.setState({carouselIndex: index, tagX: x, tagY: y, displayTagLocation: show})
+    } else {
+      this.setState({displayTagLocation: show})
+    }
   }
 
 
@@ -155,6 +171,7 @@ export default class EditPostModal extends React.Component {
           <Modal.Body>
               <div id="tag_click_div_wrapper">
                 <div style={{position: "relative"}} onClick={this.handleClick}>
+                  <div className="tag_location" style={{left: this.state.tagX + '%', top: this.state.tagY + '%', opacity: this.state.displayTagLocation ? 1 : 0}} />
                   <InputTag
                     left={this.state.tagX}
                     top={this.state.tagY}
@@ -175,10 +192,11 @@ export default class EditPostModal extends React.Component {
               <EditPostModalMetadata
                 post={post}
                 tags={this.state.tags}
+                deletedTags={this.state.deletedTags}
                 handleTagEdit={this.handleTagEdit}
                 handleTagDelete={this.handleTagDelete}
                 carouselIndex={this.state.carouselIndex}
-                setCarouselIndex={this.setCarouselIndex}
+                setTagCarouselIndex={this.setTagCarouselIndex}
                 closeModal={this.closeModal}
               />
           </Modal.Body>

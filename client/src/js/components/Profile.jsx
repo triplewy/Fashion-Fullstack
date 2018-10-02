@@ -3,6 +3,7 @@ import RenderedPosts from './RenderedPosts.jsx'
 import TypeSelector from './TypeSelector.jsx'
 import EditProfileModal from './EditProfileModal.jsx'
 import ProfileInfo from './ProfileInfo.jsx'
+import NotLoggedInOverlay from './NotLoggedInOverlay.jsx'
 import ErrorPage from './ErrorPage.jsx'
 import Cookie from 'js-cookie'
 // import * as loadImage from 'blueimp-load-image'
@@ -16,7 +17,10 @@ export default class Profile extends React.Component {
       profileInfo: {},
       isProfile: false,
       type_selector_value: 0,
-      error: false
+      error: false,
+
+      showOverlay: false,
+      target: null
     };
 
     this.toggle_type = this.toggle_type.bind(this);
@@ -33,6 +37,7 @@ export default class Profile extends React.Component {
     this.getPlaylistStream = this.getPlaylistStream.bind(this)
     this.getRepostStream = this.getRepostStream.bind(this)
     this.readImageFile = this.readImageFile.bind(this)
+    this.showOverlay = this.showOverlay.bind(this)
   }
 
   componentDidMount() {
@@ -116,6 +121,7 @@ export default class Profile extends React.Component {
   }
 
   handleFollow(e) {
+    const target = e.target
     fetch('/api/follow', {
       method: 'POST',
       headers: {
@@ -135,7 +141,9 @@ export default class Profile extends React.Component {
         tempProfileInfo.isFollowing = true
         this.setState({profileInfo: tempProfileInfo})
       } else if (data.message === 'not logged in') {
-        console.log("not logged in");
+        this.showOverlay(target)
+      } else {
+        console.log(data);
       }
     })
     .catch((error) => {
@@ -144,6 +152,7 @@ export default class Profile extends React.Component {
   }
 
   handleUnfollow(e) {
+    const target = e.target
     fetch('/api/unfollow', {
       method: 'POST',
       headers: {
@@ -162,6 +171,10 @@ export default class Profile extends React.Component {
         tempProfileInfo.followers -= 1
         tempProfileInfo.isFollowing = false
         this.setState({profileInfo: tempProfileInfo})
+      } else if (data.message === "not logged in") {
+        this.showOverlay(target)
+      } else {
+        console.log(data);
       }
     })
     .catch((error) => {
@@ -370,6 +383,13 @@ export default class Profile extends React.Component {
     // })
   }
 
+  showOverlay(target) {
+    this.setState({showOverlay: true, target: target})
+    setTimeout(function() {
+      this.setState({showOverlay: false})
+    }.bind(this), 2000)
+  }
+
   render() {
     if (this.state.error) {
       return (
@@ -403,6 +423,7 @@ export default class Profile extends React.Component {
                       </button>
                     }
                   </div>
+                  <NotLoggedInOverlay showOverlay={this.state.showOverlay} target={this.state.target} />
                 </div>
               </div>
               <div className="profile_info_description_div">

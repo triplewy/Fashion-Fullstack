@@ -137,8 +137,21 @@ export default class UploadMetadata extends React.Component {
         <label>Description:</label>
         <textarea type="text" autoComplete="off" rows="5" name="description" onChange={this.handleChange} value={this.state.description}></textarea>
         <p className="form_input_text" id="tags_input"><span>Tags</span></p>
-        <Tags tags={this.props.tags} modify={this.props.modify} handleTagDelete={this.props.handleTagDelete}
-          handleTagEdit={this.props.handleTagEdit} carouselIndex={this.props.carouselIndex} setCarouselIndex={this.props.setCarouselIndex}/>
+        {this.props.tags.length === 0 ?
+          <div className="no_tags_indicator">
+            <p>Click on your fit to make tags!</p>
+          </div>
+          :
+          null
+        }
+        <Tags
+          tags={this.props.tags}
+          modify={this.props.modify}
+          handleTagDelete={this.props.handleTagDelete}
+          handleTagEdit={this.props.handleTagEdit}
+          carouselIndex={this.props.carouselIndex}
+          setTagCarouselIndex={this.props.setTagCarouselIndex}
+        />
         <input id="form_submit" type="button" onClick={this.props.handleSubmit.bind(this, this.state.title, this.state.url, this.state.genre, this.state.description)}
           value="Submit" disabled={!(this.state.title && this.state.genre && this.state.urlAvailable)}></input>
       </div>

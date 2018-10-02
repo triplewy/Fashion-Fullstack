@@ -1408,7 +1408,7 @@ app.get('/api/post/:username/:url', (req, res) => {
   '((SELECT COUNT(*) FROM likes WHERE userId=:userId AND mediaId = a.mediaId) > 0) AS liked, ' +
   '(:userId = a.userId) AS isPoster FROM posts AS a ' +
   'JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', imageUrl, \'width\', width, \'height\', height, \'imageIndex\', imageIndex)) AS imageUrls FROM postsImages GROUP BY mediaId) b ON b.mediaId = a.mediaId ' +
-  'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'itemType\', itemType, \'itemName\', itemName, \'itemBrand\', itemBrand, \'itemLink\', itemLink, \'original\', original, \'itemX\', x, \'itemY\', y, \'imageIndex\', imageIndex)) AS postTags FROM tags GROUP BY mediaId) c ON c.mediaId = a.mediaId ' +
+  'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'itemType\', itemType, \'itemName\', itemName, \'itemBrand\', itemBrand, \'itemLink\', itemLink, \'original\', original, \'x\', x, \'y\', y, \'imageIndex\', imageIndex)) AS postTags FROM tags GROUP BY mediaId) c ON c.mediaId = a.mediaId ' +
   'WHERE username = :username AND url = :url LIMIT 1', {userId: userId, username: username, url: url}, function(err, result) {
     if (err) {
       console.log(err);
@@ -2268,7 +2268,7 @@ app.post('/api/editPost', loggedIn, function(req, res) {
   const userId = req.user.userId;
   var body = req.body
   body.userId = userId
-  Promise.all([editPostMetadata(body), editPostTags(body)])
+  Promise.all([editPostMetadata(body), editPostTags(body), deletePostTags(body.deletedTags)])
   .then(function(allData) {
     console.log("Updated post successfully");
     res.send({message: "success"})
@@ -2662,7 +2662,7 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     'null AS followed, ' +
     '(a.userId = :cookieUser) AS isPoster FROM reposts ' +
     'INNER JOIN posts AS a ON a.mediaId = reposts.mediaId ' +
-    'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'itemType\', itemType, \'itemName\', itemName, \'itemBrand\', itemBrand, \'itemLink\', itemLink, \'original\', original, \'itemX\', x, \'itemY\', y, \'imageIndex\', imageIndex)) AS postTags FROM tags GROUP BY mediaId) d ON d.mediaId = reposts.mediaId ' +
+    'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'itemType\', itemType, \'itemName\', itemName, \'itemBrand\', itemBrand, \'itemLink\', itemLink, \'original\', original, \'x\', x, \'y\', y, \'imageIndex\', imageIndex)) AS postTags FROM tags GROUP BY mediaId) d ON d.mediaId = reposts.mediaId ' +
     'INNER JOIN postsImages AS e ON e.mediaId = reposts.mediaId ' +
     'WHERE (' + profileToggle3 + 'reposts.userId=:userId) AND reposts.active = 1 ' + originalToggle2 + ' GROUP BY reposts.repostId'
 
@@ -2674,7 +2674,7 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     '((SELECT COUNT(*) FROM reposts WHERE userId=:cookieUser AND mediaId = posts.mediaId AND active = 1) > 0) AS reposted, ' +
     '((SELECT COUNT(*) FROM likes WHERE userId=:cookieUser AND mediaId = posts.mediaId) > 0) AS liked, ' +
     'null AS followed, (posts.userId = :cookieUser) AS isPoster FROM posts ' +
-    'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'itemType\', itemType, \'itemName\', itemName, \'itemBrand\', itemBrand, \'itemLink\', itemLink, \'original\', original, \'itemX\', x, \'itemY\', y, \'imageIndex\', imageIndex)) AS postTags FROM tags GROUP BY mediaId) tags ON tags.mediaId = posts.mediaId ' +
+    'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'itemType\', itemType, \'itemName\', itemName, \'itemBrand\', itemBrand, \'itemLink\', itemLink, \'original\', original, \'x\', x, \'y\', y, \'imageIndex\', imageIndex)) AS postTags FROM tags GROUP BY mediaId) tags ON tags.mediaId = posts.mediaId ' +
     'LEFT JOIN postsImages AS e ON e.mediaId = posts.mediaId ' +
     'WHERE (' + profileToggle4 + 'posts.userId=:userId) ' + originalToggle1 + ' GROUP BY posts.mediaId'
 
@@ -3006,6 +3006,29 @@ function editPostTags(body) {
       conn.query('INSERT INTO tags (tagId, mediaId, itemType, itemBrand, itemName, itemLink, original, imageIndex, x, y) VALUES ' +
       insertTagQuery + ' ON DUPLICATE KEY UPDATE ' +
       'itemType=VALUES(itemType),itemBrand=VALUES(itemBrand),itemName=VALUES(itemName),itemLink=VALUES(itemLink),original=VALUES(original),imageIndex=VALUES(imageIndex),x=VALUES(x),y=VALUES(y)', insertTags, function(err, result) {
+        if (err) {
+          return reject(err)
+        } else {
+          return resolve({message: "success"})
+        }
+      })
+    } else {
+      return resolve({message: "success"})
+    }
+  })
+}
+
+function deletePostTags(deletedTags) {
+  return new Promise(function(resolve, reject) {
+    if (deletedTags.length > 0) {
+      var deletedQuery = ''
+      var deletedTagIds = []
+      for (var i = 0; i < deletedTags.length; i++) {
+        deletedTagIds.push(deletedTags[i].tagId)
+        deletedQuery += '(?),'
+      }
+      deletedQuery = deletedQuery.slice(0, -1)
+      conn.query('DELETE FROM tags WHERE (tagId) IN (' + deletedQuery + ')', deletedTagIds, function(err, result) {
         if (err) {
           return reject(err)
         } else {

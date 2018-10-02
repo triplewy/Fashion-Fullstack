@@ -1,5 +1,6 @@
 import React from 'react';
 import DropdownProfile from './DropdownProfile.jsx'
+import NotLoggedInOverlay from './NotLoggedInOverlay.jsx'
 import { Link } from 'react-router-dom';
 import { dateDiffInDays } from './DateHelper.js'
 
@@ -10,7 +11,10 @@ export default class Comments extends React.Component {
       numComments: this.props.comments,
       comments: [],
       commentInput: '',
-      loadComments: false
+      loadComments: false,
+
+      showOverlay: false,
+      target: null
     };
 
     this.fetchComments = this.fetchComments.bind(this)
@@ -19,6 +23,7 @@ export default class Comments extends React.Component {
     this.handlePlaylistComment = this.handlePlaylistComment.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.setLoadComments = this.setLoadComments.bind(this)
+    this.showOverlay = this.showOverlay.bind(this)
   }
 
   fetchComments(e) {
@@ -50,6 +55,7 @@ export default class Comments extends React.Component {
   }
 
   handleComment(e) {
+    const target = e.target
     fetch('/api/comment', {
       method: 'POST',
       headers: {
@@ -65,17 +71,22 @@ export default class Comments extends React.Component {
     .then(res => res.json())
     .then(data => {
       if (data.message === "success") {
+        this.setState({commentInput: '', comments: data.comments, numComments: this.state.numComments + 1})
         fetch('/api/' + this.props.username + '/' + this.props.mediaId + '/comments', {
           credentials: 'include'
         })
         .then((response) => response.json())
         .then((data) => {
-          console.log(data.comments);
-          this.setState({commentInput: '', comments: data.comments, numComments: this.state.numComments + 1})
+          if (data.message === "success") {
+          } else {
+            console.log(data);
+          }
         })
         .catch((error) => {
           console.error(error);
         });
+      } else if (data.message === "not logged in") {
+        this.showOverlay(target)
       } else {
         console.log(data.message);
       }
@@ -86,6 +97,7 @@ export default class Comments extends React.Component {
   }
 
   handlePlaylistComment(e) {
+    const target = e.target
     fetch('/api/playlistComment', {
       method: 'POST',
       headers: {
@@ -112,6 +124,8 @@ export default class Comments extends React.Component {
         .catch((error) => {
           console.error(error);
         });
+      } else if (data.message === "not logged in") {
+        this.showOverlay(target)
       } else {
         console.log(data.message);
       }
@@ -135,6 +149,13 @@ export default class Comments extends React.Component {
     } else {
       this.setState({loadComments: false})
     }
+  }
+
+  showOverlay(target) {
+    this.setState({showOverlay: true, target: target})
+    setTimeout(function() {
+      this.setState({showOverlay: false})
+    }.bind(this), 2000)
   }
 
   render() {
@@ -171,6 +192,7 @@ export default class Comments extends React.Component {
           <input id="comments_input" type="text" value={this.state.commentInput}
             onChange={this.handleChange} placeholder="Comment"></input>
           <button id="comment_button" type="button" onClick={this.props.playlistId ? this.handlePlaylistComment: this.handleComment}>Send</button>
+          <NotLoggedInOverlay showOverlay={this.state.showOverlay} target={this.state.target} />
         </div>
       </div>
     );

@@ -1,6 +1,7 @@
 import React from 'react';
 import PlaylistModal from './PlaylistModal.jsx'
 import MoreDropdown from './MoreDropdown.jsx'
+import NotLoggedInOverlay from './NotLoggedInOverlay.jsx'
 import view_icon_revised from 'images/view-icon-revised.png'
 import like_icon from 'images/heart-icon.png'
 import like_icon_hover from 'images/heart-icon-hover.png'
@@ -18,14 +19,20 @@ export default class StatsHeader extends React.Component {
         likes: post.likes,
         reposts: post.reposts,
         liked: post.liked,
-        reposted: post.reposted
+        reposted: post.reposted,
+
+        showOverlay: false,
+        target: null
       };
     } else {
       this.state = {
         likes: 0,
         reposts: 0,
         liked: false,
-        reposted: false
+        reposted: false,
+
+        showOverlay: false,
+        target: null
       };
     }
 
@@ -33,6 +40,7 @@ export default class StatsHeader extends React.Component {
     this.handleUnlike = this.handleUnlike.bind(this);
     this.handleRepost = this.handleRepost.bind(this);
     this.handleUnrepost = this.handleUnrepost.bind(this);
+    this.showOverlay = this.showOverlay.bind(this)
   }
 
   componentDidUpdate(prevProps) {
@@ -43,6 +51,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleLike(e) {
+    const target = e.target
     fetch('/api/like', {
       method: 'POST',
       headers: {
@@ -59,7 +68,7 @@ export default class StatsHeader extends React.Component {
       if (data.message === "success") {
         this.setState({likes: this.state.likes + 1, liked: true})
       } else if (data.message === "not logged in") {
-        this.props.toggleLoginModal()
+        this.showOverlay(target)
       } else {
         console.log(data.message);
       }
@@ -70,6 +79,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleUnlike(e) {
+    const target = e.target
     fetch('/api/unlike', {
       method: 'POST',
       headers: {
@@ -86,7 +96,7 @@ export default class StatsHeader extends React.Component {
       if (data.message === "success") {
         this.setState({likes: this.state.likes - 1, liked: false})
       } else if (data.message === "not logged in") {
-        this.props.toggleLoginModal()
+        this.showOverlay(target)
       } else {
         console.log(data.message);
       }
@@ -97,6 +107,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleRepost(e) {
+    const target = e.target
     fetch('/api/repost', {
       method: 'POST',
       headers: {
@@ -113,7 +124,7 @@ export default class StatsHeader extends React.Component {
       if (data.message === "success") {
         this.setState({reposts: this.state.reposts + 1, reposted: true})
       } else if (data.message === "not logged in") {
-        this.props.toggleLoginModal()
+        this.showOverlay(target)
       } else {
         console.log(data.message);
       }
@@ -124,6 +135,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleUnrepost(e) {
+    const target = e.target
     fetch('/api/unrepost', {
       method: 'POST',
       headers: {
@@ -140,7 +152,7 @@ export default class StatsHeader extends React.Component {
       if (data.message === "success") {
         this.setState({reposts: this.state.reposts - 1, reposted: false})
       } else if (data.message === "not logged in") {
-        this.props.toggleLoginModal()
+        this.showOverlay(target)
       } else {
         console.log(data.message);
       }
@@ -148,6 +160,14 @@ export default class StatsHeader extends React.Component {
     .catch((error) => {
       console.error(error);
     });
+  }
+
+  showOverlay(target) {
+    console.log("herehrerer");
+    this.setState({showOverlay: true, target: target})
+    setTimeout(function() {
+      this.setState({showOverlay: false})
+    }.bind(this), 2000)
   }
 
   render() {
@@ -165,6 +185,7 @@ export default class StatsHeader extends React.Component {
           <div style={{backgroundImage: this.state.reposted ? 'url(' + repost_icon_reposted + ')' : 'url(' + repost_icon + ')'}}/>
           <p className="stats_number">{this.state.reposts}</p>
         </button>
+        <NotLoggedInOverlay showOverlay={this.state.showOverlay} target={this.state.target} />
         <div id="non_stat_div">
           <PlaylistModal mediaId={this.props.post.mediaId} toggleLoginModal={this.props.toggleLoginModal}/>
           <MoreDropdown post={this.props.post} />

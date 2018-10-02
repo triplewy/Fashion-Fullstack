@@ -1,4 +1,5 @@
 import React from 'react';
+import NotLoggedInOverlay from './NotLoggedInOverlay.jsx'
 
 export default class DropdownProfile extends React.Component {
   constructor(props) {
@@ -8,12 +9,16 @@ export default class DropdownProfile extends React.Component {
       userFollowed: 0,
       followsYou: false,
       location: '',
-      isProfile: false
+      isProfile: false,
+
+      showOverlay: false,
+      target: null
     };
 
     this.fetchDropdownProfile = this.fetchDropdownProfile.bind(this)
     this.handleFollow = this.handleFollow.bind(this);
     this.handleUnfollow = this.handleUnfollow.bind(this);
+    this.showOverlay = this.showOverlay.bind(this)
   }
 
   componentDidUpdate(prevProps) {
@@ -39,6 +44,7 @@ export default class DropdownProfile extends React.Component {
 
   handleFollow(e) {
     e.stopPropagation()
+    const target = e.target
     fetch('/api/follow', {
       method: 'POST',
       headers: {
@@ -55,7 +61,7 @@ export default class DropdownProfile extends React.Component {
       if (data.message === 'success') {
         this.setState({userFollowed: true, userFollowers: this.state.userFollowers + 1})
       } else if (data.message === "not logged in") {
-        this.props.toggleLoginModal()
+        this.showOverlay(target)
       } else {
         console.log(data);
       }
@@ -64,6 +70,7 @@ export default class DropdownProfile extends React.Component {
 
   handleUnfollow(e) {
     e.stopPropagation()
+    const target = e.target
     fetch('/api/unfollow', {
       method: 'POST',
       headers: {
@@ -80,11 +87,18 @@ export default class DropdownProfile extends React.Component {
       if (data.message === 'success') {
         this.setState({userFollowed: false, userFollowers: this.state.userFollowers - 1})
       } else if (data.message === "not logged in") {
-        this.props.toggleLoginModal()
+        this.showOverlay(target)
       } else {
         console.log(data);
       }
     })
+  }
+
+  showOverlay(target) {
+    this.setState({showOverlay: true, target: target})
+    setTimeout(function() {
+      this.setState({showOverlay: false})
+    }.bind(this), 2000)
   }
 
   render() {
@@ -108,6 +122,7 @@ export default class DropdownProfile extends React.Component {
             {buttonText}
           </button>
         }
+        <NotLoggedInOverlay showOverlay={this.state.showOverlay} target={this.state.target} />
       </div>
     );
   }

@@ -20,7 +20,11 @@ export default class Playlist extends React.Component {
       playlistIndex: 0,
       bottom: 0,
       tags: [],
-      seen: new Array(this.props.playlist.posts.length).fill(false)
+      seen: new Array(this.props.playlist.posts.length).fill(false),
+
+      displayTagLocation: false,
+      tagX: 0,
+      tagY: 0
     };
 
     this.myRef = React.createRef()
@@ -28,10 +32,12 @@ export default class Playlist extends React.Component {
     this.fetchTags = this.fetchTags.bind(this)
     this.handleScroll = this.handleScroll.bind(this)
     this.setCarouselIndex = this.setCarouselIndex.bind(this)
+    this.setTagCarouselIndex = this.setTagCarouselIndex.bind(this)
   }
 
   componentDidMount() {
     window.addEventListener('scroll', this.handleScroll);
+    this.fetchTags(this.props.playlist.posts[0].mediaId)
     setTimeout(() => {
       this.setState({bottom: this.myRef.current.offsetTop + this.myRef.current.clientHeight - 80})
     }, 10);
@@ -118,6 +124,14 @@ export default class Playlist extends React.Component {
     this.setState({carouselIndex: index})
   }
 
+  setTagCarouselIndex(index, x, y, show) {
+    if (show) {
+      this.setState({carouselIndex: index, tagX: x, tagY: y, displayTagLocation: show})
+    } else {
+      this.setState({displayTagLocation: show})
+    }
+  }
+
   render() {
     const playlist = this.props.playlist
     const currentPost = playlist.posts[this.state.playlistIndex]
@@ -135,6 +149,7 @@ export default class Playlist extends React.Component {
           }
           <LinkContainer to={{ pathname: '/' + playlist.username + '/album/' + playlist.url, state: { playlistData: playlist} }}>
             <div className="image_wrapper">
+              <div className="tag_location" style={{left: this.state.tagX + '%', top: this.state.tagY + '%', opacity: this.state.displayTagLocation ? 1 : 0}} />
               {currentPost &&
                 <CarouselImages imageUrls={currentPost.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
               }
@@ -150,7 +165,12 @@ export default class Playlist extends React.Component {
                   {playlist.genre && <Link to={"/explore/" + playlist.genre}>{playlist.genre.replace(/^\w/, c => c.toUpperCase())}</Link>}
                 </div>
               </div>
-              <Tags tags={this.state.tags}/>
+              <Tags
+                mediaId={currentPost.mediaId}
+                tags={this.state.tags}
+                setTagCarouselIndex={this.setTagCarouselIndex}
+                carouselIndex={this.state.carouselIndex}
+              />
               <div id="description_wrapper">
                 <p id="description">{playlist.description}</p>
               </div>

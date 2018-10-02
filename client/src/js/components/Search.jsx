@@ -23,9 +23,11 @@ export default class Search extends React.Component {
   }
 
   render() {
+    console.log("search query is", this.props.location);
       return (
         <div id="white_background_wrapper">
-        <div id="outfit_finder_type_selector">
+          <p>To be implemented</p>
+        {/* <div id="outfit_finder_type_selector">
           <button className={(this.state.type_selector_value === 0)?
               "type_selector_button_selected" : 'type_selector_button'}
               disabled={(this.state.type_selector_value === 0)}
@@ -57,7 +59,7 @@ export default class Search extends React.Component {
             </select>
           </div>
           <InputTag />
-        </div>
+        </div> */}
 
         </div>
   );

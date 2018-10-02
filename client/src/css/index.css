@@ -360,6 +360,7 @@ div.dropdown {
 }
 
 #search_bar_button {
+  margin: auto 0;
   padding: 0 8px;
   border: 0;
   background-color: transparent;
@@ -1818,6 +1819,7 @@ div.dropdown {
   border-radius: 6px;
   height: 50px;
   width: 50px;
+  box-shadow: 0 2px 1px #888888;
 }
 
 .oauth_div img:hover {
@@ -1955,31 +1957,66 @@ div.dropdown {
 }
 
 #playlist_posts_modal {
-  /* margin: 30px 0; */
-  padding: 20px 0;
-  background-color: #f1f1f1;
-  border-radius: 8px;
-  overflow: scroll;
-  /* display: flex; */
-  /* flex-direction: column; */
-  /* position: relative; */
+  background-color: #ccc;
+  border-radius: 6px;
+  padding: 0 5px;
+  margin: 0 0;
+  max-height: 300px;
+  overflow-y: scroll;
 }
 
-.playlist_post_drag {
-  margin: 10px 0;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  padding: 8px 10px;
+#playlist_posts_modal li {
+  display: flex;
+  list-style: none;
+  border-radius: 4px;
+  background-color: white;
+  margin: 8px 0;
   height: 40px;
+  padding: 8px 5px;
   font-weight: 300;
   font-size: 12px;
   -webkit-transition: box-shadow 0.4s ease-in;
   transition: box-shadow 0.4s ease-in;
 }
 
-.playlist_post_drag>div {
+#playlist_posts_modal li.selected {
+  box-shadow: 0 1px 1px 2px #ccc;
+}
+
+#playlist_posts_modal li div.playlist_post_title {
+  display: inline-flex;
+  flex: 1;
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+#playlist_posts_modal li div.playlist_post_title p {
+  margin: auto 0;
+}
+
+#playlist_posts_modal li div.original {
+  display: flex;
+  margin-right: 10px;
+}
+
+#playlist_posts_modal li div.original span {
+  margin: auto 0;
+  color: red;
+}
+
+#playlist_posts_modal li div.views {
+  display: inline-flex;
+}
+
+#playlist_posts_modal li div.views div {
   display: inline-block;
-  /* vertical-align: top; */
+  width: 25px;
+  height: 25px;
+  background-size: cover;
+}
+
+#playlist_posts_modal li div.views p {
+  margin: auto 5px;
 }
 
 
@@ -2404,12 +2441,16 @@ div.dropdown {
   margin: 3px auto;
 }
 
-#tag_location {
+.tag_location {
   position: absolute;
+  z-index: 2;
   border-radius: 50%;
-  width: 6px;
-  height: 6px;
-  background-color: #337ab7;
+  width: 10px;
+  height: 10px;
+  box-shadow: 0 0 0 2px white;
+  background-color: rgba(0,0,0,0.4);
+  -webkit-transition: opacity 0.3s ease-out;
+  transition: opacity 0.3s ease-out;
 }
 
 #click_tag_location {
@@ -2467,6 +2508,7 @@ div.dropdown {
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 6px;
+  font-weight: 300;
 }
 
 .post_profile_link:hover div.dropdown {
@@ -2951,6 +2993,7 @@ div.dropdown {
 }
 
 #image_list_wrapper {
+  margin-left: auto;
 }
 
 #upload_image_list {
@@ -3266,6 +3309,12 @@ div.dropdown {
   height: 10px;
   border-radius: 8px;
   background-color: green;
+}
+
+.no_tags_indicator {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 300;
 }
 
 @media only screen and (max-width: 1300px) {

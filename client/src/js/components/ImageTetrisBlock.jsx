@@ -131,7 +131,7 @@ export default class ImageTetris extends React.Component {
           <p>{post.title}</p>
         </div>
         <div className="block_stats" style={{opacity: this.state.entered ? 1 : 0}}>
-          <StatsHeader post={post} toggleLoginModal={this.props.toggleLoginModal}/>
+          <StatsHeader post={post} />
         </div>
       </div>
     );

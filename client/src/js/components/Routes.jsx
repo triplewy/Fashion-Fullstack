@@ -135,7 +135,7 @@ export default class Routes extends React.Component {
           />
           <div className="pageBody">
             <Switch>
-              <Route exact path='/' render={(props) => Cookie.get('username') ? <Stream {...props}/> : <Home toggleLoginModal={this.toggleLoginModal} {...props}/>} />
+              <Route exact path='/' render={(props) => Cookie.get('username') ? <Stream {...props}/> : <Home {...props}/>} />
               <PrivateRoute exact path='/upload' component={UploadDropzone} />}/>
               <PrivateRoute exact path='/you/likes/posts' component={LikesPosts} />
               <PrivateRoute exact path='/you/likes/albums' component={LikesAlbums} />
@@ -143,8 +143,8 @@ export default class Routes extends React.Component {
               <PrivateRoute exact path='/you/notifications' component={NotificationsPage} />
               <PrivateRoute exact path='/explore' component={Explore}/>
               <Route path='/verify' component={Verify} />
+              <Route path='/search' component={Search} />
               <Route exact path='/explore/:genre' render={({match}) => <Explore genre={match.params.genre} />} />
-              <Route exact path='/search' component={Search}/>
               <Route exact path='/signup' render={(props) => <Signup loggedIn={this.setUser} user={this.state.user} {...props}/>} />
               <Route exact path='/genre/:genre' render={({match}) => <GenrePage genre={match.params.genre} />} />
               <Route exact path='/:profile' render={({match}) => <Profile profile={match.params.profile} setUser={this.setUser}/>} />

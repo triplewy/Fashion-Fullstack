@@ -27,7 +27,11 @@ export default class SinglePlaylistPage extends React.Component {
         playlistIndex: 0,
         carouselIndex: 0,
         playlist: this.props.location.state.playlistData,
-        error: false
+        error: false,
+
+        displayTagLocation: false,
+        tagX: 0,
+        tagY: 0
       };
     } else {
       this.state = {
@@ -41,22 +45,30 @@ export default class SinglePlaylistPage extends React.Component {
         playlistIndex: 0,
         carouselIndex: 0,
         playlist: null,
-        error: false
+        error: false,
+
+        displayTagLocation: false,
+        tagX: 0,
+        tagY: 0
       };
     }
 
     this.fetchStats = this.fetchStats.bind(this)
+    this.fetchTags = this.fetchTags.bind(this)
     this.postVisit = this.postVisit.bind(this)
     this.fetchPlaylist = this.fetchPlaylist.bind(this)
     this.setPlaylistIndex = this.setPlaylistIndex.bind(this)
     this.setCarouselIndex = this.setCarouselIndex.bind(this)
+    this.setTagCarouselIndex = this.setTagCarouselIndex.bind(this)
   }
 
   componentDidMount() {
     window.scrollTo(0, 0)
     if (this.state.playlist) {
       this.fetchStats(this.state.playlist.playlistId)
-      this.postVisit(this.state.playlist.mediaId)
+      this.fetchTags(this.state.playlist.posts[this.state.playlistIndex].mediaId)
+      this.postVisit(this.state.playlist.posts[this.state.playlistIndex].mediaId)
+
     } else {
       this.fetchPlaylist()
     }
@@ -69,11 +81,20 @@ export default class SinglePlaylistPage extends React.Component {
     }
   }
   setPlaylistIndex(index, e) {
-    this.setState({playlistIndex: index, carouselIndex: 0})
+    this.fetchTags(this.state.playlist.posts[index].mediaId)
+    this.setState({playlistIndex: index, carouselIndex: 0, displayTagLocation: false})
   }
 
   setCarouselIndex(index) {
     this.setState({carouselIndex: index})
+  }
+
+  setTagCarouselIndex(index, x, y, show) {
+    if (show) {
+      this.setState({carouselIndex: index, tagX: x, tagY: y, displayTagLocation: show})
+    } else {
+      this.setState({displayTagLocation: show})
+    }
   }
 
   fetchStats(mediaId) {
@@ -90,6 +111,19 @@ export default class SinglePlaylistPage extends React.Component {
       playlist.reposted = data.reposted
       this.setState({playlist: playlist})
       // this.setState({views: data.views, likes: data.likes, reposts: data.reposts, liked: data.liked, reposted: data.reposted});
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
+  fetchTags(mediaId) {
+    fetch('/api/postTags/' + mediaId, {
+      credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+      this.setState({tags: data});
     })
     .catch((error) => {
       console.error(error);
@@ -139,6 +173,7 @@ export default class SinglePlaylistPage extends React.Component {
         this.setState({error: true})
       } else {
         this.setState({playlist: data})
+        this.fetchTags(data.posts[0].mediaId)
         this.postVisit(data.posts[0].mediaId)
       }
     })
@@ -146,6 +181,8 @@ export default class SinglePlaylistPage extends React.Component {
       console.error(error);
     });
   }
+
+
 
   render() {
     const playlist = this.state.playlist
@@ -171,6 +208,7 @@ export default class SinglePlaylistPage extends React.Component {
             <div className="center">
               <LinkContainer to={{ pathname: '/' + currentPost.username + '/' + currentPost.url}}>
                 <div className="image_wrapper">
+                  <div className="tag_location" style={{left: this.state.tagX + '%', top: this.state.tagY + '%', opacity: this.state.displayTagLocation ? 1 : 0}} />
                   <CarouselImages singlePost imageUrls={currentPost.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
                 </div>
               </LinkContainer>
@@ -181,7 +219,12 @@ export default class SinglePlaylistPage extends React.Component {
             <RelatedCollections url={this.props.match.url} />
             <div className="right_bottom">
               <p>Playlist Info</p>
-              <Tags mediaId={playlist.posts[this.state.playlistIndex].mediaId} tags={this.state.tags} modify={false} setCarouselIndex={this.setCarouselIndex} carouselIndex={this.state.carouselIndex}/>
+              <Tags
+                mediaId={playlist.posts[this.state.playlistIndex].mediaId}
+                tags={this.state.tags}
+                setTagCarouselIndex={this.setTagCarouselIndex}
+                carouselIndex={this.state.carouselIndex}
+              />
               {playlist.description &&
                 <div id="description_wrapper">
                   <p id="description">{playlist.description.split('\n').map((item, key) => {

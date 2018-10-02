@@ -24,7 +24,7 @@ export default class Home extends React.Component {
             A social media platform catered for fashion
           </p>
         </Jumbotron>
-        <Explore home toggleLoginModal={this.props.toggleLoginModal}/>
+        <Explore home />
       </div>
     );
   }

@@ -9,14 +9,12 @@ export default class Navbar extends React.Component {
     super(props);
 
     this.state = {
-      search_value: '',
-      search_redirect: false,
+      searchValue: '',
       showNavbar: true,
       lastScrollY: 0
     };
 
     this.onChange = this.onChange.bind(this);
-    this.searchSubmit = this.searchSubmit.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
     // this.fetchNavbar = this.fetchNavbar.bind(this)
   }
@@ -29,18 +27,8 @@ export default class Navbar extends React.Component {
     window.removeEventListener('scroll', this.handleScroll)
   }
 
-  searchSubmit(e) {
-    if (this.state.search_value) {
-      this.setState({
-        search_redirect: true
-      })
-    }
-  }
-
   onChange(e) {
-    this.setState({
-      search_value: e.target.value,
-    });
+    this.setState({searchValue: e.target.value});
   }
 
   handleScroll(e) {
@@ -96,9 +84,8 @@ export default class Navbar extends React.Component {
           </div>
           <div id="banner_center" className="banner_section">
             <div id="search_bar_div">
-              <input id="search_bar" type="text" placeholder="Search"
-                onChange={this.onChange} value={this.state.search_value}></input>
-              <button id="search_bar_button" disabled={!this.state.search_value} onClick={this.searchSubmit}>Go</button>
+              <input id="search_bar" type="text" placeholder="Search" onChange={this.onChange} value={this.state.searchValue}></input>
+              <Link to={'/search?q=' + this.state.searchValue} id="search_bar_button" disabled={!this.state.searchValue}>Go</Link>
             </div>
           </div>
           <div id="banner_right" className="banner_section">

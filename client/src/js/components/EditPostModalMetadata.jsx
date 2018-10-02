@@ -72,6 +72,8 @@ export default class EditPostModalMetadata extends React.Component {
       }
     }
 
+    console.log("deleted Tags are", this.props.deletedTags);
+
     fetch('/api/editPost', {
       method: 'POST',
       headers: {
@@ -86,7 +88,8 @@ export default class EditPostModalMetadata extends React.Component {
         genre: this.state.genreInput,
         description: this.state.descriptionInput,
         original: original,
-        tags: this.props.tags
+        tags: this.props.tags,
+        deletedTags: this.props.deletedTags
       })
     })
     .then(res => res.json())
@@ -193,7 +196,7 @@ export default class EditPostModalMetadata extends React.Component {
           handleTagDelete={this.props.handleTagDelete}
           handleTagEdit={this.props.handleTagEdit}
           carouselIndex={this.props.carouselIndex}
-          setCarouselIndex={this.props.setCarouselIndex}/>
+          setTagCarouselIndex={this.props.setTagCarouselIndex}/>
         <div className="input_div_submit">
           <button className="cancel" onClick={this.props.closeModal}>Cancel</button>
           <button className="save" onClick={this.handleSave} disabled={!(this.state.titleInput && this.state.genreInput && this.state.urlAvailable)}>Save</button>
