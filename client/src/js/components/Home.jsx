@@ -1,5 +1,7 @@
 import React from 'react';
 import Explore from './Explore.jsx'
+import ExplorePosts from './ExplorePosts.jsx'
+import ExploreCollections from './ExploreCollections.jsx'
 import {Redirect} from 'react-router-dom';
 import { Jumbotron } from 'react-bootstrap';
 
@@ -24,7 +26,15 @@ export default class Home extends React.Component {
             A social media platform catered for fashion
           </p>
         </Jumbotron>
-        <Explore home />
+        <Jumbotron>
+          <p>Introducing collections</p>
+        </Jumbotron>
+        <ExploreCollections />
+        <Jumbotron>
+          <p>And posts</p>
+        </Jumbotron>
+        <ExplorePosts />
+        {/* <Explore home /> */}
       </div>
     );
   }

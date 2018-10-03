@@ -18,7 +18,6 @@ export default class CarouselImages extends React.Component {
   }
 
   render() {
-    console.log(this.props.imageUrls);
     const { direction } = this.state;
     var renderedImages = [];
     if (this.props.imageUrls) {

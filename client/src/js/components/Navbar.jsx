@@ -76,10 +76,10 @@ export default class Navbar extends React.Component {
   render() {
     const user = this.props.user
       return (
-        <div id={this.state.showNavbar ? 'banner' : 'banner_hide'}>
+        <div id='banner' style={{opacity: this.state.showNavbar ? 1 : 0, visibility: this.state.showNavbar ? 1 : 0}}>
           <div id="banner_left" className="banner_section">
             <Link to="/" id="banner_title">
-              <h1>Fashion</h1>
+              <h1>drip</h1>
             </Link>
           </div>
           <div id="banner_center" className="banner_section">

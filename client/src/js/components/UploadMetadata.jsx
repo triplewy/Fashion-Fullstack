@@ -314,7 +314,7 @@ export default class UploadMetadata extends React.Component {
           </div>
           <div id="upload_disclaimer">
             <div className="upload_progress_bar_div">
-              <div className="upload_progress_bar" style={{width: this.state.progress + '%'}}></div>
+              <div className="upload_progress_bar" style={{width: this.state.progress * 100 + '%'}}></div>
             </div>
             <p>Descriptive info and stuff to make the page slightly longer vertically</p>
           </div>

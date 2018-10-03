@@ -1,6 +1,5 @@
 import React from 'react';
 import ProfileHover from './ProfileHover.jsx'
-import { Link } from 'react-router-dom';
 import { dateDiffInDays } from './DateHelper.js'
 
 export default class RepostHeader extends React.Component {

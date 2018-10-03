@@ -186,8 +186,13 @@ export default class SinglePlaylistPage extends React.Component {
 
   render() {
     const playlist = this.state.playlist
+
     if (playlist) {
-      const currentPost = playlist.posts[this.state.playlistIndex]
+      var posts = playlist.posts
+      posts.sort(function(a, b) {
+        return b.playlistIndex - a.playlistIndex;
+      })
+      const currentPost = posts[this.state.playlistIndex]
       return (
         <div id="white_background_wrapper">
           <div className="single_post_title_div">
@@ -231,7 +236,7 @@ export default class SinglePlaylistPage extends React.Component {
                     return <span key={key}>{item}<br/></span>})}</p>
                 </div>
               }
-              <PlaylistPosts playlistId={playlist.playlistId} posts={playlist.posts} playlistIndex={this.state.playlistIndex} setPlaylistIndex={this.setPlaylistIndex} />
+              <PlaylistPosts playlistId={playlist.playlistId} posts={posts} playlistIndex={this.state.playlistIndex} setPlaylistIndex={this.setPlaylistIndex} />
               <SinglePostPageComments playlistId={playlist.playlistId} username={this.props.match.params.profile}/>
             </div>
           </div>

@@ -63,7 +63,11 @@ export default class PlaylistPosts extends React.Component {
         return (
           <li key={index} value={index} className={(this.props.playlistIndex === index) ? 'selected' : ''}
                 disabled={(this.props.playlistIndex === index)} onClick={this.handleClick.bind(this, index, item.mediaId)}>
-              <ProfileHover username={item.username} profileName={item.profileName} classStyle={"post_profile_link"}/>
+              <ProfileHover
+                username={item.username}
+                profileName={item.profileName}
+                classStyle={"post_profile_link"}
+              />
               <div className="playlist_post_title">
                 <p>{item.title}</p>
               </div>

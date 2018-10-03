@@ -1,7 +1,6 @@
 body {
   padding:0 0;
   margin:0 0;
-  /* font-family: sans-serif; */
 }
 
 button {
@@ -20,7 +19,6 @@ button:disabled:hover {
 
 p {
   margin: 0 0;
-  /* font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; */
 }
 
 a {
@@ -256,11 +254,11 @@ div.dropdown {
 }
 
 .pageBody {
-  margin-top: 80px;
+  margin: 80px 10%;
 }
 
 .jumbotron {
-  padding: 80px 10%;
+  padding: 80px 0;
   margin: 0 0;
   background-color: transparent;
 }
@@ -284,29 +282,11 @@ div.dropdown {
   color: black;
   z-index: 1;
   padding: 0 10%;
+  font-weight: 300;
   border-bottom: 1px solid #f1f1f1;
   -webkit-transition:opacity 0.2s ease-in;
   -moz-transition:opacity 0.2s ease-in;
   transition: opacity 0.2s ease-in;
-}
-
-#banner_hide {
-  display: flex;
-  position: fixed;
-  opacity: 0;
-  visibility: 0;
-  top: 0;
-  background-color: white;
-  width: 100%;
-  height: 70px;
-  color: black;
-  z-index: 1;
-  padding: 0 10%;
-  border-bottom: 1px solid #f1f1f1;
-  -webkit-transition:opacity 0.2s ease-out;
-  -moz-transition:opacity 0.2s ease-out;
-  transition: opacity 0.2s ease-out;
-  pointer-events: none;
 }
 
 .banner_section {
@@ -348,6 +328,7 @@ div.dropdown {
   border: 1px solid #ccc;
   border-radius: 5px;
   margin: auto 0;
+  font-weight: 300;
 }
 
 #search_bar {
@@ -448,7 +429,7 @@ div.dropdown {
   /* width: 100%; */
   min-height: 706px;
   /* margin: 0 auto; */
-  padding: 0 10%;
+  /* padding: 0 10%; */
   /* margin: 20px 0; */
   background-color: white;
 }
@@ -463,13 +444,13 @@ div.dropdown {
   background-color: white;
 }
 
-#content_wrapper {
+/* #content_wrapper {
   margin: 0;
   float: left;
   margin-bottom: 5%;
   width: 100%;
   background-color: white;
-}
+} */
 
 #type_selector {
   display: flex;
@@ -596,12 +577,8 @@ div.dropdown {
 }
 
 #user_name {
-  /* display: inline-block; */
   margin: auto 0;
   margin-left: 5px;
-  font-size: 12px;
-  font-weight: 400;
-  /* padding: 16px 0; */
 }
 
 #genre_button {
@@ -707,9 +684,10 @@ div.dropdown {
   display: inline-block;
   vertical-align: top;
   width: 40px;
+  height: 40px;
   background-size: cover;
   padding: 5px 0;
-  margin-right: 5%;
+  margin-right: 20px;
 }
 
 .tags_text_div {
@@ -1247,7 +1225,7 @@ div.dropdown {
 
 .single_post_bottom {
   display: flex;
-  padding-bottom: 20px;
+  margin-bottom: 100px;
 }
 
 .single_post_bottom div.right_bottom {
@@ -1810,19 +1788,21 @@ div.dropdown {
 }
 
 .oauth_div {
-  text-align: center;
   padding: 20px;
   margin-bottom: 20px;
 }
 
-.oauth_div img {
+.oauth_div div {
+  display: inline-block;
+  margin: 0 10px;
   border-radius: 6px;
   height: 50px;
   width: 50px;
+  background-size: cover;
   box-shadow: 0 2px 1px #888888;
 }
 
-.oauth_div img:hover {
+.oauth_div div:hover {
   box-shadow: 0 5px 4px #888888;
   -webkit-transition: box-shadow 0.2s;
   transition: box-shadow 0.2s;
@@ -1840,6 +1820,7 @@ div.dropdown {
   width: 400px;
   margin: 0 auto;
   padding: 20px;
+  text-align: center;
 }
 
 #login_input_fields input{
@@ -1856,7 +1837,12 @@ div.dropdown {
   border-radius: 6px;
 }
 
-#login_input_fields button:hover {
+#login_input_fields button:disabled {
+  border: 1px solid #ccc;
+  color: #ccc;
+}
+
+#login_input_fields button:hover:enabled {
   border: 1px solid blue;
   color: blue;
 }
@@ -2598,6 +2584,7 @@ div.dropdown {
   height: 200px;
   background-size: cover;
   border-radius: 50%;
+  border: 1px solid #ccc;
 }
 
 .edit_profile_image div label {
@@ -2608,7 +2595,7 @@ div.dropdown {
   width: 68px;
   text-align: center;
   font-weight: 300;
-  background-color: rgb(255, 255, 255, 0.2);
+  background-color: rgb(0, 0, 0, 0.2);
   border: 1px solid white;
   color: white;
   padding: 4px 8px;
@@ -2619,7 +2606,7 @@ div.dropdown {
 }
 
 .edit_profile_image div label:hover {
-  background-color: rgb(255, 255, 255, 0.4);
+  background-color: rgb(0, 0, 0, 0.6);
 }
 
 .edit_profile_image:hover div label {
@@ -2641,6 +2628,7 @@ div.dropdown {
 
 #edit_profile_button:hover {
   border: 1px solid #ccc;
+  color: #ccc;
 }
 
 #edit_profile_text_div {
@@ -2658,7 +2646,8 @@ div.dropdown {
 
 .signup_div {
   display: flex;
-  margin: 30px 0;
+  margin-top: 50px;
+  margin-bottom: 100px;
 }
 
 .signup_form_div {
@@ -2673,10 +2662,19 @@ div.dropdown {
 
 #navbar_profile_dropdown {
   display: flex;
+  color: #337ab7;
+}
+
+#navbar_profile_dropdown:hover {
+  color: rgb(126, 128, 130);
 }
 
 #navbar_profile_dropdown>div {
   margin: auto 0;
+}
+
+#navbar_profile_dropdown_menu>li>a {
+  font-weight: 300;
 }
 
 .notification_cirlce {

@@ -51,6 +51,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleLike(e) {
+    e.stopPropagation()
     const target = e.target
     fetch('/api/like', {
       method: 'POST',
@@ -68,6 +69,7 @@ export default class StatsHeader extends React.Component {
       if (data.message === "success") {
         this.setState({likes: this.state.likes + 1, liked: true})
       } else if (data.message === "not logged in") {
+        console.log("yoooooooo");
         this.showOverlay(target)
       } else {
         console.log(data.message);
@@ -79,6 +81,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleUnlike(e) {
+    e.stopPropagation()
     const target = e.target
     fetch('/api/unlike', {
       method: 'POST',
@@ -107,6 +110,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleRepost(e) {
+    e.stopPropagation()
     const target = e.target
     fetch('/api/repost', {
       method: 'POST',
@@ -135,6 +139,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleUnrepost(e) {
+    e.stopPropagation()
     const target = e.target
     fetch('/api/unrepost', {
       method: 'POST',

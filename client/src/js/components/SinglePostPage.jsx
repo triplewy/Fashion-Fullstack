@@ -7,7 +7,6 @@ import StatsHeader from './StatsHeader.jsx'
 import ProfileHover from './ProfileHover.jsx'
 import ErrorPage from './ErrorPage.jsx'
 import { dateDiffInDays } from './DateHelper.js'
-import { LinkContainer } from 'react-router-bootstrap'
 import { Link } from 'react-router-dom';
 
 
@@ -194,7 +193,12 @@ export default class SinglePostPage extends React.Component {
       return (
         <div id="white_background_wrapper">
           <div className="single_post_title_div">
-            <ProfileHover classStyle="single_post_profile_link" username={post.username} profileName={post.profileName} profile_image_src={post.profile_image_src} />
+            <ProfileHover
+              classStyle="single_post_profile_link"
+              username={post.username}
+              profileName={post.profileName}
+              profile_image_src={post.profile_image_src}
+            />
             <div className="title">
               <p>{post.title}</p>
             </div>
@@ -210,7 +214,12 @@ export default class SinglePostPage extends React.Component {
             <div className="center">
               <div style={{position: 'relative'}}>
                 <div className="tag_location" style={{left: this.state.tagX + '%', top: this.state.tagY + '%', opacity: this.state.displayTagLocation ? 1 : 0}} />
-                <CarouselImages singlePost imageUrls={post.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
+                <CarouselImages
+                  singlePost
+                  imageUrls={post.imageUrls}
+                  carouselIndex={this.state.carouselIndex}
+                  setCarouselIndex={this.setCarouselIndex}
+                />
               </div>
               <StatsHeader post={post}/>
             </div>

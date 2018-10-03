@@ -28,7 +28,9 @@ export default class AlbumTetrisBlock extends React.Component {
   componentDidMount() {
     window.addEventListener('scroll', this.handleScroll);
     setTimeout(() => {
-      this.setState({bottom: this.myRef.current.offsetTop + this.myRef.current.clientHeight - 80})
+      if (this.myRef.current) {
+        this.setState({bottom: this.myRef.current.offsetTop + this.myRef.current.clientHeight - 80})
+      }
     }, 10);
   }
 
@@ -102,8 +104,14 @@ export default class AlbumTetrisBlock extends React.Component {
 
   render() {
     const playlist = this.props.playlist
-    const post = playlist.posts[this.state.playlistIndex]
+    var posts = playlist.posts
+    posts.sort(function(a, b) {
+      return b.playlistIndex - a.playlistIndex;
+    })
+    const post = posts[this.state.playlistIndex]
     const postImages = post.imageUrls
+
+
     // var width = 0
     // var height = 0
     // if (this.props.relatedCollections) {
@@ -116,11 +124,20 @@ export default class AlbumTetrisBlock extends React.Component {
       <div className="album_tetris_block_wrapper" onMouseEnter={this.setEntered} onMouseLeave={this.setLeft} ref={this.myRef}>
         <LinkContainer to={{ pathname: '/' + playlist.username + '/album/' + playlist.url}}>
           <div className="image_wrapper">
-            <CarouselImages imageUrls={postImages} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}
-              explore={this.props.explore} relatedPosts={this.props.relatedCollections}/>
+            <CarouselImages
+              imageUrls={postImages}
+              carouselIndex={this.state.carouselIndex}
+              setCarouselIndex={this.setCarouselIndex}
+              explore={this.props.explore}
+              relatedPosts={this.props.relatedCollections}
+            />
               <div className="block_profile" style={{opacity: this.state.entered ? 1 : 0}}>
-                <ProfileHover classStyle="post_profile_link" username={playlist.username} profileName={playlist.profileName}
-                  profile_image_src={playlist.profile_image_src} />
+                <ProfileHover
+                  classStyle="post_profile_link"
+                  username={playlist.username}
+                  profileName={playlist.profileName}
+                  profile_image_src={playlist.profile_image_src}
+                />
                   <p>{playlist.title}</p>
               </div>
               <div className="block_stats" style={{opacity: this.state.entered ? 1 : 0}}>
@@ -128,7 +145,12 @@ export default class AlbumTetrisBlock extends React.Component {
               </div>
           </div>
         </LinkContainer>
-        <PlaylistPosts playlistId={playlist.playlistId} posts={playlist.posts} setPlaylistIndex={this.setPlaylistIndex} playlistIndex={this.state.playlistIndex}/>
+        <PlaylistPosts
+          explore
+          playlistId={playlist.playlistId}
+          posts={posts}
+          setPlaylistIndex={this.setPlaylistIndex}
+          playlistIndex={this.state.playlistIndex}/>
       </div>
     );
   }

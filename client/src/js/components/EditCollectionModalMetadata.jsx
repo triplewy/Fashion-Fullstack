@@ -52,6 +52,7 @@ export default class EditCollectionModalMetadata extends React.Component {
       genreSuggestions: []
     };
 
+    this.fetchTopGenres = this.fetchTopGenres.bind(this)
     this.handleChange = this.handleChange.bind(this);
     this.handleSave = this.handleSave.bind(this)
     this.setUrlPlaceholder = this.setUrlPlaceholder.bind(this)
@@ -61,7 +62,7 @@ export default class EditCollectionModalMetadata extends React.Component {
     this.handlePostDelete = this.handlePostDelete.bind(this)
   }
 
-  componentDidMount() {
+  fetchTopGenres() {
     fetch('/api/topGenres', {
       credentials: 'include'
     })

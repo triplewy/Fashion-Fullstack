@@ -65,13 +65,13 @@ export function setAspectRatioImageTetrisBlock(width, height) {
 
 export function setAspectRatioSinglePost(width, height) {
   var aspectRatio = width/height
-  if (aspectRatio >= 0.75 && width > 1152) {
-    aspectRatio = width/1152
-    return [1152, height/aspectRatio]
+  if (aspectRatio >= 0.75 && width > 900) {
+    aspectRatio = width/900
+    return [900, height/aspectRatio]
   }
-  else if (aspectRatio < 0.75 && height > 1536) {
-    aspectRatio = height/1536
-    return [width/aspectRatio, 1536]
+  else if (aspectRatio < 0.75 && height > 1200) {
+    aspectRatio = height/1200
+    return [width/aspectRatio, 1200]
   }
   else {
     return [width, height]

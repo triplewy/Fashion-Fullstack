@@ -12,6 +12,8 @@ var multer = require('multer');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+var RedditStrategy = require('passport-reddit').Strategy
+var crypto = require('crypto')
 var session = require('express-session');
 var RedisStore = require('connect-redis')(session);
 var Redis = require('redis')
@@ -61,7 +63,7 @@ passport.serializeUser(function(user, done) {
 })
 
 passport.deserializeUser(function(user, done) {
-  console.log("deserializing user");
+  // console.log("deserializing user");
   done(null, user);
 })
 
@@ -81,7 +83,7 @@ setTimeout(function () {
 
 
 function onAuthorizeSuccess(data, accept){
-  console.log('successful connection to socket.io');
+  // console.log('successful connection to socket.io');
   accept(null, true);
 }
 
@@ -108,7 +110,6 @@ passport.use('local-login', new LocalStrategy(
         if (!isValid) {
           return done(null, false)
         }
-        console.log("successfully logged in");
         return done(null, {userId: result[0].userId, username: result[0].username})
       })
     })
@@ -134,8 +135,8 @@ passport.use('local-signup', new LocalStrategy({
             return done(err)
           } else {
             var userId = result.insertId
-            conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, verificationHash, userId) VALUES (?,?,?,?,?,?)',
-              [username.toLowerCase(), email, password, passwordHash, verificationHash, userId], function(err, result) {
+            conn.query('INSERT INTO logins (username, email, passwordHash, verificationHash, userId) VALUES (?,?,?,?,?)',
+              [username.toLowerCase(), email, passwordHash, verificationHash, userId], function(err, result) {
               if (err) {
                 return done(err)
               } else {
@@ -150,7 +151,7 @@ passport.use('local-signup', new LocalStrategy({
                     return done(err)
                   } else {
                     console.log("Message sent");
-                    return done(null, userId)
+                    return done(null, {userId: userId, username: username.toLowerCase()})
                   }
                 })
               }
@@ -175,21 +176,57 @@ passport.use(new GoogleStrategy({
        if (result.length > 0) {
          return done(null, {userId: result[0].userId, username: result[0].username})
        }
-       var username = profile.displayName.replace(/\s+/g, '');
-       Promise.all([generateUsername(username)])
-       .then(function(allData) {
+       var username = profile.displayName.replace(/\s+/g, '').toLowerCase();
+       generateUsername(username)
+       .then(function(data) {
          conn.query('INSERT INTO users (username, profileName) VALUES (?,?)',
-         [allData[0], profile.displayName], function(err, result) {
+         [data, profile.displayName], function(err, result) {
            if (err) {
              return done(err)
            }
            var userId = result.insertId
-           conn.query('INSERT INTO logins (networkId, network, accessToken, email, verified, userId) VALUES (?,?,?,?,?,?)',
-           [profile.id, profile.provider, accessToken, profile.emails[0].value, true, userId], function(err, result) {
+           conn.query('INSERT INTO logins (networkId, network, accessToken, username, email, verified, userId) VALUES (?,?,?,?,?,?,?)',
+           [profile.id, profile.provider, accessToken, data, profile.emails[0].value, true, userId], function(err, result) {
              if (err) {
                return done(err)
              }
-             return done(null, {userId: userId, username: allData[0]})
+             return done(null, {userId: userId, username: data})
+           })
+         })
+       })
+     })
+   }
+))
+
+passport.use(new RedditStrategy({
+    clientID: 'T5s3CBjcsT6T9A',
+    clientSecret: '_bPPj-07IQjzoJL9RDuI9beXCDg',
+    callbackURL: "http://localhost:8081/auth/reddit/callback"
+  },
+  function(accessToken, refreshToken, profile, done) {
+    conn.query('SELECT * FROM logins WHERE networkId=?', [profile.id], function(err, result) {
+       if (err) {
+         return done(err)
+       }
+       if (result.length > 0) {
+         return done(null, {userId: result[0].userId, username: result[0].username})
+       }
+       var username = profile.name.replace(/\s+/g, '').toLowerCase();
+       generateUsername(username)
+       .then(function(data) {
+         conn.query('INSERT INTO users (username, profileName) VALUES (?,?)',
+         [data, profile.name], function(err, result) {
+           if (err) {
+             return done(err)
+           }
+           const userId = result.insertId
+           conn.query('INSERT INTO logins (networkId, network, accessToken, username, verified, userId) VALUES (?,?,?,?,?,?)',
+           [profile.id, "reddit", accessToken, data, true, userId], function(err, result) {
+             if (err) {
+               return done(err)
+             }
+             console.log("HERERERERE");
+             return done(null, {userId: userId, username: data})
            })
          })
        })
@@ -249,7 +286,7 @@ conn.query('SET foreign_key_checks = 1')
 conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255) NOT NULL UNIQUE, profileName TEXT NOT NULL, profile_image_src VARCHAR(255), ' +
 'location TEXT, followers INTEGER NOT NULL DEFAULT 0, following INTEGER NOT NULL DEFAULT 0, numPosts INTEGER NOT NULL DEFAULT 0, description TEXT, createdDate DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL)')
 
-conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, network TEXT, networkId TEXT, accessToken TEXT, username VARCHAR(255) NOT NULL UNIQUE, email VARCHAR(255) UNIQUE, passwordText TEXT, passwordSalt TEXT, ' +
+conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, network TEXT, networkId TEXT, accessToken TEXT, username VARCHAR(255) NOT NULL UNIQUE, email VARCHAR(255) UNIQUE, ' +
 'passwordHash CHAR(60), verificationHash CHAR(60), verified BOOLEAN NOT NULL DEFAULT FALSE, FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY (username) REFERENCES users(username) ON UPDATE CASCADE);')
 
 conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT NOT NULL, profile_image_src VARCHAR(255), ' +
@@ -527,7 +564,7 @@ io.on('connection', socket => {
 
 
   socket.on('receive notifications', function() {
-    console.log("receive notifications received");
+    // console.log("receive notifications received");
  })
 
   socket.on('disconnect', () => {
@@ -557,7 +594,9 @@ function pollingLoop() {
         console.log(err);
       } else {
         for (var i = 0; i < result.length; i++) {
-          usersToSockets[result[i].receiverId].emit('unread notifications', result[i].unreadNotifications)
+          if (usersToSockets[result[i].receiverId]) {
+            usersToSockets[result[i].receiverId].emit('unread notifications', result[i].unreadNotifications)
+          }
         }
         if (connectedUserIds.length > 0) {
           setTimeout(function() {pollingLoop()}, POLLING_INTERVAL);
@@ -616,8 +655,8 @@ conn.query(insertSQL, insertQuery, function(err, result) {
 })
 
 bcrypt.hash('password', 10, function(err, hash) {
-  conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, userId) VALUES (?,?,?,?,?)',
-    ['jbin', 'jbin', 'password', hash, 1], function(err, result) {
+  conn.query('INSERT INTO logins (username, email, passwordHash, userId) VALUES (?,?,?,?)',
+    ['jbin', 'jbin', hash, 1], function(err, result) {
     if (err) {
       console.log(err);
     } else {
@@ -688,8 +727,8 @@ conn.query('INSERT INTO comments (mediaId, userId, comment) VALUES (?, ?, ?)', [
 
 
   bcrypt.hash('password', 10, function(err, hash) {
-    conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, userId) VALUES (?,?,?,?,?)',
-      ['tkd', 'tkd', 'password', hash, 2], function(err, result) {
+    conn.query('INSERT INTO logins (username, email, passwordHash, userId) VALUES (?,?,?,?)',
+      ['tkd', 'tkd', hash, 2], function(err, result) {
       if (err) {
         console.log(err);
       } else {
@@ -775,8 +814,8 @@ conn.query('INSERT INTO comments (mediaId, userId, comment) VALUES (?, ?, ?)', [
 
 
   bcrypt.hash('password', 10, function(err, hash) {
-    conn.query('INSERT INTO logins (username, email, passwordText, passwordHash, userId) VALUES (?,?,?,?,?)',
-      ['shamana', 'shamana', 'password', hash, 3], function(err, result) {
+    conn.query('INSERT INTO logins (username, email, passwordHash, userId) VALUES (?,?,?,?)',
+      ['shamana', 'shamana', hash, 3], function(err, result) {
       if (err) {
         console.log(err);
       } else {
@@ -788,8 +827,30 @@ conn.query('INSERT INTO comments (mediaId, userId, comment) VALUES (?, ?, ?)', [
 app.get('/auth/google', passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email'] }));
 
 app.get('/auth/google/callback', passport.authenticate('google'), function(req, res) {
-  res.cookie('userId', req.user.userId)
-  res.redirect('http://localhost:3000/');
+  const userId = req.user.userId
+  const username = req.user.username
+  res.cookie('userId', userId)
+  res.cookie('username', username)
+  res.redirect('http://localhost:3000/' + username);
+});
+
+app.get('/auth/reddit', function(req, res, next) {
+  req.session.state = crypto.randomBytes(32).toString('hex');
+  passport.authenticate('reddit', { state: req.session.state})(req, res, next)});
+
+app.get('/auth/reddit/callback',
+  function(req, res, next) {
+    if (req.query.state == req.session.state) {
+      passport.authenticate('reddit')(req, res, next)
+    } else {
+      next(new Error(403))
+    }
+  }, function(req, res) {
+    const userId = req.user.userId
+    const username = req.user.username
+    res.cookie('userId', userId)
+    res.cookie('username', username)
+    res.redirect('http://localhost:3000/' + username);
 });
 
 app.get('/api/sessionLogin', loggedIn, (req, res) => {
@@ -800,7 +861,15 @@ app.get('/api/sessionLogin', loggedIn, (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      res.send(result[0]);
+      if (result[0]) {
+        res.send(result[0]);
+      } else {
+        req.logout()
+        req.session.destroy()
+        res.clearCookie('username')
+        res.clearCookie('userId')
+        res.send({message: "not logged in"})
+      }
     }
   })
 })
@@ -1167,6 +1236,16 @@ app.get('/api/home', loggedIn, (req, res) => {
   })
 })
 
+app.get('/api/home/:dateTime', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/home/' + req.params.dateTime);
+  Promise.all([getStream(req.user.userId, req.user.userId, false, false, false, false, false, req.params.dateTime)])
+  .then(function(allData) {
+    res.send(allData[0])
+  }).catch(err => {
+    console.log(err);
+  })
+})
+
 app.get('/api/homeOriginal', loggedIn, (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/homeOriginal');
   Promise.all([getStream(req.user.userId, req.user.userId, false, true, false, false, false)])
@@ -1184,6 +1263,19 @@ app.get('/api/explore/hot', (req, res) => {
     userId = req.user.userId
   }
   exploreHelper(0, userId).then(function(result) {
+    res.send(result)
+  }).catch(e => {
+    console.log(e);
+  })
+})
+
+app.get('/api/explore/collections/hot', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/explore/collections/hot');
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
+  exploreCollectionsHelper(0, userId).then(function(result) {
     res.send(result)
   }).catch(e => {
     console.log(e);
@@ -1473,7 +1565,7 @@ app.get('/api/:username/album/:url', (req, res) => {
   const url = req.params.url
   conn.query('SELECT a.*, a.dateTime AS uploadDate, ' +
   'JSON_ARRAYAGG(JSON_OBJECT(\'mediaId\', c.mediaId, \'username\', c.username, \'profileName\', c.profileName, \'profile_image_src\', c.profile_image_src, ' +
-  '\'title\', c.title, \'url\', c.url, \'views\', c.views, \'original\', c.original, \'imageUrls\', d.imageUrls)) AS posts, ' +
+  '\'title\', c.title, \'url\', c.url, \'views\', c.views, \'original\', c.original, \'playlistIndex\', b.playlistIndex, \'imageUrls\', d.imageUrls)) AS posts, ' +
   '((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=:userId AND playlistId = a.playlistId) > 0) AS followed, ' +
   '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=:userId AND playlistId = a.playlistId AND active = 1) > 0) AS reposted, ' +
   '((SELECT COUNT(*) FROM playlistsLikes WHERE userId=:userId AND playlistId = a.playlistId) > 0) AS liked, ' +
@@ -1633,7 +1725,10 @@ app.post('/api/postVisit', (req, res) => {
 
 app.post('/api/collectionPostVisit', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/collectionPostVisit');
-  const userId = req.user.userId
+  var userId = null;
+  if (req.user) {
+    userId = req.user.userId
+  }
   const view = req.body.view
 
   conn.query('INSERT IGNORE INTO playlistsViews (playlistId, mediaId, reposterId, viewerId, dateTime) VALUES ' +
@@ -2258,6 +2353,7 @@ app.post('/api/editProfileInfo', loggedIn, function(req, res) {
       console.log(err);
     } else {
       console.log("Edited profile successfully");
+      res.cookie('username', body.username)
       res.send({message: 'success'})
     }
   })
@@ -2339,7 +2435,6 @@ app.post('/api/follow', loggedIn, function(req, res) {
     if (err) {
       console.log(err);
     } else {
-      console.log(result[0]);
       var profileId = result[0].userId
       conn.query('INSERT IGNORE INTO following (followingUserId, followerUserId) VALUES (?, ?)', [profileId, userId], function(err, result) {
         if (err) {
@@ -2465,13 +2560,15 @@ app.post('/api/checkUsername', (req, res) => {
 
 app.post('/api/signup', passport.authenticate('local-signup'), (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/signup');
-  res.cookie('userId', req.user.userId)
-  res.send({message: 'success'});
+  const username = req.user.username
+  // res.cookie('userId', req.user.userId)
+  res.cookie('username', username)
+  res.send({username: username, profileName: username, profile_image_src: null});
 })
 
 app.post('/api/signin', passport.authenticate('local-login'), function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/signin');
-  res.cookie('userId', req.user.userId)
+  // res.cookie('userId', req.user.userId)
   res.cookie('username', req.user.username)
   const userId = req.user.userId
   conn.query('SELECT username, profileName, profile_image_src FROM users WHERE userId=? LIMIT 1', [userId], function(err, result) {
@@ -2486,7 +2583,7 @@ app.post('/api/signin', passport.authenticate('local-login'), function(req, res)
 app.post('/api/logout', function(req, res) {
   console.log('- Request received:', req.method.cyan, '/api/logout');
   req.logout()
-  res.clearCookie('userId');
+  // res.clearCookie('userId');
   res.clearCookie('username');
   req.session.destroy();
   res.send({message: 'success'})
@@ -2501,6 +2598,8 @@ function loggedIn(req, res, next) {
   if (req.user) {
     next()
   } else {
+    // res.clearCookie('userId');
+    res.clearCookie('username');
     res.send({message: 'not logged in'})
   }
 }
@@ -2586,7 +2685,7 @@ function insertPostImages(mediaId, imageMetadata, dimensions) {
   });
 }
 
-function getStream(cookieUser, userId, isProfile, original, posts, playlists, reposts) {
+function getStream(cookieUser, userId, isProfile, original, posts, playlists, reposts, lastDate) {
   return new Promise(function(resolve, reject) {
     var profileToggle1 = ''
     var profileToggle2 = ''
@@ -2595,11 +2694,21 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
 
     var userPlaylistsFollowing = ''
 
+    var lastDateToggle1 = ''
+    var lastDateToggle2 = ''
+    var lastDateToggle3 = ''
+
+    if (lastDate) {
+      lastDateToggle1 = 'AND UNIX_TIMESTAMP(a.displayTime) < ' + lastDate + ' '
+      lastDateToggle2 = 'AND UNIX_TIMESTAMP(a.dateTime) < ' + lastDate + ' '
+      lastDateToggle3 = 'AND UNIX_TIMESTAMP(b.dateTime) < ' + lastDate + ' '
+    }
+
     if (!isProfile) {
       profileToggle1 = 'b.userId IN (SELECT followingUserId FROM following WHERE followerUserId=:userId) OR '
       profileToggle2 = 'a.userId IN (SELECT followingUserId FROM following WHERE followerUserId=:userId) OR '
-      profileToggle3 = 'reposts.userId IN (SELECT followingUserId FROM following WHERE followerUserId=:userId) OR '
-      profileToggle4 = 'posts.userId IN (SELECT followingUserId FROM following WHERE followerUserId=:userId) OR '
+      // profileToggle3 = 'reposts.userId IN (SELECT followingUserId FROM following WHERE followerUserId=:userId) OR '
+      // profileToggle4 = 'posts.userId IN (SELECT followingUserId FROM following WHERE followerUserId=:userId) OR '
 
       userPlaylistsFollowing = 'SELECT null AS mediaId, a.playlistId, a.title, a.url, a.genre, a.public, null AS original, null AS imageUrls, ' +
       'null AS views, a.likes, a.reposts, a.comments, a.followers AS playlistFollowers, a.description, a.dateTime AS uploadDate, a.displayTime AS orderTime, a.displayTime, a.postsAdded, ' +
@@ -2613,7 +2722,7 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
       'LEFT JOIN playlistsPosts AS c ON c.playlistId = a.playlistId AND c.dateTime < a.displayTime ' +
       'LEFT JOIN posts AS d ON d.mediaId = c.mediaId ' +
       'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', imageUrl, \'width\', width, \'height\', height, \'imageIndex\', imageIndex)) AS imageUrls FROM postsImages GROUP BY mediaId) e ON e.mediaId = d.mediaId ' +
-      'WHERE ' + profileToggle1 + 'b.userId=:userId GROUP BY b.playlistId UNION ALL '
+      'WHERE ' + profileToggle1 + 'b.userId=:userId ' + lastDateToggle1 + 'GROUP BY b.playlistId UNION ALL '
     } else {
       userPlaylistsFollowing = ''
     }
@@ -2621,8 +2730,8 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     var originalToggle1 = ''
     var originalToggle2 = ''
     if (original) {
-      originalToggle1 = 'AND posts.original = 1'
-      originalToggle2 = 'AND a.original = 1'
+      originalToggle1 = 'AND b.original = 1 '
+      originalToggle2 = 'AND a.original = 1 '
     }
 
     var userPlaylistReposts = 'SELECT null as mediaId, a.playlistId, a.title, a.url, a.genre, a.public, null as original, null as imageUrls, ' +
@@ -2637,7 +2746,7 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     'LEFT JOIN playlistsPosts AS e ON e.playlistId = b.playlistId ' +
     'LEFT JOIN posts AS f ON f.mediaId = e.mediaId ' +
     'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', imageUrl, \'width\', width, \'height\', height, \'imageIndex\', imageIndex)) AS imageUrls FROM postsImages GROUP BY mediaId) postsImages ON postsImages.mediaId = f.mediaId ' +
-    'WHERE ' + profileToggle1 + 'b.userId=:userId AND b.active = 1 GROUP BY b.repostId'
+    'WHERE ' + profileToggle1 + 'b.userId=:userId AND b.active = 1 ' + lastDateToggle3 + 'GROUP BY b.repostId'
 
     var userPlaylistPosts = 'SELECT null as mediaId, a.playlistId, a.title, a.url, a.genre, a.public, null as original, null as imageUrls, ' +
     'null AS views, a.likes, a.reposts, a.comments, a.followers AS playlistFollowers, a.description, a.dateTime AS uploadDate, a.dateTime as orderTime, null AS displayTime, null AS postsAdded, ' +
@@ -2650,33 +2759,33 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
     'LEFT JOIN playlistsPosts AS b ON b.playlistId = a.playlistId ' +
     'LEFT JOIN posts AS c ON c.mediaId = b.mediaId ' +
     'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', imageUrl, \'width\', width, \'height\', height, \'imageIndex\', imageIndex)) AS imageUrls FROM postsImages GROUP BY mediaId) d ON d.mediaId = c.mediaId ' +
-    'WHERE ' + profileToggle2 + 'a.userId=:userId GROUP BY a.playlistId'
+    'WHERE ' + profileToggle2 + 'a.userId=:userId ' + lastDateToggle2 + 'GROUP BY a.playlistId'
 
-    var userReposts = 'SELECT a.mediaId, null as playlistId, a.title, a.url, a.genre, null, a.original, ' +
-    'JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', e.imageUrl, \'width\', e.width, \'height\', e.height, \'imageIndex\', e.imageIndex)) AS imageUrls, a.views, ' +
-    'a.likes, a.reposts, a.comments, null as playlistFollowers, a.description, a.dateTime AS uploadDate, reposts.dateTime as orderTime, null AS displayTime, null AS postsAdded, ' +
-    'reposts.username as repost_username, reposts.profileName as repost_profileName, reposts.profile_image_src AS repost_profile_image_src, ' +
-    'a.username, a.profileName, a.profile_image_src, d.postTags AS postTags, null AS playlistPosts, ' +
+    var userReposts = 'SELECT b.mediaId, null as playlistId, b.title, b.url, b.genre, null, b.original, ' +
+    'JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', e.imageUrl, \'width\', e.width, \'height\', e.height, \'imageIndex\', e.imageIndex)) AS imageUrls, b.views, ' +
+    'b.likes, b.reposts, b.comments, null as playlistFollowers, b.description, b.dateTime AS uploadDate, a.dateTime as orderTime, null AS displayTime, null AS postsAdded, ' +
+    'a.username as repost_username, a.profileName as repost_profileName, a.profile_image_src AS repost_profile_image_src, ' +
+    'b.username, b.profileName, b.profile_image_src, d.postTags AS postTags, null AS playlistPosts, ' +
+    '((SELECT COUNT(*) FROM reposts WHERE userId=:cookieUser AND mediaId = b.mediaId AND active = 1) > 0) AS reposted, ' +
+    '((SELECT COUNT(*) FROM likes WHERE userId=:cookieUser AND mediaId = b.mediaId) > 0) AS liked, ' +
+    'null AS followed, ' +
+    '(b.userId = :cookieUser) AS isPoster FROM reposts AS a ' +
+    'INNER JOIN posts AS b ON b.mediaId = a.mediaId ' +
+    'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'itemType\', itemType, \'itemName\', itemName, \'itemBrand\', itemBrand, \'itemLink\', itemLink, \'original\', original, \'x\', x, \'y\', y, \'imageIndex\', imageIndex)) AS postTags FROM tags GROUP BY mediaId) d ON d.mediaId = a.mediaId ' +
+    'INNER JOIN postsImages AS e ON e.mediaId = a.mediaId ' +
+    'WHERE (' + profileToggle2 + 'a.userId=:userId) AND a.active = 1 ' + lastDateToggle2 + originalToggle1 + 'GROUP BY a.repostId'
+
+    var userPosts = 'SELECT a.mediaId, null as playlistId, a.title, a.url, a.genre, null, a.original, ' +
+    'JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', e.imageUrl, \'width\', e.width, \'height\', e.height, \'imageIndex\', e.imageIndex)) AS imageUrls, a.views, a.likes, a.reposts, a.comments, ' +
+    'null as playlistFollowers, a.description, a.dateTime AS uploadDate, a.dateTime as orderTime, null AS displayTime, null AS postsAdded, ' +
+    'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, ' +
+    'a.username, a.profileName, a.profile_image_src, tags.postTags AS postTags, null AS playlistPosts, ' +
     '((SELECT COUNT(*) FROM reposts WHERE userId=:cookieUser AND mediaId = a.mediaId AND active = 1) > 0) AS reposted, ' +
     '((SELECT COUNT(*) FROM likes WHERE userId=:cookieUser AND mediaId = a.mediaId) > 0) AS liked, ' +
-    'null AS followed, ' +
-    '(a.userId = :cookieUser) AS isPoster FROM reposts ' +
-    'INNER JOIN posts AS a ON a.mediaId = reposts.mediaId ' +
-    'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'itemType\', itemType, \'itemName\', itemName, \'itemBrand\', itemBrand, \'itemLink\', itemLink, \'original\', original, \'x\', x, \'y\', y, \'imageIndex\', imageIndex)) AS postTags FROM tags GROUP BY mediaId) d ON d.mediaId = reposts.mediaId ' +
-    'INNER JOIN postsImages AS e ON e.mediaId = reposts.mediaId ' +
-    'WHERE (' + profileToggle3 + 'reposts.userId=:userId) AND reposts.active = 1 ' + originalToggle2 + ' GROUP BY reposts.repostId'
-
-    var userPosts = 'SELECT posts.mediaId, null as playlistId, title, url, genre, null, posts.original, ' +
-    'JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', e.imageUrl, \'width\', e.width, \'height\', e.height, \'imageIndex\', e.imageIndex)) AS imageUrls, views, likes, reposts, comments, ' +
-    'null as playlistFollowers, posts.description, posts.dateTime AS uploadDate, posts.dateTime as orderTime, null AS displayTime, null AS postsAdded, ' +
-    'null as repost_username, null as repost_profileName, null AS repost_profile_image_src, ' +
-    'username, profileName, profile_image_src, tags.postTags AS postTags, null AS playlistPosts, ' +
-    '((SELECT COUNT(*) FROM reposts WHERE userId=:cookieUser AND mediaId = posts.mediaId AND active = 1) > 0) AS reposted, ' +
-    '((SELECT COUNT(*) FROM likes WHERE userId=:cookieUser AND mediaId = posts.mediaId) > 0) AS liked, ' +
-    'null AS followed, (posts.userId = :cookieUser) AS isPoster FROM posts ' +
-    'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'itemType\', itemType, \'itemName\', itemName, \'itemBrand\', itemBrand, \'itemLink\', itemLink, \'original\', original, \'x\', x, \'y\', y, \'imageIndex\', imageIndex)) AS postTags FROM tags GROUP BY mediaId) tags ON tags.mediaId = posts.mediaId ' +
-    'LEFT JOIN postsImages AS e ON e.mediaId = posts.mediaId ' +
-    'WHERE (' + profileToggle4 + 'posts.userId=:userId) ' + originalToggle1 + ' GROUP BY posts.mediaId'
+    'null AS followed, (a.userId = :cookieUser) AS isPoster FROM posts AS a ' +
+    'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'itemType\', itemType, \'itemName\', itemName, \'itemBrand\', itemBrand, \'itemLink\', itemLink, \'original\', original, \'x\', x, \'y\', y, \'imageIndex\', imageIndex)) AS postTags FROM tags GROUP BY mediaId) tags ON tags.mediaId = a.mediaId ' +
+    'LEFT JOIN postsImages AS e ON e.mediaId = a.mediaId ' +
+    'WHERE (' + profileToggle2 + 'a.userId=:userId) ' + lastDateToggle2 + originalToggle2 + ' GROUP BY a.mediaId'
 
     var orderBy = ' ORDER BY orderTime DESC LIMIT 20'
 
@@ -2973,6 +3082,64 @@ function exploreHelper(type, userId, timePeriod) {
       } else {
         for (var i = 0; i < result.length; i++) {
           result[i].imageUrls = JSON.parse(result[i].imageUrls)
+        }
+        return resolve(result)
+      }
+    })
+  })
+}
+
+function exploreCollectionsHelper(type, userId, timePeriod) {
+  return new Promise(function(resolve, reject) {
+    var hotScore = ''
+    var orderBy = ''
+    switch (type) {
+      //hot
+      case 0:
+        hotScore = '(LOG(10, GREATEST(1, a.likes + a.followers)) + UNIX_TIMESTAMP(a.dateTime)/45000) AS hotScore, '
+        orderBy = 'ORDER BY hotScore '
+        break;
+      //new
+      case 1:
+        orderBy = 'ORDER BY a.dateTime '
+        break;
+      //top
+      case 2:
+        orderBy = 'ORDER BY a.likes + a.followers '
+        break;
+      //random
+      case 3:
+        orderBy = 'ORDER BY a.likes + a.followers '
+        break;
+      default:
+        hotScore = '(LOG(10, GREATEST(1, a.likes + a.followers)) + UNIX_TIMESTAMP(a.dateTime)/45000) AS hotScore, '
+        orderBy = 'ORDER BY hotScore '
+    }
+
+    var timePeriodQuery = ''
+    if (timePeriod) {
+      timePeriodQuery = 'WHERE a.dateTime BETWEEN :timePeriod AND NOW() '
+    }
+
+    conn.query('SELECT a.*, a.dateTime AS uploadDate, b.posts, (a.userId = :userId) AS isPoster, ' + hotScore +
+    '((SELECT COUNT(*) FROM playlistsReposts WHERE userId=:userId AND playlistId = a.playlistId AND active = 1) > 0) AS reposted, ' +
+    '((SELECT COUNT(*) FROM playlistsLikes WHERE userId=:userId AND playlistId = a.playlistId) > 0) AS liked, ' +
+    '((SELECT COUNT(*) FROM playlistsFollowers WHERE userId=:userId AND playlistId = a.playlistId) > 0) AS followed ' +
+    'FROM playlists AS a ' +
+    'JOIN (SELECT a.playlistId, ' +
+    'JSON_ARRAYAGG(JSON_OBJECT(\'mediaId\', b.mediaId, \'url\', b.url, \'title\', b.title, \'views\', b.views, \'original\', b.original, \'username\', b.username, \'profileName\', b.profileName, \'playlistIndex\', a.playlistIndex, \'imageUrls\', c.imageUrls)) AS posts ' +
+    'FROM playlistsPosts AS a ' +
+    'JOIN posts AS b ON b.mediaId = a.mediaId ' +
+    'JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', imageUrl, \'width\', width, \'height\', height, \'imageIndex\', imageIndex)) AS imageUrls FROM postsImages GROUP BY mediaId) c ON c.mediaId = b.mediaId GROUP BY a.playlistId) b ON b.playlistId = a.playlistId ' +
+    timePeriodQuery + 'GROUP BY playlistId ' + orderBy + 'DESC LIMIT 3', {userId: userId, timePeriod: timePeriod}, function(err, result) {
+      if (err) {
+        console.log(err);
+        return reject(err)
+      } else {
+        for (var i = 0; i < result.length; i++) {
+          if (result[i].posts) {
+            result[i].posts = JSON.parse(result[i].posts)
+          }
         }
         return resolve(result)
       }

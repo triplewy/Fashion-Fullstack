@@ -43,6 +43,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleLike(e) {
+    e.stopPropagation()
     const target = e.target
     fetch('/api/playlistLike', {
       method: 'POST',
@@ -71,6 +72,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleUnlike(e) {
+    e.stopPropagation()
     const target = e.target
     fetch('/api/playlistUnlike', {
       method: 'POST',
@@ -99,6 +101,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleRepost(e) {
+    e.stopPropagation()
     const target = e.target
     fetch('/api/playlistRepost', {
       method: 'POST',
@@ -127,6 +130,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleUnrepost(e) {
+    e.stopPropagation()
     const target = e.target
     fetch('/api/playlistUnrepost', {
       method: 'POST',
@@ -155,6 +159,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleFollow(e) {
+    e.stopPropagation()
     const target = e.target
     fetch('/api/playlistFollow', {
       method: 'POST',
@@ -183,6 +188,7 @@ export default class StatsHeader extends React.Component {
   }
 
   handleUnfollow(e) {
+    e.stopPropagation()
     const target = e.target
     fetch('/api/playlistUnfollow', {
       method: 'POST',

@@ -50,12 +50,12 @@ export default class NavbarProfile extends React.Component {
           <div id="profile_image_div" style={{backgroundImage: 'url(' + this.props.profile_image_src + ')'}} />
           <p id="user_name">{this.props.profileName}</p>
         </Dropdown.Toggle>
-        <Dropdown.Menu>
+        <Dropdown.Menu id="navbar_profile_dropdown_menu">
           <li onClick={this.closeDropdown}>
             <Link to={"/" + this.props.username}>Profile</Link>
           </li>
           <li onClick={this.closeDropdown}>
-            <Link to={"/you/likes/posts"}>Likes</Link>
+            <Link to={"/you/likes"}>Likes</Link>
           </li>
           <li>
             <StatsColumn dayViews={this.state.dayViews} weekViews={this.state.weekViews} totalViews={this.state.totalViews} closeDropdown={this.closeDropdown}/>

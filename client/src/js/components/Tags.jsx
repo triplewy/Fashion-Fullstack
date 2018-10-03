@@ -86,7 +86,6 @@ export default class Tags extends React.Component {
   render() {
     var renderedTags = [];
     if (this.props.tags) {
-      console.log(this.props.tags);
       renderedTags = this.props.tags.map((item, index) => {
           return (
             <li key={index} className={(this.state.selectedTagIndex === index && this.props.carouselIndex === item.imageIndex) ? "active" : ""}>

@@ -15,8 +15,7 @@ import Stream from './Stream.jsx';
 import Profile from './Profile.jsx';
 import SinglePostPage from './SinglePostPage.jsx'
 import SinglePlaylistPage from './SinglePlaylistPage.jsx'
-import LikesPosts from './LikesPosts.jsx'
-import LikesAlbums from './LikesAlbums.jsx'
+import Likes from './Likes.jsx'
 import UploadDropzone from './UploadDropzone.jsx'
 import Explore from './Explore.jsx'
 import Search from './Search.jsx'
@@ -64,6 +63,10 @@ export default class Routes extends React.Component {
   }
 
   handleLogin(username, password) {
+    console.log("username is", username);
+    console.log("password is", password);
+    var seen = [];
+
     fetch('/api/signin', {
       method: 'POST',
       headers: {
@@ -74,6 +77,14 @@ export default class Routes extends React.Component {
       body: JSON.stringify({
         username: username,
         password: password,
+      }, function(key, val) {
+        if (val != null && typeof val == "object") {
+          if (seen.indexOf(val) >= 0) {
+            return;
+          }
+          seen.push(val);
+        }
+        return val;
       })
     })
     .then(res => res.json())
@@ -137,15 +148,14 @@ export default class Routes extends React.Component {
             <Switch>
               <Route exact path='/' render={(props) => Cookie.get('username') ? <Stream {...props}/> : <Home {...props}/>} />
               <PrivateRoute exact path='/upload' component={UploadDropzone} />}/>
-              <PrivateRoute exact path='/you/likes/posts' component={LikesPosts} />
-              <PrivateRoute exact path='/you/likes/albums' component={LikesAlbums} />
+              <PrivateRoute exact path='/you/likes' component={Likes} />
               <PrivateRoute exact path='/you/stats' component={Stats} />
               <PrivateRoute exact path='/you/notifications' component={NotificationsPage} />
               <PrivateRoute exact path='/explore' component={Explore}/>
               <Route path='/verify' component={Verify} />
               <Route path='/search' component={Search} />
               <Route exact path='/explore/:genre' render={({match}) => <Explore genre={match.params.genre} />} />
-              <Route exact path='/signup' render={(props) => <Signup loggedIn={this.setUser} user={this.state.user} {...props}/>} />
+              <Route exact path='/signup' render={(props) => <Signup setUser={this.setUser} user={this.state.user} {...props}/>} />
               <Route exact path='/genre/:genre' render={({match}) => <GenrePage genre={match.params.genre} />} />
               <Route exact path='/:profile' render={({match}) => <Profile profile={match.params.profile} setUser={this.setUser}/>} />
               <Route exact path='/:profile/followers' component={FollowersPage} />

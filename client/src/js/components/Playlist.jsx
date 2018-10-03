@@ -20,7 +20,9 @@ export default class Playlist extends React.Component {
       playlistIndex: 0,
       bottom: 0,
       tags: [],
-      seen: new Array(this.props.playlist.posts.length).fill(false),
+      // seen: new Array(this.props.playlist.posts.length).fill(false),
+      seen: [this.props.playlist.posts.length],
+
 
       displayTagLocation: false,
       tagX: 0,

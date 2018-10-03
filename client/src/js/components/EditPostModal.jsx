@@ -9,6 +9,7 @@ import edit_icon from 'images/edit-icon.svg'
 export default class EditPostModal extends React.Component {
   constructor(props) {
     super(props);
+
     this.state = {
       tags: null,
       deletedTags: [],
@@ -37,10 +38,6 @@ export default class EditPostModal extends React.Component {
     this.handleClick = this.handleClick.bind(this)
     this.setCarouselIndex = this.setCarouselIndex.bind(this)
     this.setTagCarouselIndex = this.setTagCarouselIndex.bind(this)
-  }
-
-  componentDidMount() {
-    this.fetchTags()
   }
 
   fetchTags() {
@@ -162,7 +159,7 @@ export default class EditPostModal extends React.Component {
           <div style={{backgroundImage: 'url(' + edit_icon + ')'}} />
           <p>Edit</p>
         </li>
-        <Modal show={this.state.showModal} onHide={this.closeModal}>
+        <Modal show={this.state.showModal} onHide={this.closeModal} onEnter={this.fetchTags}>
           <Modal.Header closeButton>
             <Modal.Title>
               Edit Post

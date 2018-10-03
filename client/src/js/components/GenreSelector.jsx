@@ -28,23 +28,23 @@ export default class GenreSelector extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      topGenres: [],
+      topGenres: this.props.topGenres,
       genreSuggestions: []
     };
   }
 
   componentDidMount() {
-    fetch('/api/topGenres', {
-      credentials: 'include'
-    })
-    .then(res => res.json())
-    .then(data => {
-      console.log(data);
-      this.setState({topGenres: data});
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+    // fetch('/api/topGenres', {
+    //   credentials: 'include'
+    // })
+    // .then(res => res.json())
+    // .then(data => {
+    //   console.log(data);
+    //   this.setState({topGenres: data});
+    // })
+    // .catch((error) => {
+    //   console.error(error);
+    // });
   }
 
   onSuggestionsFetchRequested = ({ value }) => {

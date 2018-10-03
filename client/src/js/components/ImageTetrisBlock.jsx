@@ -28,8 +28,11 @@ export default class ImageTetris extends React.Component {
   componentDidMount() {
     window.addEventListener('scroll', this.handleScroll);
     setTimeout(() => {
-      this.setState({bottom: this.myRef.current.offsetTop + this.myRef.current.clientHeight - 80})
+      if (this.myRef.current) {
+        this.setState({bottom: this.myRef.current.offsetTop + this.myRef.current.clientHeight - 80})
+      }
     }, 10);
+
   }
 
   componentWillUnmount() {
@@ -110,8 +113,13 @@ export default class ImageTetris extends React.Component {
         {postImages.length > 1 ?
           <LinkContainer to={{ pathname: '/' + post.username + '/' + post.url, state: { postData: post}}}>
             <div className="image_wrapper">
-              <CarouselImages imageUrls={postImages} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}
-                explore={this.props.explore} relatedPosts={this.props.relatedPosts}/>
+              <CarouselImages
+                imageUrls={postImages}
+                carouselIndex={this.state.carouselIndex}
+                setCarouselIndex={this.setCarouselIndex}
+                explore={this.props.explore}
+                relatedPosts={this.props.relatedPosts}
+              />
             </div>
           </LinkContainer>
         :

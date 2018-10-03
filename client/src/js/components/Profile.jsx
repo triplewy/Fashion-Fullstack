@@ -6,6 +6,7 @@ import ProfileInfo from './ProfileInfo.jsx'
 import NotLoggedInOverlay from './NotLoggedInOverlay.jsx'
 import ErrorPage from './ErrorPage.jsx'
 import Cookie from 'js-cookie'
+import { Jumbotron } from 'react-bootstrap'
 // import * as loadImage from 'blueimp-load-image'
 
 export default class Profile extends React.Component {
@@ -13,7 +14,7 @@ export default class Profile extends React.Component {
     super(props);
     console.log(props);
     this.state = {
-      streamData: null,
+      streamData: [],
       profileInfo: {},
       isProfile: false,
       type_selector_value: 0,
@@ -444,8 +445,12 @@ export default class Profile extends React.Component {
               type_selector_value={this.state.type_selector_value}
               right={<ProfileInfo profileInfo={this.state.profileInfo} isProfile={this.state.isProfile} fetchProfileInfo={this.fetchProfileInfo}
                 readImageFile={this.readImageFile} getStream={this.getStream} setUser={this.props.setUser}/> } />
-              {this.state.streamData &&
+              {this.state.streamData.length > 0 ?
                 <RenderedPosts streamData={this.state.streamData} />
+                :
+                <Jumbotron>
+                  <p>There doesn't seem to be anything here!</p>
+                </Jumbotron>
               }
             </div>
           </div>

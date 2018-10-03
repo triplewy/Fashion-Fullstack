@@ -3,6 +3,7 @@ import validator from 'validator';
 import owasp from 'owasp-password-strength-test'
 import {Link, Redirect} from 'react-router-dom'
 import googleLogo from 'images/google-logo.png'
+import redditLogo from 'images/reddit-logo.png'
 
 // {this.state.emailIsValid ? <span className="signup_validator">✔</span> : <span className="signup_validator">x</span>}
 
@@ -74,7 +75,7 @@ export default class Signup extends React.Component {
     .then(data => {
       if (data.message === 'not logged in') {
       } else {
-        this.props.loggedIn(data)
+        this.props.setUser(data)
       }
     })
     .catch(function(err) {
@@ -110,8 +111,8 @@ export default class Signup extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message === 'success') {
-        this.props.loggedIn()
+      if (data) {
+        this.props.setUser(data)
       }
     }).catch(function(err) {
         console.log(err);
@@ -151,34 +152,38 @@ export default class Signup extends React.Component {
   }
 
   checkUsername(e) {
-    if (!validator.isAlphanumeric(this.state.signupUsername) && !this.state.signupUsername) {
-      console.log("not valid username");
-      this.setState({usernameIsValid: false})
-    } else {
-      fetch('/api/checkUsername', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: this.state.signupUsername
+    if (e.target.value.length < 20) {
+      const username = e.target.value.replace(/\W+/g, '').toLowerCase()
+      this.setState({signupUsername: username})
+      if (!validator.isAlphanumeric(username) && !username) {
+        console.log("not valid username");
+        this.setState({usernameIsValid: false})
+      } else {
+        fetch('/api/checkUsername', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: username
+          })
         })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.message === 'unique') {
-          console.log("username is good to go");
-          this.setState({usernameIsValid: true})
-        } else {
-          console.log("username is not valid");
-          this.setState({usernameIsValid: false})
-        }
-      })
-      .catch(function(err) {
-          console.log(err);
-      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.message === 'unique') {
+            console.log("username is good to go");
+            this.setState({usernameIsValid: true})
+          } else {
+            console.log("username is not valid");
+            this.setState({usernameIsValid: false})
+          }
+        })
+        .catch(function(err) {
+            console.log(err);
+        })
+      }
     }
   }
 
@@ -200,7 +205,7 @@ export default class Signup extends React.Component {
   render() {
     if (this.props.user) {
       return (
-        <Redirect to={this.props.location.state ? this.props.location.state.from.pathname : '/'} />
+        <Redirect to={this.props.location.state ? this.props.location.state.from.pathname : '/' + this.props.user.username} />
       )
     }
     return (
@@ -231,8 +236,12 @@ export default class Signup extends React.Component {
             <div className="welcome_text">
               <p>Use Google, Facebook, or Reddit to create an account</p>
               <div className="oauth_div">
+                {/* <a target="_blank" onClick={this.clickLink}>{item.itemLink}</a> */}
                 <a href='http://localhost:8081/auth/google'>
-                  <img alt="google" src={googleLogo} />
+                  <div style={{backgroundImage: 'url(' + googleLogo + ')'}} />
+                </a>
+                <a href='http://localhost:8081/auth/reddit'>
+                  <div style={{backgroundImage: 'url(' + redditLogo + ')'}} />
                 </a>
               </div>
               <p>Or use the old fashioned way to create an account</p>
@@ -242,13 +251,13 @@ export default class Signup extends React.Component {
                 onChange={this.handleChange} onBlur={this.checkEmail}
                 value={this.state.signupEmail} className={this.state.emailIsValid ? "valid_field" : ''}></input>
               <input type="text" autoComplete="off" placeholder="Username" name="signupUsername"
-                onChange={this.handleChange} onBlur={this.checkUsername}
+                onChange={this.checkUsername} onBlur={this.checkUsername}
                 value={this.state.signupUsername} className={this.state.usernameIsValid ? "valid_field" : ''}></input>
-              <input type="text" autoComplete="off" placeholder="Password" name="signupPassword"
+              <input type="password" autoComplete="off" placeholder="Password" name="signupPassword"
                 onChange={this.handleChange} onBlur={this.checkPassword}
                 value={this.state.signupPassword} className={this.state.passwordIsValid ? "valid_field" : ''}></input>
               <p>{this.state.passwordErrorMessage}</p>
-              <input type="text" autoComplete="off" placeholder="Confirm Password" name="signupConfirmPassword"
+              <input type="password" autoComplete="off" placeholder="Confirm Password" name="signupConfirmPassword"
                 onChange={this.handleChange} value={this.state.signupConfirmPassword}
                 className={(this.state.signupPassword === this.state.signupConfirmPassword) && this.state.signupConfirmPassword ? "valid_field" : ''}></input>
               <button onClick={this.handleSignup}

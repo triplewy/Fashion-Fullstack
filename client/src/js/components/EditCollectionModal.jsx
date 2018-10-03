@@ -65,7 +65,6 @@ export default class EditCollectionModal extends React.Component {
 
   render() {
     const collection = this.props.collection
-    console.log("collectionIndex is", this.state.collectionIndex);
     const currentPost = this.state.posts[this.state.collectionIndex]
     return (
       <div>

@@ -2,6 +2,7 @@ import React from 'react';
 import {Modal} from 'react-bootstrap'
 import { Link } from 'react-router-dom';
 import googleLogo from 'images/google-logo.png'
+import redditLogo from 'images/reddit-logo.png'
 
 export default class LoginModal extends React.Component {
   constructor(props) {
@@ -29,6 +30,8 @@ export default class LoginModal extends React.Component {
   }
 
   handleLogin(e) {
+    console.log(this.state.username);
+    console.log(this.state.password);
     this.props.handleLogin(this.state.username, this.state.password)
   }
 
@@ -43,7 +46,10 @@ export default class LoginModal extends React.Component {
             <p>Use Google, Facebook, or Reddit to login</p>
             <div className="oauth_div">
               <a href='http://localhost:8081/auth/google'>
-                <img alt="google" src={googleLogo} />
+                <div style={{backgroundImage: 'url(' + googleLogo + ')'}} />
+              </a>
+              <a href='http://localhost:8081/auth/reddit'>
+                <div style={{backgroundImage: 'url(' + redditLogo + ')'}} />
               </a>
             </div>
             <p>Or use the old fashioned way to login</p>
@@ -54,7 +60,7 @@ export default class LoginModal extends React.Component {
               name="username" onChange={this.handleChange} value={this.state.username}></input>
             <input type="password" placeholder="Password" name="password" onChange={this.handleChange}
             onKeyPress={this.handleKeyPress} value={this.state.password}></input>
-            <button onClick={this.props.handleLogin}>Login</button>
+            <button onClick={this.handleLogin}>Login</button>
             <Link to="/signup" onClick={this.props.toggleLoginModal}>Create an account</Link>
           </div>
         </Modal.Body>
