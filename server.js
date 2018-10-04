@@ -14,11 +14,13 @@ var LocalStrategy = require('passport-local').Strategy
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 var RedditStrategy = require('passport-reddit').Strategy
 var crypto = require('crypto')
+var uuidv1 = require('uuid/v1');
 var session = require('express-session');
 var RedisStore = require('connect-redis')(session);
 var Redis = require('redis')
 var bcrypt = require('bcrypt');
 var jo = require('jpeg-autorotate')
+var sharp = require('sharp')
 var fs = require('fs')
 var validator = require('validator');
 var nodemailer = require('nodemailer')
@@ -293,7 +295,7 @@ conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRI
 'title VARCHAR(255) NOT NULL, url VARCHAR(255) NOT NULL, genre TEXT, original BOOLEAN, ' +
 'views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY (username) REFERENCES users(username) ON UPDATE CASCADE, UNIQUE(userId, url));')
 
-conn.query('CREATE TABLE IF NOT EXISTS postsImages (imageId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, imageUrl VARCHAR(255) NOT NULL UNIQUE, imageIndex INTEGER NOT NULL, width INTEGER NOT NULL, height INTEGER NOT NULL, displayWidth INTEGER, displayHeight INTEGER, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE);')
+conn.query('CREATE TABLE IF NOT EXISTS postsImages (imageId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, imageUrl VARCHAR(255) NOT NULL UNIQUE, imageIndex INTEGER NOT NULL, width INTEGER NOT NULL, height INTEGER NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE);')
 
 conn.query('CREATE TABLE IF NOT EXISTS playlists (playlistId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT NOT NULL, profile_image_src VARCHAR(255), ' +
 'title VARCHAR(255), url VARCHAR(255) NOT NULL, genre TEXT, public BOOLEAN, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, ' +
@@ -624,7 +626,6 @@ var upload = multer({
   limits: {fileSize: 10000000, files: 5},
   fileFilter: function(request, file, callback) {
      var ext = path.extname(file.originalname)
-     console.log("ext is", ext);
      if (ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg' && ext !== '.JPG') {
           return callback(new Error('Only images are allowed'), false);
       }
@@ -1225,32 +1226,32 @@ app.get('/api/topPlaylistsViewers/:timePeriod', loggedIn, (req, res) => {
     }
   })
 })
+//
+// app.get('/api/home', loggedIn, (req, res) => {
+//   console.log('- Request received:', req.method.cyan, '/api/home');
+//   Promise.all([getStream(req.user.userId, req.user.userId, false, false, false, false, false)])
+//   .then(function(allData) {
+//     res.send(allData[0])
+//   }).catch(err => {
+//     console.log(err);
+//   })
+// })
 
-app.get('/api/home', loggedIn, (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/home');
-  Promise.all([getStream(req.user.userId, req.user.userId, false, false, false, false, false)])
-  .then(function(allData) {
-    res.send(allData[0])
+app.get('/api/home/:lastDate', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/home/' + req.params.lastDate);
+  getStream(req.user.userId, req.user.userId, false, false, false, false, false, req.params.lastDate)
+  .then(function(data) {
+    res.send(data)
   }).catch(err => {
     console.log(err);
   })
 })
 
-app.get('/api/home/:dateTime', loggedIn, (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/home/' + req.params.dateTime);
-  Promise.all([getStream(req.user.userId, req.user.userId, false, false, false, false, false, req.params.dateTime)])
-  .then(function(allData) {
-    res.send(allData[0])
-  }).catch(err => {
-    console.log(err);
-  })
-})
-
-app.get('/api/homeOriginal', loggedIn, (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/homeOriginal');
-  Promise.all([getStream(req.user.userId, req.user.userId, false, true, false, false, false)])
-  .then(function(allData) {
-    res.send(allData[0])
+app.get('/api/homeOriginal/:lastDate', loggedIn, (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/homeOriginal/' + req.params.lastDate);
+  getStream(req.user.userId, req.user.userId, false, true, false, false, false, req.params.lastDate)
+  .then(function(data) {
+    res.send(data)
   }).catch(err => {
     console.log(err);
   })
@@ -2187,8 +2188,33 @@ app.get('/api/:profile/info', (req, res) => {
   })
 })
 
-app.get('/api/:profile/stream', (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/stream');
+// app.get('/api/:profile/stream', (req, res) => {
+//   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/stream');
+//   var userId = null;
+//   if (req.user) {
+//     userId = req.user.userId
+//   }
+//   const username = req.params.profile;
+//   conn.query('SELECT userId FROM users WHERE username = ? LIMIT 1', [username], function(err, result) {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       if (result[0]) {
+//         getStream(userId, result[0].userId, true, false, false, false, false)
+//         .then(function(data) {
+//           res.send(data)
+//         }).catch(err => {
+//           console.log(err);
+//         })
+//       } else {
+//         res.send({message: "error"})
+//       }
+//     }
+//   })
+// })
+
+app.get('/api/:profile/stream/:lastDate', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/stream/' + req.params.lastDate);
   var userId = null;
   if (req.user) {
     userId = req.user.userId
@@ -2199,7 +2225,7 @@ app.get('/api/:profile/stream', (req, res) => {
       console.log(err);
     } else {
       if (result[0]) {
-        getStream(userId, result[0].userId, true, false, false, false, false)
+        getStream(userId, result[0].userId, true, false, false, false, false, req.params.lastDate)
         .then(function(data) {
           res.send(data)
         }).catch(err => {
@@ -2234,7 +2260,7 @@ app.get('/api/:profile/userDetails', (req, res) => {
   })
 })
 
-app.get('/api/:profile/streamOriginal', (req, res) => {
+app.get('/api/:profile/streamOriginal/:lastDate', (req, res) => {
   console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/streamOriginal');
   var userId = null;
   if (req.user) {
@@ -2255,8 +2281,8 @@ app.get('/api/:profile/streamOriginal', (req, res) => {
   })
 })
 
-app.get('/api/:profile/streamPosts', (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/streamPosts');
+app.get('/api/:profile/streamPosts/:lastDate', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/streamPosts/' + req.params.lastDate);
   var userId = null;
   if (req.user) {
     userId = req.user.userId
@@ -2266,7 +2292,7 @@ app.get('/api/:profile/streamPosts', (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      getStream(userId, result[0].userId, true, false, true, false, false)
+      getStream(userId, result[0].userId, true, false, true, false, false, req.params.lastDate)
       .then(function(allData) {
         res.send(allData)
       }).catch(err => {
@@ -2276,8 +2302,8 @@ app.get('/api/:profile/streamPosts', (req, res) => {
   })
 })
 
-app.get('/api/:profile/streamPlaylists', (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/streamPlaylists');
+app.get('/api/:profile/streamPlaylists/:lastDate', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/streamPlaylists/' + req.params.lastDate);
   var userId = null;
   if (req.user) {
     userId = req.user.userId
@@ -2287,7 +2313,7 @@ app.get('/api/:profile/streamPlaylists', (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      getStream(userId, result[0].userId, true, false, false, true, false)
+      getStream(userId, result[0].userId, true, false, false, true, false, req.params.lastDate)
       .then(function(allData) {
         res.send(allData)
       }).catch(err => {
@@ -2297,8 +2323,8 @@ app.get('/api/:profile/streamPlaylists', (req, res) => {
   })
 })
 
-app.get('/api/:profile/streamReposts', (req, res) => {
-  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/streamReposts');
+app.get('/api/:profile/streamReposts/:lastDate', (req, res) => {
+  console.log('- Request received:', req.method.cyan, '/api/' + req.params.profile + '/streamReposts/' + req.params.lastDate);
   var userId = null;
   if (req.user) {
     userId = req.user.userId
@@ -2308,7 +2334,7 @@ app.get('/api/:profile/streamReposts', (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      getStream(userId, result[0].userId, true, false, false, false, true)
+      getStream(userId, result[0].userId, true, false, false, false, true, req.params.lastDate)
       .then(function(allData) {
         res.send(allData)
       }).catch(err => {
@@ -2485,7 +2511,7 @@ app.post('/api/upload', loggedIn, function(req, res) {
       console.log(err);
       res.send({message: err.message})
     } else {
-      storeImages(req.files).then(imageMetadata => {
+      storeImages(req.files, req.body.dimensions).then(imageMetadata => {
         conn.query('START TRANSACTION', [], function(err, result) {
           if (err) {
             console.log(err);
@@ -2667,15 +2693,16 @@ function postTagsFromUploadRevised(mediaId, inputTags) {
 
 function insertPostImages(mediaId, imageMetadata, dimensions) {
   return new Promise(function(resolve, reject) {
+    console.log("imageMetadata is", imageMetadata);
+    console.log("dimensions are", dimensions);
     var question_query = ''
     var insertQuery = [];
     for (var i = 0; i < imageMetadata.length; i++) {
-      insertQuery.push(mediaId, imageMetadata[i].filename, imageMetadata[i].height, imageMetadata[i].width,
-        dimensions[i].display.height, dimensions[i].display.width, imageMetadata[i].order);
-      question_query += '(?, ?, ?, ?, ?, ?, ?),';
+      insertQuery.push(mediaId, imageMetadata[i].filename, dimensions[i].width, dimensions[i].height, imageMetadata[i].order);
+      question_query += '(?, ?, ?, ?, ?),';
     }
     question_query = question_query.slice(0, -1);
-    conn.query('INSERT INTO postsImages (mediaId, imageUrl, height, width, displayHeight, displayWidth, imageIndex) VALUES ' + question_query, insertQuery, function(err, result) {
+    conn.query('INSERT INTO postsImages (mediaId, imageUrl, width, height, imageIndex) VALUES ' + question_query, insertQuery, function(err, result) {
       if (err) {
         return reject(err);
       } else {
@@ -2689,8 +2716,6 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
   return new Promise(function(resolve, reject) {
     var profileToggle1 = ''
     var profileToggle2 = ''
-    var profileToggle3 = ''
-    var profileToggle4 = ''
 
     var userPlaylistsFollowing = ''
 
@@ -2723,8 +2748,6 @@ function getStream(cookieUser, userId, isProfile, original, posts, playlists, re
       'LEFT JOIN posts AS d ON d.mediaId = c.mediaId ' +
       'LEFT JOIN (SELECT mediaId, JSON_ARRAYAGG(JSON_OBJECT(\'imageUrl\', imageUrl, \'width\', width, \'height\', height, \'imageIndex\', imageIndex)) AS imageUrls FROM postsImages GROUP BY mediaId) e ON e.mediaId = d.mediaId ' +
       'WHERE ' + profileToggle1 + 'b.userId=:userId ' + lastDateToggle1 + 'GROUP BY b.playlistId UNION ALL '
-    } else {
-      userPlaylistsFollowing = ''
     }
 
     var originalToggle1 = ''
@@ -2998,26 +3021,28 @@ function orderFollowers(sortBy) {
   }
 }
 
-async function storeImages(files) {
+async function storeImages(files, dimensions) {
   var imageMetadata = []
   for (var i = 0; i < files.length; i++) {
     var file = files[i]
-    var filename = "/images/" + file.fieldname + '-' + Date.now() +'.jpg'
-    var metadata = await storeImagesHelper(file, filename, i)
+    var dimension = dimensions[i]
+    var filename = "/images/" + uuidv1() + '.jpg'
+    var metadata = await storeImagesHelper(file, dimension, filename, i)
     imageMetadata.push(metadata)
   }
   return imageMetadata
 }
 
-function storeImagesHelper(file, filename, index) {
+function storeImagesHelper(file, dimensions, filename, index) {
   return new Promise(function(resolve, reject) {
-    var dimensions = sizeOf(file.buffer);
+    // var dimensions = sizeOf(file.buffer);
     if (file.mimetype == 'image/png') {
       fs.writeFile("public" + filename, file.buffer, function(err) {
         if (err) {
           return reject(err);
         } else {
-          return resolve({filename: filename, height: dimensions.height, width: dimensions.width, order: index})
+          return resolve({filename: filename, order: index})
+          // return resolve({filename: filename, height: dimensions.height, width: dimensions.width, order: index})
         }
       })
     } else {
@@ -3030,7 +3055,8 @@ function storeImagesHelper(file, filename, index) {
             if (err) {
               return reject(err)
             } else {
-              return resolve({filename: filename, height: dimensions.height, width: dimensions.width, order: index})
+              return resolve({filename: filename, order: index})
+              // return resolve({filename: filename, height: dimensions.height, width: dimensions.width, order: index})
             }
           })
         }

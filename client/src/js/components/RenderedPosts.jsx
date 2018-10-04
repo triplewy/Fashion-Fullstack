@@ -1,31 +1,19 @@
 import React from 'react';
 import Post from './Post.jsx'
 import Playlist from './Playlist.jsx'
-
-{/* <Post key={index} index={index} mediaId={item.mediaId} genre={item.genre} username={item.username}
-      profileName={item.profileName} profile_image_src={item.profile_image_src}
-      original={item.original} imageUrls={item.imageUrls} views={item.views} likes={item.likes}
-      reposts={item.reposts} comments={item.comments} title={item.title} url={item.url}
-      description={item.description} uploadDate={item.uploadDate} tags={item.tags}
-      repost_username={item.repost_username} repost_profileName={item.repost_profileName}
-      repost_profile_image_src={item.repost_profile_image_src} repostDate={item.repostDate}
-      reposted={item.reposted} liked={item.liked} isPoster={item.isPoster} /> */}
-
-{/* <Playlist key={index} index={index} playlistId={item.playlistId} genre={item.genre} username={item.username}
-      profileName={item.profileName} profile_image_src={item.profile_image_src} url={item.url}
-      playlist_image_srcs={item.playlist_image_srcs} likes={item.likes}
-      reposts={item.reposts} comments={item.comments} title={item.title}
-      description={item.description} uploadDate={item.uploadDate} followers={item.followers}
-      posts={item.posts} repost_username={item.repost_username} repost_profileName={item.repost_profileName}
-      repost_profile_image_src={item.repost_profile_image_src} repostDate={item.repostDate}
-      reposted={item.reposted} liked={item.liked} followed={item.followed}
-      isPoster={item.isPoster} /> */}
+import InfiniteScroll from 'react-infinite-scroller'
 
 export default class RenderedPosts extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
     };
+
+    this.backToTop = this.backToTop.bind(this)
+  }
+
+  backToTop(e) {
+    window.scrollTo(0,0)
   }
 
   render() {
@@ -53,10 +41,23 @@ export default class RenderedPosts extends React.Component {
         }
       })
     }
-      return (
-        <div>
+    return (
+      <div>
+        <InfiniteScroll
+          initialLoad={false}
+          loadMore={this.props.fetchStreamScroll.bind(this)}
+          hasMore={this.props.hasMore}
+          loader={<div className="loader" key={0}>Loading ...</div>}
+          useWindow={true}
+        >
           {rendered_posts}
-        </div>
+        </InfiniteScroll>
+        {this.props.hasMore ?
+          null
+          :
+          <div className="back_to_top" onClick={this.backToTop}>Back to top</div>
+        }
+      </div>
     );
   }
 }

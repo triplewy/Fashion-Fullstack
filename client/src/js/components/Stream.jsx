@@ -15,50 +15,53 @@ export default class Stream extends React.Component {
     };
 
     this.toggle_type = this.toggle_type.bind(this);
+    this.fetchStream = this.fetchStream.bind(this)
+    this.fetchStreamScroll = this.fetchStreamScroll.bind(this)
     this.getStream = this.getStream.bind(this)
-    this.getStreamScroll = this.getStreamScroll.bind(this)
     this.getOriginalStream = this.getOriginalStream.bind(this)
   }
 
   componentDidMount() {
     window.scrollTo(0, 0)
-    this.getStream()
+    this.fetchStream(0)
   }
 
   toggle_type(e) {
-    if (e.target.name == 1) {
-      this.getOriginalStream()
-    } else {
-      this.getStream()
+    const toggleInt = e.target.name * 1
+    this.setState({type_selector_value: toggleInt, streamData:[]});
+    this.fetchStream(toggleInt)
+  }
+
+  fetchStream(type_selector_value) {
+    const seconds = Math.round(Date.now() / 1000)
+    switch (type_selector_value) {
+      case 0:
+        this.getStream(seconds)
+        break;
+      case 1:
+        this.getOriginalStream(seconds)
+        break;
+      default:
+        this.getStream(seconds)
     }
-    this.setState({type_selector_value: e.target.name});
   }
 
-  getStream() {
-    fetch('/api/home', {
-      credentials: 'include'
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.message === 'not logged in') {
-      }
-      var streamData = data.stream
-      console.log("streamData is", streamData);
-      var hasMore = true
-      if (streamData.length < 20) {
-        hasMore = false
-      }
-      this.setState({streamData: streamData, hasMore: hasMore});
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-  }
-
-  getStreamScroll() {
+  fetchStreamScroll() {
     const d = new Date(this.state.streamData[this.state.streamData.length - 1].repostDate);
     const seconds = Math.round(d.getTime() / 1000);
+    switch (this.state.type_selector_value) {
+      case 0:
+        this.getStream(seconds)
+        break;
+      case 1:
+        this.getOriginalStream(seconds)
+        break;
+      default:
+        this.getStream(seconds)
+    }
+  }
 
+  getStream(seconds) {
     fetch('/api/home/' + seconds, {
       credentials: 'include'
     })
@@ -67,45 +70,46 @@ export default class Stream extends React.Component {
       if (data.message === 'not logged in') {
       } else {
         var streamData = this.state.streamData
-        if (streamData.length > 0) {
-          for (var i = 0; i < data.stream.length; i++) {
-            streamData.push(data.stream[i])
-          }
-          var hasMore = true
-          if (streamData.length < 20) {
-            hasMore = false
-          }
-          this.setState({streamData: streamData, hasMore: hasMore});
-        } else {
-          console.log("no data");
-          this.setState({hasMore: false})
+        for (var i = 0; i < data.stream.length; i++) {
+          streamData.push(data.stream[i])
         }
+        console.log("streamData is", streamData);
+        var hasMore = true
+        if (data.stream.length < 20) {
+          hasMore = false
+        }
+        this.setState({streamData: streamData, hasMore: hasMore});
       }
-
     })
     .catch((error) => {
       console.error(error);
     });
   }
 
-  getOriginalStream() {
-    fetch('/api/homeOriginal', {
+  getOriginalStream(seconds) {
+    fetch('/api/homeOriginal/' + seconds, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
       if (data.message === 'not logged in') {
+      } else {
+        var streamData = this.state.streamData
+        for (var i = 0; i < data.stream.length; i++) {
+          streamData.push(data.stream[i])
+        }
+        console.log("streamData is", streamData);
+        var hasMore = true
+        if (data.stream.length < 20) {
+          hasMore = false
+        }
+        this.setState({streamData: streamData, hasMore: hasMore});
       }
-      console.log("api home data is", data);
-      var streamData = data.stream
-      console.log("streamData is", streamData);
-      this.setState({streamData: streamData});
     })
     .catch((error) => {
       console.error(error);
     });
   }
-
 
   render() {
     return (
@@ -116,15 +120,11 @@ export default class Stream extends React.Component {
           type_selector_value={this.state.type_selector_value}
         />
         {this.state.streamData.length > 0 ?
-        <InfiniteScroll
-          initialLoad={false}
-          loadMore={this.getStreamScroll.bind(this)}
-          hasMore={this.state.hasMore}
-          loader={<div className="loader" key={0}>Loading ...</div>}
-          useWindow={true}
-        >
-          <RenderedPosts streamData={this.state.streamData} />
-        </InfiniteScroll>
+          <RenderedPosts
+            fetchStreamScroll={this.fetchStreamScroll}
+            hasMore={this.state.hasMore}
+            streamData={this.state.streamData}
+          />
           :
         <Jumbotron>
           <p>

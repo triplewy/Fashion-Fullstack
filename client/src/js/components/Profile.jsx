@@ -5,6 +5,7 @@ import EditProfileModal from './EditProfileModal.jsx'
 import ProfileInfo from './ProfileInfo.jsx'
 import NotLoggedInOverlay from './NotLoggedInOverlay.jsx'
 import ErrorPage from './ErrorPage.jsx'
+import InfiniteScroll from 'react-infinite-scroller'
 import Cookie from 'js-cookie'
 import { Jumbotron } from 'react-bootstrap'
 // import * as loadImage from 'blueimp-load-image'
@@ -21,18 +22,18 @@ export default class Profile extends React.Component {
       error: false,
 
       showOverlay: false,
-      target: null
+      target: null,
+
+      hasMore: true
     };
 
     this.toggle_type = this.toggle_type.bind(this);
     this.fetchStream = this.fetchStream.bind(this)
+    this.fetchStreamScroll = this.fetchStreamScroll.bind(this)
     this.handleFollow = this.handleFollow.bind(this);
     this.handleUnfollow = this.handleUnfollow.bind(this);
-    // this.getProfile = this.getProfile.bind(this)
-    // this.fetchProfileStream = this.fetchProfileStream.bind(this)
     this.fetchProfileInfo = this.fetchProfileInfo.bind(this)
     this.profileVisit = this.profileVisit.bind(this)
-    // this.getUserDetails = this.getUserDetails.bind(this)
     this.getStream = this.getStream.bind(this)
     this.getOriginalStream = this.getOriginalStream.bind(this)
     this.getPlaylistStream = this.getPlaylistStream.bind(this)
@@ -44,55 +45,70 @@ export default class Profile extends React.Component {
   componentDidMount() {
     window.scrollTo(0, 0)
     this.fetchProfileInfo(this.props.profile)
-    this.getStream()
+    this.fetchStream(0)
     this.profileVisit()
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.profile !== prevProps.profile) {
       window.scrollTo(0, 0)
-      this.setState({type_selector_value: 0})
+      this.setState({type_selector_value: 0, streamData: []})
       this.fetchProfileInfo(this.props.profile)
-      this.getStream()
+      this.fetchStream(0)
       this.profileVisit()
     }
   }
 
   toggle_type(e) {
+    this.setState({type_selector_value: e.target.name, streamData: []});
     this.fetchStream(e.target.name * 1)
-    // if (e.target.name == 1) {
-    //   this.getOriginalStream()
-    // } else if (e.target.name == 2) {
-    //   this.getPostStream()
-    // } else if (e.target.name == 3) {
-    //   this.getPlaylistStream()
-    // } else if (e.target.name == 4) {
-    //   this.getRepostStream()
-    // } else {
-    //   this.getStream()
-    // }
-    this.setState({type_selector_value: e.target.name});
   }
 
   fetchStream(type_selector_value) {
+    const seconds = Math.round(Date.now() / 1000)
     switch (type_selector_value) {
       case 0:
-        this.getStream()
+        this.getStream(seconds)
         break;
       case 1:
-        this.getOriginalStream()
+        this.getOriginalStream(seconds)
         break;
       case 2:
-        this.getPostStream()
+        this.getPostStream(seconds)
         break;
       case 3:
-        this.getPlaylistStream()
+        this.getPlaylistStream(seconds)
         break;
       case 4:
-        this.getRepostStream()
+        this.getRepostStream(seconds)
         break;
       default:
-        this.getStream()
+        this.getStream(seconds)
+    }
+  }
+
+  fetchStreamScroll() {
+    const d = new Date(this.state.streamData[this.state.streamData.length - 1].repostDate);
+    const seconds = Math.round(d.getTime() / 1000);
+
+    switch (this.state.type_selector_value) {
+      case 0:
+        this.getStream(seconds)
+        break;
+      case 1:
+        this.getOriginalStream(seconds)
+        break;
+      case 2:
+        this.getPostStream(seconds)
+        break;
+      case 3:
+        this.getPlaylistStream(seconds)
+        break;
+      case 4:
+        this.getRepostStream(seconds)
+        break;
+      default:
+        this.getStream(seconds)
     }
   }
 
@@ -183,43 +199,6 @@ export default class Profile extends React.Component {
     });
   }
 
-  // getProfile(url) {
-  //   fetch('/api/' + url, {
-  //     credentials: 'include'
-  //   })
-  //   .then(res => res.json())
-  //   .then(data => {
-  //     console.log("profile data is", data);
-  //     this.setState({
-  //       isFollowing: data.userDetails.isFollowing,
-  //       streamData: data.media.stream,
-  //       profileInfo: data.userDetails,
-  //       type_selector_value: 0,
-  //       editProfile: false,
-  //       profile_image_src: data.userDetails.profile_image_src
-  //     })
-  //   })
-  //   .catch((error) => {
-  //     console.error(error);
-  //   });
-  // }
-
-  // fetchProfileStream(profile) {
-  //   fetch('/api/' + profile + '/stream', {
-  //     credentials: 'include'
-  //   })
-  //   .then(res => res.json())
-  //   .then(data => {
-  //     console.log(data);
-  //     this.setState({
-  //       streamData: data.stream
-  //     })
-  //   })
-  //   .catch((error) => {
-  //     console.error(error);
-  //   });
-  // }
-
   fetchProfileInfo() {
     fetch('/api/' + this.props.profile + '/info', {
       credentials: 'include'
@@ -238,21 +217,8 @@ export default class Profile extends React.Component {
     });
   }
 
-  // getUserDetails() {
-  //   fetch('/api/' + this.props.profile + '/userDetails', {
-  //     credentials: 'include'
-  //   })
-  //   .then(res => res.json())
-  //   .then(data => {
-  //     this.setState({profileInfo: data.userDetails});
-  //   })
-  //   .catch((error) => {
-  //     console.error(error);
-  //   });
-  // }
-
-  getStream() {
-    fetch('/api/' + this.props.profile + '/stream', {
+  getStream(lastDateSeconds) {
+    fetch('/api/' + this.props.profile + '/stream/' + lastDateSeconds, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -261,7 +227,15 @@ export default class Profile extends React.Component {
       if (data.message === "error") {
         this.setState({error: true})
       } else {
-        this.setState({streamData: data.stream});
+        var streamData = this.state.streamData
+        for (var i = 0; i < data.stream.length; i++) {
+          streamData.push(data.stream[i])
+        }
+        var hasMore = true
+        if (data.stream.length < 20) {
+          hasMore = false
+        }
+        this.setState({streamData: streamData, hasMore: hasMore});
       }
     })
     .catch((error) => {
@@ -269,56 +243,104 @@ export default class Profile extends React.Component {
     });
   }
 
-  getOriginalStream() {
-    fetch('/api/' + this.props.profile + '/streamOriginal', {
+  getOriginalStream(lastDateSeconds) {
+    fetch('/api/' + this.props.profile + '/streamOriginal/' + lastDateSeconds, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({streamData: data.stream});
+      if (data.message === "error") {
+        this.setState({error: true})
+      } else {
+        var streamData = this.state.streamData
+        for (var i = 0; i < data.stream.length; i++) {
+          streamData.push(data.stream[i])
+        }
+        var hasMore = true
+        if (data.stream.length < 20) {
+          hasMore = false
+        }
+        this.setState({streamData: streamData, hasMore: hasMore});
+      }
     })
     .catch((error) => {
       console.error(error);
     });
   }
 
-  getPostStream() {
-    fetch('/api/' + this.props.profile + '/streamPosts', {
+  getPostStream(lastDateSeconds) {
+    fetch('/api/' + this.props.profile + '/streamPosts/' + lastDateSeconds, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({streamData: data.stream});
+      if (data.message === "error") {
+        this.setState({error: true})
+      } else {
+        var streamData = this.state.streamData
+        for (var i = 0; i < data.stream.length; i++) {
+          streamData.push(data.stream[i])
+        }
+        var hasMore = true
+        if (data.stream.length < 20) {
+          hasMore = false
+        }
+        this.setState({streamData: streamData, hasMore: hasMore});
+      }
     })
     .catch((error) => {
       console.error(error);
     });
   }
 
-  getPlaylistStream() {
-    fetch('/api/' + this.props.profile + '/streamPlaylists', {
+  getPlaylistStream(lastDateSeconds) {
+    fetch('/api/' + this.props.profile + '/streamPlaylists/' + lastDateSeconds, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({streamData: data.stream});
+      if (data.message === "error") {
+        this.setState({error: true})
+      } else {
+        var streamData = this.state.streamData
+        for (var i = 0; i < data.stream.length; i++) {
+          streamData.push(data.stream[i])
+        }
+        var hasMore = true
+        if (data.stream.length < 20) {
+          hasMore = false
+        }
+        this.setState({streamData: streamData, hasMore: hasMore});
+      }
     })
     .catch((error) => {
       console.error(error);
     });
   }
 
-  getRepostStream() {
-    fetch('/api/' + this.props.profile + '/streamReposts', {
+  getRepostStream(lastDateSeconds) {
+    fetch('/api/' + this.props.profile + '/streamReposts/' + lastDateSeconds, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({streamData: data.stream});
+      if (data.message === "error") {
+        this.setState({error: true})
+      } else {
+        var streamData = this.state.streamData
+        for (var i = 0; i < data.stream.length; i++) {
+          streamData.push(data.stream[i])
+        }
+        var hasMore = true
+        if (data.stream.length < 20) {
+          hasMore = false
+        }
+        this.setState({streamData: streamData, hasMore: hasMore});
+      }
     })
     .catch((error) => {
       console.error(error);
@@ -441,12 +463,25 @@ export default class Profile extends React.Component {
               </div>
             </div>
             <div id="content_wrapper">
-              <TypeSelector toggle_type={this.toggle_type.bind(this)} types={["All", "Original", "Posts", "Collections", "Reposts"]}
-              type_selector_value={this.state.type_selector_value}
-              right={<ProfileInfo profileInfo={this.state.profileInfo} isProfile={this.state.isProfile} fetchProfileInfo={this.fetchProfileInfo}
-                readImageFile={this.readImageFile} getStream={this.getStream} setUser={this.props.setUser}/> } />
+              <TypeSelector
+                toggle_type={this.toggle_type.bind(this)}
+                types={["All", "Original", "Posts", "Collections", "Reposts"]}
+                type_selector_value={this.state.type_selector_value}
+              right={
+                <ProfileInfo
+                  profileInfo={this.state.profileInfo}
+                  isProfile={this.state.isProfile}
+                  fetchProfileInfo={this.fetchProfileInfo}
+                  readImageFile={this.readImageFile}
+                  getStream={this.getStream}
+                  setUser={this.props.setUser}/> }
+                />
               {this.state.streamData.length > 0 ?
-                <RenderedPosts streamData={this.state.streamData} />
+                <RenderedPosts
+                  streamData={this.state.streamData}
+                  hasMore={this.state.hasMore}
+                  fetchStreamScroll={this.fetchStreamScroll}
+                />
                 :
                 <Jumbotron>
                   <p>There doesn't seem to be anything here!</p>

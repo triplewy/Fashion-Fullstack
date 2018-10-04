@@ -429,7 +429,7 @@ div.dropdown {
   /* width: 100%; */
   min-height: 706px;
   /* margin: 0 auto; */
-  /* padding: 0 10%; */
+  padding-bottom: 200px;
   /* margin: 20px 0; */
   background-color: white;
 }
@@ -1055,7 +1055,8 @@ div.dropdown {
 }
 
 .page_title {
-  margin-top: 20px;
+  margin-top: 50px;
+  margin-bottom: 40px;
   font-size: 32px;
   font-weight: 300;
 }
@@ -2864,6 +2865,8 @@ div.dropdown {
 
 .image_tetris_wrapper {
   width: 1152px;
+  border-radius: 8px;
+  /* overflow: scroll; */
 }
 
 .tetris_column {
@@ -3313,6 +3316,19 @@ div.dropdown {
   text-align: center;
   font-size: 16px;
   font-weight: 300;
+}
+
+.back_to_top {
+  font-size: 24px;
+  font-weight: 300;
+  text-align: center;
+  cursor: pointer;
+  transition: color 0.3s;
+  -webkit-transition: color 0.3s;
+}
+
+.back_to_top:hover {
+  color: #ccc;
 }
 
 @media only screen and (max-width: 1300px) {

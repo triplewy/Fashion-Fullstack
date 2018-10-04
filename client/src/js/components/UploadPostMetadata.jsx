@@ -153,7 +153,10 @@ export default class UploadMetadata extends React.Component {
           setTagCarouselIndex={this.props.setTagCarouselIndex}
         />
         <input id="form_submit" type="button" onClick={this.props.handleSubmit.bind(this, this.state.title, this.state.url, this.state.genre, this.state.description)}
-          value="Submit" disabled={!(this.state.title && this.state.genre && this.state.urlAvailable)}></input>
+          value="Submit" disabled={!(this.state.title && this.state.genre && this.state.urlAvailable) || this.props.submitted}></input>
+        <div className="upload_progress_bar_div">
+          <div className="upload_progress_bar" style={{width: this.props.progress * 100 + '%'}}></div>
+        </div>
       </div>
     )
   }

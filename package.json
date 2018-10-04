@@ -7,7 +7,8 @@
     "client": "cd client && npm start",
     "server": "node server.js",
     "start": "concurrently \"npm run server\" \"npm run client\"",
-    "dev": "concurrently \"yarn server\"\"yarn client\""
+    "dev": "concurrently \"yarn server\"\"yarn client\"",
+    "build": "react-scripts build"
   },
   "author": "Alex Yu",
   "license": "ISC",
@@ -38,8 +39,11 @@
     "path": "^0.12.7",
     "randomstring": "^1.1.5",
     "react-measure": "^2.1.0",
+    "react-scripts": "^2.0.4",
     "redis": "^2.8.0",
+    "sharp": "^0.20.8",
     "socket.io": "^2.1.1",
+    "uuid": "^3.3.2",
     "validator": "^10.5.0"
   }
 }

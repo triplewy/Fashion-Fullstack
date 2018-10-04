@@ -23,7 +23,6 @@ export default class Notifications extends React.Component {
   }
 
   componentDidMount() {
-    console.log("notifications mounted");
     // this.send()
     var socket = socketIOClient(this.state.endpoint);
     socket.emit('receive notifications')

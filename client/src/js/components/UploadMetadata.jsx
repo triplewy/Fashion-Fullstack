@@ -17,8 +17,10 @@ export default class UploadMetadata extends React.Component {
       editTag: {itemType:'shirt', itemBrand: '', itemName: '', itemLink: '', original: false},
       carouselIndex: 0,
       back: false,
+
       progress: 0,
       submitted: false,
+      uploaded: false,
 
       showOverlay: false,
       target: null,
@@ -61,6 +63,7 @@ export default class UploadMetadata extends React.Component {
     formData.append('inputTags', JSON.stringify(this.state.inputTags));
     formData.append('dimensions', JSON.stringify(this.props.dimensions))
 
+    this.setState({submitted: true})
     this.upload(formData)
   }
 
@@ -71,12 +74,11 @@ export default class UploadMetadata extends React.Component {
     xhr.onreadystatechange = () => {
      if(xhr.readyState === 4 && xhr.status === 200){
          console.log(xhr.responseText);
-         this.setState({submitted: true})
+         this.setState({uploaded: true})
       }
     }
 
     xhr.upload.onprogress = (e) => {
-      // it will never come inside here
       console.log("loaded", e.loaded);
       console.log("total", e.total);
       this.setState({progress: e.loaded/e.total})
@@ -224,7 +226,7 @@ export default class UploadMetadata extends React.Component {
   }
 
   render() {
-    if (this.state.submitted) {
+    if (this.state.uploaded) {
       return (
         <Redirect to='/' />
       )
@@ -310,12 +312,11 @@ export default class UploadMetadata extends React.Component {
               handleSubmit={this.handleSubmit}
               carouselIndex={this.state.carouselIndex}
               setTagCarouselIndex={this.setTagCarouselIndex}
+              submitted={this.state.submitted}
+              progress={this.state.progress}
             />
           </div>
           <div id="upload_disclaimer">
-            <div className="upload_progress_bar_div">
-              <div className="upload_progress_bar" style={{width: this.state.progress * 100 + '%'}}></div>
-            </div>
             <p>Descriptive info and stuff to make the page slightly longer vertically</p>
           </div>
         </div>

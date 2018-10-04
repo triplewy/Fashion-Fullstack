@@ -1,6 +1,5 @@
 import React from 'react';
 import InputTag from './InputTag.jsx'
-import Charts from './Charts.jsx'
 
 export default class Search extends React.Component {
   constructor(props) {

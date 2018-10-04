@@ -60,29 +60,28 @@ export default class UploadImages extends React.Component {
   }
 
   imageProcessor(file, index) {
-    var reader = new FileReader();
-    reader.onloadend = () => {
-      var img = new Image();
-        img.onload = () => {
-          var [width, height] = setAspectRatio(img.width, img.height)
-          var tempDimensions = this.state.dimensions
-          tempDimensions[index] = {original: {width: img.width, height: img.height}, display: {width: width, height: height}}
-          this.setState({dimensions: tempDimensions})
-        };
-      img.src = reader.result;
+
+    const loadImageOptions = {
+      canvas: true,
+      maxWidth: 1080,
+      maxHeight: 1440,
+      minWidth: 150,
+      minHeight: 200,
+      downsamplingRatio: 0.6
     }
-    console.log("file is", file);
-    reader.readAsDataURL(file);
-    const loadImageOptions = { canvas: true }
     loadImage.parseMetaData(file, (data) => {
       if (data.exif) {
         loadImageOptions.orientation = data.exif.get('Orientation')
       }
       loadImage(file, (canvas) => {
-        file.imageUrl = canvas.toDataURL(file.type)
+        file.imageUrl = canvas.toDataURL('jpg')
         var files = this.state.files
         files[index] = {file: file, imageUrl: file.imageUrl}
-        this.setState({files: files})
+        var dimensions = this.state.dimensions
+        dimensions[index] = {width: canvas.width, height: canvas.height}
+
+        this.setState({files: files, dimensions: dimensions})
+
       }, loadImageOptions)
     })
   }
@@ -178,8 +177,8 @@ export default class UploadImages extends React.Component {
       var files = this.state.files
       const dimensions = this.state.dimensions
       for (var i = 0; i < files.length; i++) {
-        files[i].width = dimensions[i].original.width
-        files[i].height = dimensions[i].original.height
+        files[i].width = dimensions[i].width
+        files[i].height = dimensions[i].height
       }
       return (
         <UploadMetadata files={files} dimensions={this.state.dimensions} />
@@ -190,7 +189,9 @@ export default class UploadImages extends React.Component {
       if (length > 0) {
         renderedList = this.state.files.map((item, index) => {
           if (this.state.dimensions[index]) {
-            var [width, height] = setAspectRatioImageList(this.state.dimensions[index].original.width, this.state.dimensions[index].original.height)
+            const img = this.state.dimensions[index]
+            var [width, height] = setAspectRatio(img.width, img.height)
+            var [listWidth, listHeight] = setAspectRatioImageList(img.width, img.height)
             return (
               <Draggable key={index} draggableId={index} index={index}>
                 {(provided, snapshot) => (
@@ -202,7 +203,8 @@ export default class UploadImages extends React.Component {
                     onClick={this.setCurrentImageIndex.bind(this, index)}
                   >
                     <div style={{backgroundImage: 'url(' + this.state.files[index].imageUrl + ')',
-                      backgroundSize: (width + "px " + height + "px"), width: width, height: height,
+                      width: listWidth, height: listHeight,
+                      backgroundSize: 'cover',
                       position: "relative"}}>
                       <button className="remove_image_button" onClick={this.removeImage.bind(this, index)}
                         style={{backgroundImage: 'url(' + close_icon + ')'}}></button>
@@ -235,6 +237,11 @@ export default class UploadImages extends React.Component {
         var index = this.state.currentImageIndex
         var file = this.state.files[index]
         var dimensions = this.state.dimensions[index]
+        var width = 660;
+        var height = 660;
+        if (dimensions) {
+          [width, height] = setAspectRatio(dimensions.width, dimensions.height)
+        }
         return (
           <div id="white_background_wrapper">
             <p id="upload_title">Upload</p>
@@ -243,7 +250,7 @@ export default class UploadImages extends React.Component {
                 {renderedEditTool}
                 {(dimensions && file) ?
                   <div className="post_image" style={{backgroundImage: 'url(' + file.imageUrl + ')',
-                    width: dimensions.display.width, height: dimensions.display.height}}/>
+                    width: width, height: height}}/>
                     :
                   <div className="post_image" style={{width: 660, height: 660}}/>
                   }
