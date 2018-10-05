@@ -14,6 +14,8 @@ import trash_icon from 'images/trash-icon.png'
 import edit_icon from 'images/edit-icon.svg'
 import { Link } from 'react-router-dom'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class Tags extends React.Component {
   constructor(props) {
     super(props);
@@ -63,7 +65,7 @@ export default class Tags extends React.Component {
   }
 
   clickLink() {
-    fetch('/api/linkClick', {
+    fetch(url + '/api/linkClick', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',

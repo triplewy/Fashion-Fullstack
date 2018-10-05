@@ -2,6 +2,8 @@ import React from 'react';
 import ProfileHover from './ProfileHover.jsx'
 import view_icon from 'images/view-icon-revised.png'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class PlaylistPosts extends React.Component {
   constructor(props) {
     super(props);
@@ -29,7 +31,7 @@ export default class PlaylistPosts extends React.Component {
     const now = new Date()
     const nowISOString = now.toISOString()
     const view = {playlistId: this.props.playlistId, repost_username: this.props.repost_username, mediaId: mediaId, dateTime: nowISOString}
-    fetch('/api/collectionPostVisit', {
+    fetch(url + '/api/collectionPostVisit', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',

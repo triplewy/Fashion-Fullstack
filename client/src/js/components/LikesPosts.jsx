@@ -1,6 +1,8 @@
 import React from 'react';
 import ImageTetris from './ImageTetris.jsx'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class LikesPosts extends React.Component {
   constructor(props) {
     super(props);
@@ -17,7 +19,7 @@ export default class LikesPosts extends React.Component {
   }
 
   fetchPostsLikes() {
-    fetch('/api/you/likes/posts', {
+    fetch(url + '/api/you/likes/posts', {
       credentials: 'include'
     })
     .then(res => res.json())

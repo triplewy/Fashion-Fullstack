@@ -4,6 +4,8 @@ import ProfileHover from './ProfileHover.jsx'
 import { Link, Redirect } from 'react-router-dom';
 import { Dropdown } from 'react-bootstrap'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class FollowersPage extends React.Component {
   constructor(props) {
     super(props);
@@ -25,7 +27,7 @@ export default class FollowersPage extends React.Component {
   }
 
   fetchFollowers(orderBy) {
-    fetch('/api' + this.props.match.url + '/' + orderBy, {
+    fetch(url + '/api' + this.props.match.url + '/' + orderBy, {
       credentials: 'include'
     })
     .then(res => res.json())

@@ -4,6 +4,8 @@ import TypeSelector from './TypeSelector.jsx'
 import InfiniteScroll from 'react-infinite-scroller'
 import { Jumbotron } from 'react-bootstrap'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class Stream extends React.Component {
   constructor(props) {
     super(props);
@@ -62,7 +64,7 @@ export default class Stream extends React.Component {
   }
 
   getStream(seconds) {
-    fetch('/api/home/' + seconds, {
+    fetch(url + '/api/home/' + seconds, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -73,7 +75,6 @@ export default class Stream extends React.Component {
         for (var i = 0; i < data.stream.length; i++) {
           streamData.push(data.stream[i])
         }
-        console.log("streamData is", streamData);
         var hasMore = true
         if (data.stream.length < 20) {
           hasMore = false
@@ -87,7 +88,7 @@ export default class Stream extends React.Component {
   }
 
   getOriginalStream(seconds) {
-    fetch('/api/homeOriginal/' + seconds, {
+    fetch(url + '/api/homeOriginal/' + seconds, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -98,7 +99,6 @@ export default class Stream extends React.Component {
         for (var i = 0; i < data.stream.length; i++) {
           streamData.push(data.stream[i])
         }
-        console.log("streamData is", streamData);
         var hasMore = true
         if (data.stream.length < 20) {
           hasMore = false

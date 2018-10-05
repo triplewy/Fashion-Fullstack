@@ -7,10 +7,11 @@ import redditLogo from 'images/reddit-logo.png'
 
 // {this.state.emailIsValid ? <span className="signup_validator">✔</span> : <span className="signup_validator">x</span>}
 
+const url = process.env.REACT_APP_API_URL
+
 export default class Signup extends React.Component {
   constructor(props) {
     super(props);
-    console.log("signup page props are", props);
     this.state = {
       loginUsername: '',
       loginPassword: '',
@@ -59,7 +60,7 @@ export default class Signup extends React.Component {
   }
 
   handleLogin(e) {
-    fetch('/api/signin', {
+    fetch(url + '/api/signin', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -84,8 +85,7 @@ export default class Signup extends React.Component {
   }
 
   handleGoogleOAuth(e) {
-    console.log("ayy");
-    fetch('/api/auth/google', {
+    fetch(url + '/api/auth/google', {
       method: 'GET',
       credentials: 'include',
       mode: 'no-cors'
@@ -96,7 +96,7 @@ export default class Signup extends React.Component {
   }
 
   handleSignup(e) {
-    fetch('/api/signup', {
+    fetch(url + '/api/signup', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -124,7 +124,7 @@ export default class Signup extends React.Component {
       console.log("not valid email");
       this.setState({emailIsValid: false})
     } else {
-      fetch('/api/checkEmail', {
+      fetch(url + '/api/checkEmail', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -159,7 +159,7 @@ export default class Signup extends React.Component {
         console.log("not valid username");
         this.setState({usernameIsValid: false})
       } else {
-        fetch('/api/checkUsername', {
+        fetch(url + '/api/checkUsername', {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -234,9 +234,8 @@ export default class Signup extends React.Component {
           <div className="signup_form_div">
             <p className="modal-title">Sign Up</p>
             <div className="welcome_text">
-              <p>Use Google, Facebook, or Reddit to create an account</p>
+              <p>Use Google or Reddit to create an account (These do not work right now)</p>
               <div className="oauth_div">
-                {/* <a target="_blank" onClick={this.clickLink}>{item.itemLink}</a> */}
                 <a href='http://localhost:8081/auth/google'>
                   <div style={{backgroundImage: 'url(' + googleLogo + ')'}} />
                 </a>

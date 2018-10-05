@@ -6,7 +6,6 @@ import more_icon from 'images/more-icon.png'
 import report_icon from 'images/report-icon.png'
 import edit_icon from 'images/edit-icon.svg'
 
-
 export default class PlaylistMoreDropdown extends React.Component {
   constructor(props) {
     super(props);

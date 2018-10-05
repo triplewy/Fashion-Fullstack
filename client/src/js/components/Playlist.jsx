@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { LinkContainer } from 'react-router-bootstrap'
 import Cookie from 'js-cookie'
 
+const url = process.env.REACT_APP_API_URL
 
 export default class Playlist extends React.Component {
   constructor(props) {
@@ -20,7 +21,6 @@ export default class Playlist extends React.Component {
       playlistIndex: 0,
       bottom: 0,
       tags: [],
-      // seen: new Array(this.props.playlist.posts.length).fill(false),
       seen: [],
 
 
@@ -69,7 +69,7 @@ export default class Playlist extends React.Component {
         arr.push(view)
         if (arr.length > 9) {
           Cookie.set('collectionsViews', [])
-          fetch('/api/storeCollectionsViews', {
+          fetch(url + '/api/storeCollectionsViews', {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -105,7 +105,7 @@ export default class Playlist extends React.Component {
   }
 
   fetchTags(mediaId) {
-    fetch('/api/postTags/' + mediaId, {
+    fetch(url + '/api/postTags/' + mediaId, {
       credentials: 'include'
     })
     .then(res => res.json())

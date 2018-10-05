@@ -11,18 +11,13 @@ import { dateDiffInDays } from './DateHelper.js'
 import { LinkContainer } from 'react-router-bootstrap'
 import { Link } from 'react-router-dom';
 
+const url = process.env.REACT_APP_API_URL
+
 export default class SinglePlaylistPage extends React.Component {
   constructor(props) {
     super(props);
-    console.log(props);
     if (this.props.location.state) {
       this.state = {
-        // followers: this.props.location.state.playlistData.followers,
-        // likes: this.props.location.state.playlistData.likes,
-        // reposts: this.props.location.state.playlistData.reposts,
-        // followed: this.props.location.state.playlistData.followed,
-        // liked: this.props.location.state.playlistData.liked,
-        // reposted: this.props.location.state.playlistData.reposted,
         tags: [],
         playlistIndex: 0,
         carouselIndex: 0,
@@ -35,12 +30,6 @@ export default class SinglePlaylistPage extends React.Component {
       };
     } else {
       this.state = {
-        // followers: null,
-        // likes: null,
-        // reposts: null,
-        // followed: false,
-        // liked: false,
-        // reposted: false,
         tags: [],
         playlistIndex: 0,
         carouselIndex: 0,
@@ -97,16 +86,17 @@ export default class SinglePlaylistPage extends React.Component {
     }
   }
 
-  fetchStats(mediaId) {
-    fetch('/api/postStats/' + mediaId, {
+  fetchStats(playlistId) {
+    fetch(url + '/api/playlistStats/' + playlistId, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
       var playlist = this.state.playlist
-      playlist.views = data.views
+      playlist.follows = data.follows
       playlist.likes = data.likes
       playlist.reposts = data.reposts
+      playlist.followed = data.followed
       playlist.liked = data.liked
       playlist.reposted = data.reposted
       this.setState({playlist: playlist})
@@ -118,7 +108,7 @@ export default class SinglePlaylistPage extends React.Component {
   }
 
   fetchTags(mediaId) {
-    fetch('/api/postTags/' + mediaId, {
+    fetch(url + '/api/postTags/' + mediaId, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -134,7 +124,7 @@ export default class SinglePlaylistPage extends React.Component {
     const now = new Date()
     const nowISOString = now.toISOString()
     const view = {mediaId: mediaId, dateTime: nowISOString}
-    fetch('/api/postVisit', {
+    fetch(url + '/api/postVisit', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -162,13 +152,11 @@ export default class SinglePlaylistPage extends React.Component {
   }
 
   fetchPlaylist() {
-    console.log('/api' + this.props.match.url);
-    fetch('/api' + this.props.match.url, {
+    fetch(url + '/api' + this.props.match.url, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
       if (data.message === 'error') {
         this.setState({error: true})
       } else {

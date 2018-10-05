@@ -8,6 +8,8 @@ import repost_icon_reposted from 'images/repost-icon-reposted.png'
 import followers_icon_notFollowed from 'images/followers-icon-notFollowed.png'
 import followers_icon_followed from 'images/followers-icon-followed.png'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class StatsHeader extends React.Component {
   constructor(props) {
     super(props);
@@ -45,7 +47,7 @@ export default class StatsHeader extends React.Component {
   handleLike(e) {
     e.stopPropagation()
     const target = e.target
-    fetch('/api/playlistLike', {
+    fetch(url + '/api/playlistLike', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -74,7 +76,7 @@ export default class StatsHeader extends React.Component {
   handleUnlike(e) {
     e.stopPropagation()
     const target = e.target
-    fetch('/api/playlistUnlike', {
+    fetch(url + '/api/playlistUnlike', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -103,7 +105,7 @@ export default class StatsHeader extends React.Component {
   handleRepost(e) {
     e.stopPropagation()
     const target = e.target
-    fetch('/api/playlistRepost', {
+    fetch(url + '/api/playlistRepost', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -132,7 +134,7 @@ export default class StatsHeader extends React.Component {
   handleUnrepost(e) {
     e.stopPropagation()
     const target = e.target
-    fetch('/api/playlistUnrepost', {
+    fetch(url + '/api/playlistUnrepost', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -161,7 +163,7 @@ export default class StatsHeader extends React.Component {
   handleFollow(e) {
     e.stopPropagation()
     const target = e.target
-    fetch('/api/playlistFollow', {
+    fetch(url + '/api/playlistFollow', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -190,7 +192,7 @@ export default class StatsHeader extends React.Component {
   handleUnfollow(e) {
     e.stopPropagation()
     const target = e.target
-    fetch('/api/playlistUnfollow', {
+    fetch(url + '/api/playlistUnfollow', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',

@@ -4,6 +4,8 @@ import PlaylistModalCreate from './PlaylistModalCreate.jsx'
 import { Modal } from 'react-bootstrap'
 import plus_icon from 'images/plus-icon.png'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class PlaylistModal extends React.Component {
   constructor(props) {
     super(props);
@@ -21,7 +23,7 @@ export default class PlaylistModal extends React.Component {
   }
 
   getPlaylists() {
-    fetch('/api/getPlaylists', {
+    fetch(url + '/api/getPlaylists', {
       credentials: 'include'
     })
     .then((response) => response.json())
@@ -80,7 +82,7 @@ export default class PlaylistModal extends React.Component {
               <PlaylistModalCreate mediaId={this.props.mediaId} />
               :
               <div>
-                <div id="create_new_playlist" className="playlist_selector" onClick={this.createNewPlaylist}>New Playlist +</div>
+                <div id="create_new_playlist" className="playlist_selector" onClick={this.createNewPlaylist}>New Collection +</div>
                 <ul id="playlists_list">
                   {renderedPlaylists}
                 </ul>

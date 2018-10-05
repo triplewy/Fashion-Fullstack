@@ -20,13 +20,10 @@ export default class PlaylistHeader extends React.Component {
         />
         <div className="post_status">
         {this.props.uploadDate &&
-            <p>{(this.props.displayTime ? "added " + this.props.postsAdded + " posts in the last " : "posted a playlist ") + dateDiffInDays(new Date(this.props.uploadDate)) +
+            <p>{(this.props.displayTime ? "added " + this.props.postsAdded + " posts in the last " : "posted a collection ") + dateDiffInDays(new Date(this.props.uploadDate)) +
               (!this.props.displayTime ? " ago" : "")}</p>
         }
         </div>
-        {/* <div className="genre">
-          {this.props.genre && <Link to={"/explore/" + this.props.genre}>{this.props.genre.replace(/^\w/, c => c.toUpperCase())}</Link>}
-        </div> */}
       </div>
     );
   }

@@ -3,6 +3,8 @@ import validator from 'validator';
 import {Modal} from 'react-bootstrap'
 import { Redirect } from 'react-router-dom'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class EditProfileModal extends React.Component {
   constructor(props) {
     super(props);
@@ -60,7 +62,7 @@ export default class EditProfileModal extends React.Component {
       console.log("hello");
       this.setState({usernameIsValid: true})
     } else {
-      fetch('/api/checkUsername', {
+      fetch(url + '/api/checkUsername', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -88,7 +90,7 @@ export default class EditProfileModal extends React.Component {
   }
 
   handleSave(e) {
-    fetch('/api/editProfileInfo', {
+    fetch(url + '/api/editProfileInfo', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',

@@ -26,6 +26,7 @@ import FollowingPage from './FollowingPage.jsx'
 import GenrePage from './GenrePage.jsx'
 import ErrorPage from './ErrorPage.jsx'
 
+const url = process.env.REACT_APP_API_URL
 
 export default class Routes extends React.Component {
   constructor(props) {
@@ -45,12 +46,11 @@ export default class Routes extends React.Component {
     Cookie.set('postsViews', [])
     Cookie.set('collectionsViews', [])
 
-    fetch('/api/sessionLogin', {
+    fetch(url + '/api/sessionLogin', {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
-      console.log("sessionLogin data is", data);
       if (data.message === "not logged in") {
         this.setState({user: null})
       } else {
@@ -63,11 +63,9 @@ export default class Routes extends React.Component {
   }
 
   handleLogin(username, password) {
-    console.log("username is", username);
-    console.log("password is", password);
     var seen = [];
 
-    fetch('/api/signin', {
+    fetch(url + '/api/signin', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -89,7 +87,6 @@ export default class Routes extends React.Component {
     })
     .then(res => res.json())
     .then(data => {
-      console.log("login data is", data);
       if (data.message === 'not logged in') {
         this.setState({user: null});
       } else {
@@ -102,7 +99,7 @@ export default class Routes extends React.Component {
   }
 
   handleLogout() {
-    fetch('/api/logout', {
+    fetch(url + '/api/logout', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',

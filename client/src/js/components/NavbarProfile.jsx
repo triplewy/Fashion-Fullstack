@@ -3,6 +3,8 @@ import StatsColumn from './StatsColumn.jsx'
 import {Dropdown} from 'react-bootstrap'
 import { Link } from 'react-router-dom';
 
+const url = process.env.REACT_APP_API_URL
+
 export default class NavbarProfile extends React.Component {
   constructor(props) {
     super(props);
@@ -21,7 +23,7 @@ export default class NavbarProfile extends React.Component {
   fetchStats() {
     if (!this.state.open) {
       this.setState({open: true})
-      fetch('/api/profileStats', {
+      fetch(url + '/api/profileStats', {
         credentials: 'include'
       })
       .then(res => res.json())

@@ -3,6 +3,8 @@ import AlbumTetrisBlock from './AlbumTetrisBlock.jsx'
 import ProfileHover from './ProfileHover.jsx'
 import { Link } from 'react-router-dom';
 
+const url = process.env.REACT_APP_API_URL
+
 export default class TopCollectionsStats extends React.Component {
   constructor(props) {
     super(props);
@@ -29,7 +31,7 @@ export default class TopCollectionsStats extends React.Component {
   }
 
   fetchTopPlaylists() {
-    fetch('/api/topPlaylists/' + this.props.timePeriod, {
+    fetch(url + '/api/topPlaylists/' + this.props.timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -45,7 +47,7 @@ export default class TopCollectionsStats extends React.Component {
   }
 
   fetchTopPlaylistsViewers() {
-    fetch('/api/topPlaylistsViewers/' + this.props.timePeriod, {
+    fetch(url + '/api/topPlaylistsViewers/' + this.props.timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())

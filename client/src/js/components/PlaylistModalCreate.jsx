@@ -1,6 +1,8 @@
 import React from 'react';
 import Cookie from 'js-cookie'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class PlaylistModalCreate extends React.Component {
   constructor(props) {
     super(props);
@@ -34,7 +36,7 @@ export default class PlaylistModalCreate extends React.Component {
     if (this.state.selectedOption === 'public') {
       isPublic = true
     }
-    fetch('/api/newPlaylist', {
+    fetch(url + '/api/newPlaylist', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -71,9 +73,9 @@ export default class PlaylistModalCreate extends React.Component {
     this.fetchUrlAvailable(e.target.value.replace(/\W+/g, '-').toLowerCase())
   }
 
-  fetchUrlAvailable(url) {
-    if (url) {
-      fetch('/api/urlAvailable/collection/' + url, {
+  fetchUrlAvailable(inputUrl) {
+    if (inputUrl) {
+      fetch(url + '/api/urlAvailable/collection/' + inputUrl, {
         credentials: 'include'
       })
       .then(res => res.json())
@@ -113,7 +115,7 @@ export default class PlaylistModalCreate extends React.Component {
           <input type="text" autoComplete="off" name="genreInput" onChange={this.handleChange} value={this.state.genreInput}></input>
           <label>Description:</label>
           <textarea type="text" autoComplete="off" rows="5" name="descriptionInput" onChange={this.handleChange} value={this.state.descriptionInput}></textarea>
-          <div className="playlist_input_div">
+          {/* <div className="playlist_input_div">
             <label className="playlist_input_label">Public</label>
             <input className="playlist_input" type="radio" name="selectedOption" value="public"
               checked={this.state.selectedOption === 'public'} onChange={this.handleChange}></input>
@@ -121,7 +123,7 @@ export default class PlaylistModalCreate extends React.Component {
             <input className="playlist_input" type="radio" name="selectedOption"
               value="private" checked={this.state.selectedOption === 'private'}
               onChange={this.handleChange}></input>
-          </div>
+          </div> */}
         </div>
         <button className="submit" type="button" onClick={this.handleSubmit}
           disabled={!this.state.titleInput || !this.state.genreInput || !this.state.urlAvailable || this.state.loading}>

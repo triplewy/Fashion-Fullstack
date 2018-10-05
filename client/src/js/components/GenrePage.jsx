@@ -3,6 +3,8 @@ import TypeSelector from './TypeSelector.jsx'
 import TimePeriod from './TimePeriod.jsx'
 import ImageTetris from './ImageTetris.jsx'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class GenrePage extends React.Component {
   constructor(props) {
     super(props);
@@ -17,7 +19,7 @@ export default class GenrePage extends React.Component {
   }
 
   componentDidMount() {
-    fetch('/api/genre/' + this.props.genre + '/' + this.state.timePeriod, {
+    fetch(url + '/api/genre/' + this.props.genre + '/' + this.state.timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())

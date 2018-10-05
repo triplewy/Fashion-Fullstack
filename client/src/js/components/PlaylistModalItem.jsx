@@ -2,6 +2,8 @@ import React from 'react';
 import followers_icon from 'images/followers-icon.png'
 import posts_icon from 'images/posts-icon.png'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class PlaylistModalItem extends React.Component {
   constructor(props) {
     super(props);
@@ -18,7 +20,7 @@ export default class PlaylistModalItem extends React.Component {
   addToPlaylist() {
     this.setState({loading: true})
     var playlist = this.props.playlist
-    fetch('/api/addToPlaylist', {
+    fetch(url + '/api/addToPlaylist', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -64,7 +66,7 @@ export default class PlaylistModalItem extends React.Component {
     return (
       <li className="playlist_selector" onClick={this.addToPlaylist} disabled={this.state.loading}>
         <div className="success" style={{width: this.state.showAlert ? '100%' : '0', backgroundColor: this.state.success ? '#9BDEBF' : '#C24750'}}>
-          <p>{this.state.success? "Added successfully!" : "Post already exists in this playlist"}</p>
+          <p>{this.state.success? "Added successfully!" : "Post already exists in this collection"}</p>
         </div>
         <p id="playlist_title">{playlist.title}</p>
         <div className="playlist_icon_div">
@@ -75,7 +77,7 @@ export default class PlaylistModalItem extends React.Component {
           <p>{playlist.numPosts}</p>
           <div className="playlist_icon" style={{backgroundImage: 'url(' + posts_icon + ')'}} />
         </div>
-        <p className="is_public">{playlist.public ? "Public" : "Private"}</p>
+        {/* <p className="is_public">{playlist.public ? "Public" : "Private"}</p> */}
       </li>
     )
   }

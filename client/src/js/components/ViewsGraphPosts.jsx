@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { BarChart } from 'react-d3-components'
 
+const url = process.env.REACT_APP_API_URL
+
 var data = [
     {
     label: 'somethingA',
@@ -40,7 +42,7 @@ export default class ViewsGraphPosts extends React.Component {
   }
 
   fetchPostsViewsGraph() {
-    fetch('/api/postsViewsGraph/' + this.props.timePeriod, {
+    fetch(url + '/api/postsViewsGraph/' + this.props.timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())

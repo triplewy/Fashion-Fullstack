@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom'
 import { LinkContainer } from 'react-router-bootstrap'
 import Cookie from 'js-cookie'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class ImageTetris extends React.Component {
   constructor(props) {
     super(props);
@@ -49,7 +51,7 @@ export default class ImageTetris extends React.Component {
         arr.push(view)
         if (arr.length > 9) {
           Cookie.set('postsViews', [])
-          fetch('/api/storePostsViews', {
+          fetch(url + '/api/storePostsViews', {
             method: 'POST',
             headers: {
               'Accept': 'application/json',

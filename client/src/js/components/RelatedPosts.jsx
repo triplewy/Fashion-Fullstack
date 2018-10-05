@@ -1,6 +1,8 @@
 import React from 'react';
 import ImageTetrisBlock from './ImageTetrisBlock.jsx'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class RelatedPosts extends React.Component {
   constructor(props) {
     super(props);
@@ -23,12 +25,11 @@ export default class RelatedPosts extends React.Component {
   }
 
   fetchRelatedPosts() {
-    fetch('/api/relatedPosts/' + this.props.url, {
+    fetch(url + '/api/relatedPosts' + this.props.url, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
       this.setState({relatedPosts: data});
     })
     .catch((error) => {
@@ -49,11 +50,6 @@ export default class RelatedPosts extends React.Component {
           renderedCol1.push([<ImageTetrisBlock key={i} post={relatedPosts[i]} relatedPosts />])
         }
       }
-      // renderedPosts = relatedPosts.map((item, index) => {
-      //   return (
-      //     <ImageTetrisBlock key={index} post={item} relatedPosts />
-      //   )
-      // })
       return (
         <div className="left_bottom">
           <p>Related Posts</p>

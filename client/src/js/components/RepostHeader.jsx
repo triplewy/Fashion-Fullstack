@@ -11,10 +11,6 @@ export default class RepostHeader extends React.Component {
 
   render() {
     return (
-      // var profileName = this.props.profileName
-      // if (profileName.length > 25) {
-      //   profileName = profileName.substring(0,22) + '...'
-      // }
       <div id="post_header">
         <ProfileHover classStyle="post_profile_link" username={this.props.username} profileName={this.props.profileName}
           profile_image_src={this.props.profile_image_src} />
@@ -23,9 +19,6 @@ export default class RepostHeader extends React.Component {
         </div>
         <ProfileHover classStyle="post_profile_link" username={this.props.repost_username} profileName={this.props.repost_profileName}
           profile_image_src={this.props.repost_profile_image_src} />
-        {/* <div className="genre">
-          {this.props.genre && <Link to={"/explore/" + this.props.genre}>{this.props.genre.replace(/^\w/, c => c.toUpperCase())}</Link>}
-        </div> */}
       </div>
     );
   }

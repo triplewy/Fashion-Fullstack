@@ -4,6 +4,8 @@ import NotLoggedInOverlay from './NotLoggedInOverlay.jsx'
 import { Link } from 'react-router-dom';
 import { dateDiffInDays } from './DateHelper.js'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class Comments extends React.Component {
   constructor(props) {
     super(props);
@@ -27,7 +29,7 @@ export default class Comments extends React.Component {
   }
 
   fetchComments(e) {
-    fetch('/api/' + this.props.username + '/' + this.props.mediaId + '/comments', {
+    fetch(url + '/api/' + this.props.username + '/' + this.props.mediaId + '/comments', {
       credentials: 'include'
     })
     .then((response) => response.json())
@@ -41,7 +43,7 @@ export default class Comments extends React.Component {
   }
 
   fetchPlaylistComments(e) {
-    fetch('/api/' + this.props.username + '/' + this.props.playlistId + '/playlistComments', {
+    fetch(url + '/api/' + this.props.username + '/' + this.props.playlistId + '/playlistComments', {
       credentials: 'include'
     })
     .then((response) => response.json())
@@ -56,7 +58,7 @@ export default class Comments extends React.Component {
 
   handleComment(e) {
     const target = e.target
-    fetch('/api/comment', {
+    fetch(url + '/api/comment', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -71,20 +73,7 @@ export default class Comments extends React.Component {
     .then(res => res.json())
     .then(data => {
       if (data.message === "success") {
-        this.setState({commentInput: '', comments: data.comments, numComments: this.state.numComments + 1})
-        fetch('/api/' + this.props.username + '/' + this.props.mediaId + '/comments', {
-          credentials: 'include'
-        })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.message === "success") {
-          } else {
-            console.log(data);
-          }
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+        this.setState({commentInput: '', numComments: this.state.numComments + 1})
       } else if (data.message === "not logged in") {
         this.showOverlay(target)
       } else {
@@ -98,7 +87,7 @@ export default class Comments extends React.Component {
 
   handlePlaylistComment(e) {
     const target = e.target
-    fetch('/api/playlistComment', {
+    fetch(url + '/api/playlistComment', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -113,17 +102,7 @@ export default class Comments extends React.Component {
     .then(res => res.json())
     .then(data => {
       if (data.message === "success") {
-        fetch('/api/' + this.props.username + '/' + this.props.playlistId + '/playlistComments', {
-          credentials: 'include'
-        })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data.comments);
-          this.setState({commentInput: '', comments: data.comments, numComments: this.state.numComments + 1})
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+        this.setState({commentInput: '', numComments: this.state.numComments + 1})
       } else if (data.message === "not logged in") {
         this.showOverlay(target)
       } else {

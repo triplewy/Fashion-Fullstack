@@ -4,6 +4,8 @@ import GenreSelector from './GenreSelector.jsx'
 import TimePeriod from './TimePeriod.jsx'
 import ImageTetris from './ImageTetris.jsx'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class ExplorePosts extends React.Component {
   constructor(props) {
     super(props);
@@ -59,7 +61,7 @@ export default class ExplorePosts extends React.Component {
   }
 
   fetchExploreHot(genre) {
-    fetch('/api/explore/hot/' + genre, {
+    fetch(url + '/api/explore/hot/' + genre, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -73,7 +75,7 @@ export default class ExplorePosts extends React.Component {
   }
 
   fetchExploreNew(genre) {
-    fetch('/api/explore/new/' + genre, {
+    fetch(url + '/api/explore/new/' + genre, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -87,7 +89,7 @@ export default class ExplorePosts extends React.Component {
   }
 
   fetchExploreTop(genre, timePeriod) {
-    fetch('/api/explore/top/' + genre + '/' + timePeriod, {
+    fetch(url + '/api/explore/top/' + genre + '/' + timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -101,7 +103,7 @@ export default class ExplorePosts extends React.Component {
   }
 
   fetchExploreRandom(genre, timePeriod) {
-    fetch('/api/explore/random/' + genre + '/' + timePeriod, {
+    fetch(url + '/api/explore/random/' + genre + '/' + timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -141,6 +143,7 @@ export default class ExplorePosts extends React.Component {
   render() {
     return (
       <div>
+        <p className="explore_title">Posts</p>
         <TypeSelector toggle_type={this.toggle_type} types={["Hot", "New", "Top", "Random"]}
         type_selector_value={this.state.type_selector_value}
         right={

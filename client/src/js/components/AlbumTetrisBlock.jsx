@@ -7,6 +7,8 @@ import { setAspectRatioImageTetrisBlock } from './aspectRatio.js'
 import Cookie from 'js-cookie'
 import { LinkContainer } from 'react-router-bootstrap'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class AlbumTetrisBlock extends React.Component {
   constructor(props) {
     super(props);
@@ -49,7 +51,7 @@ export default class AlbumTetrisBlock extends React.Component {
         arr.push(view)
         if (arr.length > 9) {
           Cookie.set('collectionsViews', [])
-          fetch('/api/storeCollectionsViews', {
+          fetch(url + '/api/storeCollectionsViews', {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -110,15 +112,6 @@ export default class AlbumTetrisBlock extends React.Component {
     })
     const post = posts[this.state.playlistIndex]
     const postImages = post.imageUrls
-
-
-    // var width = 0
-    // var height = 0
-    // if (this.props.relatedCollections) {
-    //
-    // } else {
-    //   [width, height] = setAspectRatioImageTetrisBlock(postImages[0].width, postImages[0].height)
-    // }
 
     return (
       <div className="album_tetris_block_wrapper" onMouseEnter={this.setEntered} onMouseLeave={this.setLeft} ref={this.myRef}>

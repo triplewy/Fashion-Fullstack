@@ -5,11 +5,13 @@ import {Dropdown} from 'react-bootstrap'
 import {Link} from 'react-router-dom'
 import NotificationItem from './NotificationItem.jsx'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class Notifications extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      endpoint: 'http://localhost:8081',
+      endpoint: url,
       unread: false,
       notifications: [],
       open: false
@@ -49,7 +51,7 @@ export default class Notifications extends React.Component {
   getNotifications() {
     if (!this.state.open) {
       this.setState({open: true})
-      fetch('/api/notificationsDropdown/5', {
+      fetch(url + '/api/notificationsDropdown/5', {
         credentials: 'include'
       })
       .then(res => res.json())
@@ -64,7 +66,7 @@ export default class Notifications extends React.Component {
   }
 
   handleFollow(profile, index) {
-    fetch('/api/follow', {
+    fetch(url + '/api/follow', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -93,7 +95,7 @@ export default class Notifications extends React.Component {
   }
 
   handleUnfollow(profile, index) {
-    fetch('/api/unfollow', {
+    fetch(url + '/api/unfollow', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',

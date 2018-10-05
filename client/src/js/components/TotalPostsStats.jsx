@@ -4,6 +4,8 @@ import like_icon from 'images/heart-icon-liked.png'
 import repost_icon from 'images/repost-icon-reposted.png'
 import comment_icon from 'images/comment-icon.png'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class TotalPostsStats extends React.Component {
   constructor(props) {
     super(props);
@@ -30,7 +32,7 @@ export default class TotalPostsStats extends React.Component {
   }
 
   fetchPostsStats() {
-    fetch('/api/postsStats/' + this.props.timePeriod, {
+    fetch(url + '/api/postsStats/' + this.props.timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -46,7 +48,7 @@ export default class TotalPostsStats extends React.Component {
   }
 
   fetchPostsViews() {
-    fetch('/api/postsViews/' + this.props.timePeriod, {
+    fetch(url + '/api/postsViews/' + this.props.timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())

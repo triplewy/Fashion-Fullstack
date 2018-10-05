@@ -5,6 +5,8 @@ import UploadPostMetadata from './UploadPostMetadata.jsx'
 import CarouselImages from './CarouselImages.jsx'
 import { Redirect } from 'react-router-dom'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class UploadMetadata extends React.Component {
   constructor(props) {
     super(props);
@@ -43,7 +45,6 @@ export default class UploadMetadata extends React.Component {
   }
 
   handleSubmit(title, url, genre, description) {
-    console.log("description is", description);
     var original = 0
     for (var i = 0; i < this.state.inputTags.length; i++) {
       if (this.state.inputTags[i].original) {
@@ -84,32 +85,8 @@ export default class UploadMetadata extends React.Component {
       this.setState({progress: e.loaded/e.total})
     }
 
-    xhr.open('POST','/api/upload');
+    xhr.open('POST', url + '/api/upload');
     xhr.send(formData)
-
-
-    // fetch('/api/upload', {
-    //   method: 'POST',
-    //   credentials: 'include',
-    //   body: formData
-    // })
-    // .then(response => {
-    //   console.log(response);
-    //   if (response.status === 400) {
-    //     console.log("not logged in");
-    //   } else {
-    //     return response.json()
-    //   }
-    // })
-    // .then(data => {
-    //   console.log(data.message);
-    //   if (data.message === 'success') {
-    //
-    //   }
-    // })
-    // .catch(e => {
-    //   console.log(e);
-    // })
   }
 
   handleClick(e) {

@@ -3,6 +3,8 @@ import Tags from './Tags.jsx'
 import Autosuggest from 'react-autosuggest';
 import Cookie from 'js-cookie'
 
+const url = process.env.REACT_APP_API_URL
+
 function escapeRegexCharacters(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -49,7 +51,7 @@ export default class UploadMetadata extends React.Component {
 
   componentDidMount() {
     window.scrollTo(0,0)
-    fetch('/api/topGenres', {
+    fetch(url + '/api/topGenres', {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -81,9 +83,9 @@ export default class UploadMetadata extends React.Component {
 
   }
 
-  fetchUrlAvailable(url) {
-    if (url) {
-      fetch('/api/urlAvailable/' + url, {
+  fetchUrlAvailable(inputUrl) {
+    if (inputUrl) {
+      fetch(url + '/api/urlAvailable/' + inputUrl, {
         credentials: 'include'
       })
       .then(res => res.json())

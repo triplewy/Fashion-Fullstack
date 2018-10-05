@@ -2,6 +2,8 @@ import React from 'react';
 import { Modal } from 'react-bootstrap'
 import trash_icon from 'images/trash-icon.png'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class DeleteModal extends React.Component {
   constructor(props) {
     super(props);
@@ -23,7 +25,7 @@ export default class DeleteModal extends React.Component {
   }
 
   handleDelete(e) {
-    fetch('/api/deletePost', {
+    fetch(url + '/api/deletePost', {
       method: 'DELETE',
       headers: {
         'Accept': 'application/json',

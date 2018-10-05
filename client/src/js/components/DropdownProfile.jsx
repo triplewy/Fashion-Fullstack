@@ -1,6 +1,8 @@
 import React from 'react';
 import NotLoggedInOverlay from './NotLoggedInOverlay.jsx'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class DropdownProfile extends React.Component {
   constructor(props) {
     super(props);
@@ -28,12 +30,11 @@ export default class DropdownProfile extends React.Component {
   }
 
   fetchDropdownProfile() {
-    fetch('/api/dropdownProfile/' + this.props.username, {
+    fetch(url + '/api/dropdownProfile/' + this.props.username, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
       this.setState({userFollowers: data.followers, userFollowed: data.isFollowing,
         location: data.location, followsYou: data.followsYou, isProfile: data.isProfile});
     })
@@ -45,7 +46,7 @@ export default class DropdownProfile extends React.Component {
   handleFollow(e) {
     e.stopPropagation()
     const target = e.target
-    fetch('/api/follow', {
+    fetch(url + '/api/follow', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -71,7 +72,7 @@ export default class DropdownProfile extends React.Component {
   handleUnfollow(e) {
     e.stopPropagation()
     const target = e.target
-    fetch('/api/unfollow', {
+    fetch(url + '/api/unfollow', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',

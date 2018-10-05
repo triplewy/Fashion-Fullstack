@@ -4,6 +4,8 @@ import like_icon from 'images/heart-icon-liked.png'
 import repost_icon from 'images/repost-icon-reposted.png'
 import comment_icon from 'images/comment-icon.png'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class TotalCollectionsStats extends React.Component {
   constructor(props) {
     super(props);
@@ -30,7 +32,7 @@ export default class TotalCollectionsStats extends React.Component {
   }
 
   fetchPlaylistsStats() {
-    fetch('/api/playlistsStats/' + this.props.timePeriod, {
+    fetch(url + '/api/playlistsStats/' + this.props.timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -45,7 +47,7 @@ export default class TotalCollectionsStats extends React.Component {
   }
 
   fetchPlaylistsViews() {
-    fetch('/api/playlistsViews/' + this.props.timePeriod, {
+    fetch(url + '/api/playlistsViews/' + this.props.timePeriod, {
       credentials: 'include'
     })
     .then(res => res.json())

@@ -6,6 +6,8 @@ import { Modal } from 'react-bootstrap'
 import { setAspectRatio } from './aspectRatio.js'
 import edit_icon from 'images/edit-icon.svg'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class EditPostModal extends React.Component {
   constructor(props) {
     super(props);
@@ -41,7 +43,7 @@ export default class EditPostModal extends React.Component {
   }
 
   fetchTags() {
-    fetch('/api/postTags/' + this.props.post.mediaId, {
+    fetch(url + '/api/postTags/' + this.props.post.mediaId, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -118,6 +120,7 @@ export default class EditPostModal extends React.Component {
 
   showModal(e) {
     this.setState({showModal: true})
+    this.fetchTags()
   }
 
   closeModal(e) {
@@ -159,7 +162,7 @@ export default class EditPostModal extends React.Component {
           <div style={{backgroundImage: 'url(' + edit_icon + ')'}} />
           <p>Edit</p>
         </li>
-        <Modal show={this.state.showModal} onHide={this.closeModal} onEnter={this.fetchTags}>
+        <Modal show={this.state.showModal} onHide={this.closeModal}>
           <Modal.Header closeButton>
             <Modal.Title>
               Edit Post

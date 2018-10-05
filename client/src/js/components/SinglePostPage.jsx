@@ -9,18 +9,13 @@ import ErrorPage from './ErrorPage.jsx'
 import { dateDiffInDays } from './DateHelper.js'
 import { Link } from 'react-router-dom';
 
+const url = process.env.REACT_APP_API_URL
 
 export default class SinglePostPage extends React.Component {
   constructor(props) {
     super(props);
-    console.log(this.props.location.state);
     if (this.props.location.state) {
       this.state = {
-        // views: this.props.location.state.postData.views,
-        // likes: this.props.location.state.postData.likes,
-        // reposts: this.props.location.state.postData.reposts,
-        // liked: this.props.location.state.postData.liked,
-        // reposted: this.props.location.state.postData.reposted,
         tags: this.props.location.state.postData.tags,
         carouselIndex: 0,
         post: this.props.location.state.postData,
@@ -33,11 +28,6 @@ export default class SinglePostPage extends React.Component {
       };
     } else {
       this.state = {
-        // views: null,
-        // likes: null,
-        // reposts: null,
-        // liked: false,
-        // reposted: false,
         tags: null,
         carouselIndex: 0,
         post: null,
@@ -60,7 +50,6 @@ export default class SinglePostPage extends React.Component {
   }
 
   componentDidMount() {
-    console.log("mounted");
     window.scrollTo(0, 0)
     window.addEventListener('beforeunload', this.componentCleanup);
     if (this.state.post) {
@@ -87,7 +76,6 @@ export default class SinglePostPage extends React.Component {
   }
 
   componentCleanup() {
-    console.log("YOOOOOOOO");
     this.fetchPost()
     return "unloading"
   }
@@ -97,7 +85,7 @@ export default class SinglePostPage extends React.Component {
   }
 
   fetchStats(mediaId) {
-    fetch('/api/postStats/' + mediaId, {
+    fetch(url + '/api/postStats/' + mediaId, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -117,7 +105,7 @@ export default class SinglePostPage extends React.Component {
   }
 
   fetchTags(mediaId) {
-    fetch('/api/postTags/' + mediaId, {
+    fetch(url + '/api/postTags/' + mediaId, {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -133,7 +121,7 @@ export default class SinglePostPage extends React.Component {
     const now = new Date()
     const nowISOString = now.toISOString()
     const view = {mediaId: mediaId, dateTime: nowISOString}
-    fetch('/api/postVisit', {
+    fetch(url + '/api/postVisit', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -161,12 +149,11 @@ export default class SinglePostPage extends React.Component {
   }
 
   fetchPost() {
-    fetch('/api/post/' + this.props.match.url, {
+    fetch(url + '/api/post' + this.props.match.url, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
       if (data.message === "error") {
         this.setState({error: true})
       } else {

@@ -10,10 +10,11 @@ import Cookie from 'js-cookie'
 import { Jumbotron } from 'react-bootstrap'
 // import * as loadImage from 'blueimp-load-image'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class Profile extends React.Component {
   constructor(props) {
     super(props);
-    console.log(props);
     this.state = {
       streamData: [],
       profileInfo: {},
@@ -114,7 +115,7 @@ export default class Profile extends React.Component {
 
   profileVisit() {
     if (Cookie.get('username') !== this.props.profile) {
-      fetch('/api/profileVisit', {
+      fetch(url + '/api/profileVisit', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -139,7 +140,7 @@ export default class Profile extends React.Component {
 
   handleFollow(e) {
     const target = e.target
-    fetch('/api/follow', {
+    fetch(url + '/api/follow', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -170,7 +171,7 @@ export default class Profile extends React.Component {
 
   handleUnfollow(e) {
     const target = e.target
-    fetch('/api/unfollow', {
+    fetch(url + '/api/unfollow', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -200,12 +201,11 @@ export default class Profile extends React.Component {
   }
 
   fetchProfileInfo() {
-    fetch('/api/' + this.props.profile + '/info', {
+    fetch(url + '/api/' + this.props.profile + '/info', {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
       if (data.message === "error") {
         this.setState({error: true})
       } else {
@@ -218,12 +218,11 @@ export default class Profile extends React.Component {
   }
 
   getStream(lastDateSeconds) {
-    fetch('/api/' + this.props.profile + '/stream/' + lastDateSeconds, {
+    fetch(url + '/api/' + this.props.profile + '/stream/' + lastDateSeconds, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
       if (data.message === "error") {
         this.setState({error: true})
       } else {
@@ -244,12 +243,11 @@ export default class Profile extends React.Component {
   }
 
   getOriginalStream(lastDateSeconds) {
-    fetch('/api/' + this.props.profile + '/streamOriginal/' + lastDateSeconds, {
+    fetch(url + '/api/' + this.props.profile + '/streamOriginal/' + lastDateSeconds, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
       if (data.message === "error") {
         this.setState({error: true})
       } else {
@@ -270,12 +268,11 @@ export default class Profile extends React.Component {
   }
 
   getPostStream(lastDateSeconds) {
-    fetch('/api/' + this.props.profile + '/streamPosts/' + lastDateSeconds, {
+    fetch(url + '/api/' + this.props.profile + '/streamPosts/' + lastDateSeconds, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
       if (data.message === "error") {
         this.setState({error: true})
       } else {
@@ -296,12 +293,11 @@ export default class Profile extends React.Component {
   }
 
   getPlaylistStream(lastDateSeconds) {
-    fetch('/api/' + this.props.profile + '/streamPlaylists/' + lastDateSeconds, {
+    fetch(url + '/api/' + this.props.profile + '/streamPlaylists/' + lastDateSeconds, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
       if (data.message === "error") {
         this.setState({error: true})
       } else {
@@ -322,12 +318,11 @@ export default class Profile extends React.Component {
   }
 
   getRepostStream(lastDateSeconds) {
-    fetch('/api/' + this.props.profile + '/streamReposts/' + lastDateSeconds, {
+    fetch(url + '/api/' + this.props.profile + '/streamReposts/' + lastDateSeconds, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
       if (data.message === "error") {
         this.setState({error: true})
       } else {
@@ -374,17 +369,15 @@ export default class Profile extends React.Component {
     //     console.log("file is", file);
     //     file.preview = canvas.toDataURL(file.type)
     //
-    console.log("file is", file);
     var formData = new FormData();
     formData.append('image', file);
 
-    fetch('/api/updateProfileImage', {
+    fetch(url + '/api/updateProfileImage', {
       method: 'POST',
       credentials: 'include',
       body: formData
     })
     .then(response => {
-      console.log(response);
       if (response.status === 400) {
         console.log("not logged in");
       } else {

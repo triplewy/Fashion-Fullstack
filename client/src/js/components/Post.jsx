@@ -9,6 +9,8 @@ import { Link } from 'react-router-dom'
 import { LinkContainer } from 'react-router-bootstrap'
 import Cookie from 'js-cookie'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class Post extends React.Component {
   constructor(props) {
     super(props);
@@ -63,7 +65,7 @@ export default class Post extends React.Component {
         arr.push(view)
         if (arr.length > 9) {
           Cookie.set('postsViews', [])
-          fetch('/api/storePostsViews', {
+          fetch(url + '/api/storePostsViews', {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -143,7 +145,7 @@ export default class Post extends React.Component {
             <Tags
               mediaId={post.mediaId}
               tags={post.tags}
-              setTagCarouselIndex={this.setTagCarouselIndex} 
+              setTagCarouselIndex={this.setTagCarouselIndex}
               carouselIndex={this.state.carouselIndex}/>
             {post.description &&
             <div id="description_wrapper">

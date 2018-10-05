@@ -1,6 +1,8 @@
 import React from 'react';
 import {Redirect} from 'react-router-dom'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class Verify extends React.Component {
   constructor(props) {
     super(props);
@@ -11,7 +13,7 @@ export default class Verify extends React.Component {
   }
 
   componentDidMount() {
-    fetch('api/verify/' + this.state.url, {
+    fetch(url + '/api/verify/' + this.state.url, {
       method: 'GET',
       credentials: 'include',
     })

@@ -9,6 +9,8 @@ import like_icon_liked from 'images/heart-icon-liked.png'
 import repost_icon from 'images/repost-icon.png'
 import repost_icon_reposted from 'images/repost-icon-reposted.png'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class StatsHeader extends React.Component {
   constructor(props) {
     super(props);
@@ -53,7 +55,7 @@ export default class StatsHeader extends React.Component {
   handleLike(e) {
     e.stopPropagation()
     const target = e.target
-    fetch('/api/like', {
+    fetch(url + '/api/like', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -83,7 +85,7 @@ export default class StatsHeader extends React.Component {
   handleUnlike(e) {
     e.stopPropagation()
     const target = e.target
-    fetch('/api/unlike', {
+    fetch(url + '/api/unlike', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -112,7 +114,7 @@ export default class StatsHeader extends React.Component {
   handleRepost(e) {
     e.stopPropagation()
     const target = e.target
-    fetch('/api/repost', {
+    fetch(url + '/api/repost', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -141,7 +143,7 @@ export default class StatsHeader extends React.Component {
   handleUnrepost(e) {
     e.stopPropagation()
     const target = e.target
-    fetch('/api/unrepost', {
+    fetch(url + '/api/unrepost', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -168,7 +170,6 @@ export default class StatsHeader extends React.Component {
   }
 
   showOverlay(target) {
-    console.log("herehrerer");
     this.setState({showOverlay: true, target: target})
     setTimeout(function() {
       this.setState({showOverlay: false})

@@ -3,6 +3,8 @@ import Tags from './Tags.jsx'
 import Autosuggest from 'react-autosuggest';
 import Cookie from 'js-cookie'
 
+const url = process.env.REACT_APP_API_URL
+
 function escapeRegexCharacters(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -50,7 +52,7 @@ export default class EditPostModalMetadata extends React.Component {
   }
 
   componentDidMount() {
-    fetch('/api/topGenres', {
+    fetch(url + '/api/topGenres', {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -74,7 +76,7 @@ export default class EditPostModalMetadata extends React.Component {
 
     console.log("deleted Tags are", this.props.deletedTags);
 
-    fetch('/api/editPost', {
+    fetch(url + '/api/editPost', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -130,7 +132,7 @@ export default class EditPostModalMetadata extends React.Component {
       this.setState({urlAvailable: true})
     } else {
       if (url) {
-        fetch('/api/urlAvailable/' + url, {
+        fetch(url + '/api/urlAvailable/' + url, {
           credentials: 'include'
         })
         .then(res => res.json())

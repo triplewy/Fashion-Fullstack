@@ -1,6 +1,8 @@
 import React from 'react';
 import AlbumTetrisBlock from './AlbumTetrisBlock.jsx'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class relatedCollections extends React.Component {
   constructor(props) {
     super(props);
@@ -23,12 +25,11 @@ export default class relatedCollections extends React.Component {
   }
 
   fetchRelatedCollections() {
-    fetch('/api/relatedCollections/' + this.props.url, {
+    fetch(url + '/api/relatedCollections' + this.props.url, {
       credentials: 'include'
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
       this.setState({relatedCollections: data});
     })
     .catch((error) => {

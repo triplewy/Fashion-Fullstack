@@ -2,7 +2,6 @@
   "name": "fashion-fullstack",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:8081/",
   "dependencies": {
     "blueimp-load-image": "^2.19.0",
     "cookie-parser": "^1.4.3",

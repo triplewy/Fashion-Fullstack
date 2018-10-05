@@ -2,6 +2,8 @@ import React from 'react';
 import Autosuggest from 'react-autosuggest';
 import { Overlay, Tooltip } from 'react-bootstrap'
 
+const url = process.env.REACT_APP_API_URL
+
 function escapeRegexCharacters(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -46,7 +48,7 @@ export default class InputTag extends React.Component {
   }
 
   componentDidMount() {
-    fetch('/api/topBrands', {
+    fetch(url + '/api/topBrands', {
       credentials: 'include'
     })
     .then(res => res.json())

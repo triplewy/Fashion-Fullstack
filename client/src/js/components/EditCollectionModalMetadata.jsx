@@ -9,6 +9,8 @@ import view_icon from 'images/view-icon.png'
 import trash_icon from 'images/trash-icon.png'
 import Cookie from 'js-cookie'
 
+const url = process.env.REACT_APP_API_URL
+
 function escapeRegexCharacters(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -63,7 +65,7 @@ export default class EditCollectionModalMetadata extends React.Component {
   }
 
   fetchTopGenres() {
-    fetch('/api/topGenres', {
+    fetch(url + '/api/topGenres', {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -77,7 +79,7 @@ export default class EditCollectionModalMetadata extends React.Component {
   }
 
   handleSave() {
-    fetch('/api/editCollection', {
+    fetch(url + '/api/editCollection', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -132,7 +134,7 @@ export default class EditCollectionModalMetadata extends React.Component {
       this.setState({urlAvailable: true})
     } else {
       if (url) {
-        fetch('/api/urlAvailable/collection/' + url, {
+        fetch(url + '/api/urlAvailable/collection/' + url, {
           credentials: 'include'
         })
         .then(res => res.json())

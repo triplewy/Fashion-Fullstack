@@ -30,8 +30,6 @@ export default class LoginModal extends React.Component {
   }
 
   handleLogin(e) {
-    console.log(this.state.username);
-    console.log(this.state.password);
     this.props.handleLogin(this.state.username, this.state.password)
   }
 
@@ -43,7 +41,7 @@ export default class LoginModal extends React.Component {
         </Modal.Header>
         <Modal.Body id="login_modal_body">
           <div className="welcome_text">
-            <p>Use Google, Facebook, or Reddit to login</p>
+            <p>Use Google or Reddit to login (These do not work right now)</p>
             <div className="oauth_div">
               <a href='http://localhost:8081/auth/google'>
                 <div style={{backgroundImage: 'url(' + googleLogo + ')'}} />
@@ -56,7 +54,7 @@ export default class LoginModal extends React.Component {
             <p>Did you forgot your password?</p>
           </div>
           <div id="login_input_fields">
-            <input type="text" autoComplete="off" placeholder="Username or Email"
+            <input type="text" autoComplete="off" placeholder="Username"
               name="username" onChange={this.handleChange} value={this.state.username}></input>
             <input type="password" placeholder="Password" name="password" onChange={this.handleChange}
             onKeyPress={this.handleKeyPress} value={this.state.password}></input>

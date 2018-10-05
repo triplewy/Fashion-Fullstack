@@ -1,6 +1,8 @@
 import React from 'react';
 import NotificationItem from './NotificationItem.jsx'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class NotificationsPage extends React.Component {
   constructor(props) {
     super(props);
@@ -19,7 +21,7 @@ export default class NotificationsPage extends React.Component {
   }
 
   getNotifications() {
-    fetch('/api/notificationsDropdown/20', {
+    fetch(url + '/api/notificationsDropdown/20', {
       credentials: 'include'
     })
     .then(res => res.json())
@@ -30,7 +32,7 @@ export default class NotificationsPage extends React.Component {
   }
 
   handleFollow(profile, index) {
-    fetch('/api/' + profile + '/follow', {
+    fetch(url + '/api/' + profile + '/follow', {
       method: 'POST',
       credentials: 'include',
     })
@@ -52,7 +54,7 @@ export default class NotificationsPage extends React.Component {
   }
 
   handleUnfollow(profile, index) {
-    fetch('/api/' + profile + '/unfollow', {
+    fetch(url + '/api/' + profile + '/unfollow', {
       method: 'POST',
       credentials: 'include',
     })
