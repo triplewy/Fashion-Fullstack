@@ -37,6 +37,11 @@ var sessionStore = new RedisStore({
 })
 var POLLING_INTERVAL = 10000
 
+aws.config.update({
+  accessKeyId: "",
+  secretAccessKey: ""
+});
+
 var app = express();
 
 var server = http.createServer(app)
