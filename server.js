@@ -259,291 +259,291 @@ var conn = mysql.createConnection({
   timezone: 'utc'
 });
 
-// conn.query('SET foreign_key_checks = 0')
-// conn.query('DROP TABLE IF EXISTS users')
-// conn.query('DROP TABLE IF EXISTS posts')
-// conn.query('DROP TABLE IF EXISTS postsImages')
-// conn.query('DROP TABLE IF EXISTS playlists')
-// conn.query('DROP TABLE IF EXISTS tags');
-// conn.query('DROP TABLE IF EXISTS reposts');
-// conn.query('DROP TABLE IF EXISTS likes');
-// conn.query('DROP TABLE IF EXISTS views');
-// conn.query('DROP TABLE IF EXISTS playlistsViews');
-// conn.query('DROP TABLE IF EXISTS comments');
-// conn.query('DROP TABLE IF EXISTS playlistsPosts');
-// conn.query('DROP TABLE IF EXISTS playlistsFollowers');
-// conn.query('DROP TABLE IF EXISTS playlistsReposts');
-// conn.query('DROP TABLE IF EXISTS playlistsLikes');
-// conn.query('DROP TABLE IF EXISTS playlistsComments');
-// conn.query('DROP TABLE IF EXISTS postsNotifications')
-// conn.query('DROP TABLE IF EXISTS playlistsNotifications')
-// conn.query('DROP TABLE IF EXISTS followingNotifications')
-// conn.query('DROP TABLE IF EXISTS playlistsPostsNotifications')
-// conn.query('DROP TABLE IF EXISTS following');
-// conn.query('DROP TABLE IF EXISTS logins')
-// conn.query('DROP TABLE IF EXISTS linksClicks')
-// conn.query('DROP TABLE IF EXISTS profilesVisits')
-// conn.query('DROP PROCEDURE IF EXISTS markNotificationsAsRead')
-// conn.query('SET foreign_key_checks = 1')
-//
-// conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255) NOT NULL UNIQUE, profileName TEXT NOT NULL, profile_image_src VARCHAR(255), ' +
-// 'location TEXT, followers INTEGER NOT NULL DEFAULT 0, following INTEGER NOT NULL DEFAULT 0, numPosts INTEGER NOT NULL DEFAULT 0, description TEXT, createdDate DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL)')
-//
-// conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, network TEXT, networkId TEXT, accessToken TEXT, username VARCHAR(255) NOT NULL UNIQUE, email VARCHAR(255) UNIQUE, ' +
-// 'passwordHash CHAR(60), verificationHash CHAR(60), verified BOOLEAN NOT NULL DEFAULT FALSE, FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY (username) REFERENCES users(username) ON UPDATE CASCADE);')
-//
-// conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT NOT NULL, profile_image_src VARCHAR(255), ' +
-// 'title VARCHAR(255) NOT NULL, url VARCHAR(255) NOT NULL, genre TEXT, original BOOLEAN, ' +
-// 'views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY (username) REFERENCES users(username) ON UPDATE CASCADE, UNIQUE(userId, url));')
-//
-// conn.query('CREATE TABLE IF NOT EXISTS postsImages (imageId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, imageUrl VARCHAR(255) NOT NULL UNIQUE, imageIndex INTEGER NOT NULL, width INTEGER NOT NULL, height INTEGER NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE);')
-//
-// conn.query('CREATE TABLE IF NOT EXISTS playlists (playlistId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT NOT NULL, profile_image_src VARCHAR(255), ' +
-// 'title VARCHAR(255), url VARCHAR(255) NOT NULL, genre TEXT, public BOOLEAN, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, ' +
-// 'followers INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, displayTime DATETIME, postsAdded INTEGER DEFAULT 0, ' +
-// 'dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY(username) REFERENCES users(username) ON UPDATE CASCADE, UNIQUE(url, userId))')
-//
-// conn.query('CREATE TABLE IF NOT EXISTS followingNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
-// 'FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId))')
-//
-// conn.query('CREATE TABLE IF NOT EXISTS postsNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, mediaId INTEGER NOT NULL, activity INTEGER NOT NULL, comment TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
-// 'FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId))')
-//
-// conn.query('CREATE TABLE IF NOT EXISTS playlistsNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, playlistId INTEGER NOT NULL, activity INTEGER NOT NULL, comment TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
-// 'FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId), FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE)')
-//
-// conn.query('CREATE TABLE IF NOT EXISTS playlistsPostsNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
-// 'FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId), FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE)')
-//
-// conn.query('CREATE TABLE IF NOT EXISTS tags (tagId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, itemType TEXT NOT NULL, itemName TEXT, itemBrand TEXT, itemLink VARCHAR(255), original BOOLEAN NOT NULL DEFAULT FALSE, x INTEGER NOT NULL, y INTEGER NOT NULL, imageIndex INTEGER NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE)');
-//
-// conn.query('CREATE TABLE IF NOT EXISTS reposts (repostId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT, profile_image_src VARCHAR(255), dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, active BOOLEAN NOT NULL DEFAULT TRUE, ' +
-// 'FOREIGN KEY(mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY(username) REFERENCES users(username) ON UPDATE CASCADE, UNIQUE(mediaId, userId))');
-//
-// conn.query('CREATE TABLE IF NOT EXISTS likes (likeId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
-//
-// conn.query('CREATE TABLE IF NOT EXISTS views (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, reposterId INTEGER, viewerId INTEGER, ' +
-// // 'viewerId INTEGER NOT NULL, ' +
-// 'mediaUserId INTEGER NOT NULL, IP_Address TEXT, explore BOOLEAN, dateTime DATETIME NOT NULL, ' +
-// // 'FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, ' +
-// 'FOREIGN KEY (reposterId) REFERENCES users(userId), ' +
-// // 'FOREIGN KEY (viewerId) REFERENCES users(userId), ' +
-// 'FOREIGN KEY (mediaUserId) REFERENCES users(userId)' +
-// // ', UNIQUE(mediaId, viewerId, dateTime)' +
-// ')');
-//
-// conn.query('CREATE TABLE IF NOT EXISTS comments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId))');
-//
-// conn.query('CREATE TABLE IF NOT EXISTS playlistsPosts (playlistPostId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, playlistIndex INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY(mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, UNIQUE KEY (playlistId, mediaId))');
-//
-// conn.query('CREATE TABLE IF NOT EXISTS playlistsFollowers (playlistFollowId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
-//
-// conn.query('CREATE TABLE IF NOT EXISTS playlistsReposts (repostId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT, profile_image_src VARCHAR(255), dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, active BOOLEAN NOT NULL DEFAULT TRUE, ' +
-// 'FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY(username) REFERENCES users(username) ON UPDATE CASCADE, UNIQUE(playlistId, userId))');
-//
-// conn.query('CREATE TABLE IF NOT EXISTS playlistsLikes (likeId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
-//
-// conn.query('CREATE TABLE IF NOT EXISTS playlistsComments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId))')
-//
-// conn.query('CREATE TABLE IF NOT EXISTS playlistsViews (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, reposterId INTEGER, viewerId INTEGER, mediaUserId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, IP_Address TEXT, explore BOOLEAN, dateTime DATETIME NOT NULL, ' +
-// // 'FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), ' +
-// // 'FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, ' +
-// 'FOREIGN KEY (reposterId) REFERENCES users(userId), ' +
-// // 'FOREIGN KEY (viewerId) REFERENCES users(userId), ' +
-// 'FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (playlistUserId) REFERENCES users(userId)' +
-// // ', UNIQUE(mediaId, viewerId, dateTime)' +
-// ')');
-//
-// conn.query('CREATE TABLE IF NOT EXISTS following (followingId INTEGER AUTO_INCREMENT PRIMARY KEY, followerUserId INTEGER NOT NULL, followingUserId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (followerUserId) REFERENCES users(userId), FOREIGN KEY (followingUserId) REFERENCES users(userId), UNIQUE(followerUserId, followingUserId))')
-//
-// conn.query('CREATE TABLE IF NOT EXISTS linksClicks (clickId INTEGER AUTO_INCREMENT PRIMARY KEY, clickUserId INTEGER NOT NULL, linkUserId INTEGER NOT NULL, mediaId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (clickUserId) REFERENCES users(userId), FOREIGN KEY (linkUserId) REFERENCES users(userId), FOREIGN KEY (mediaId) REFERENCES posts(mediaId))')
-//
-// conn.query('CREATE TABLE IF NOT EXISTS profilesVisits (clickId INTEGER AUTO_INCREMENT PRIMARY KEY, visitUserId INTEGER NOT NULL, profileUserId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (visitUserId) REFERENCES users(userId), FOREIGN KEY (profileUserId) REFERENCES users(userId))')
-//
-// conn.query('CREATE TRIGGER before_following_insert BEFORE INSERT ON following FOR EACH ROW BEGIN ' +
-// 'IF (NEW.followerUserId = NEW.followingUserId) THEN ' +
-// 'SIGNAL SQLSTATE \'45000\' SET MESSAGE_TEXT = \'Cannot follow yourself\', MYSQL_ERRNO = 1001; END IF; END;')
-//
-// conn.query('CREATE TRIGGER after_following_insert AFTER INSERT ON following FOR EACH ROW BEGIN ' +
-// 'UPDATE users SET followers = (SELECT COUNT(*) FROM following WHERE followingUserId=NEW.followingUserId) WHERE userId=NEW.followingUserId; ' +
-// 'UPDATE users SET following = (SELECT COUNT(*) FROM following WHERE followerUserId=NEW.followerUserId) WHERE userId=NEW.followerUserId; ' +
-// 'INSERT INTO followingNotifications (senderId, receiverId, dateTime) VALUES (NEW.followerUserId, NEW.followingUserId, NEW.dateTime); END;')
-//
-// conn.query('CREATE TRIGGER after_following_delete AFTER DELETE ON following FOR EACH ROW BEGIN ' +
-// 'UPDATE users SET followers = (SELECT COUNT(*) FROM following WHERE followingUserId=OLD.followingUserId) WHERE userId=OLD.followingUserId; ' +
-// 'UPDATE users SET following = (SELECT COUNT(*) FROM following WHERE followerUserId=OLD.followerUserId) WHERE userId=OLD.followerUserId; ' + 'END;')
-//
-// conn.query('CREATE TRIGGER before_likes_insert BEFORE INSERT ON likes FOR EACH ROW BEGIN ' +
-// 'SET NEW.mediaUserId = (SELECT userId FROM posts WHERE mediaId = NEW.mediaId LIMIT 1); END; ')
-//
-// conn.query('CREATE TRIGGER after_likes_insert AFTER INSERT ON likes FOR EACH ROW BEGIN ' +
-// 'UPDATE posts SET likes = (SELECT COUNT(*) FROM likes WHERE mediaId=NEW.mediaId) WHERE mediaId=NEW.mediaId; ' +
-// 'INSERT INTO postsNotifications (senderId, receiverId, mediaId, activity, dateTime) VALUES (NEW.userId, (SELECT userId FROM posts WHERE mediaId=NEW.mediaId), NEW.mediaId, 0, NEW.dateTime); END;')
-//
-// conn.query('CREATE TRIGGER after_likes_delete AFTER DELETE ON likes FOR EACH ROW BEGIN ' +
-// 'UPDATE posts SET likes = (SELECT COUNT(*) FROM likes WHERE mediaId=OLD.mediaId) WHERE mediaId=OLD.mediaId; ' +
-// 'DELETE FROM postsNotifications WHERE senderId=OLD.userId AND mediaId=OLD.mediaId AND activity=0; END;')
-//
-// conn.query('CREATE TRIGGER before_reposts_insert BEFORE INSERT ON reposts FOR EACH ROW BEGIN ' +
-// 'DECLARE newUsername VARCHAR(255); DECLARE newProfileName TEXT; DECLARE new_profile_image_src VARCHAR(255); ' +
-// 'IF (SELECT COUNT(*) FROM posts WHERE userId=NEW.userId AND mediaId=NEW.mediaId > 0) THEN ' +
-// 'SIGNAL SQLSTATE \'45000\' SET MESSAGE_TEXT = \'Cannot repost own track\', MYSQL_ERRNO = 1001; ' +
-// 'ELSE ' +
-// 'SELECT username, profileName, profile_image_src INTO newUsername, newProfileName, new_profile_image_src FROM users WHERE userId = NEW.userId; ' +
-// 'SET NEW.username = newUsername; SET NEW.profileName = newProfileName; SET NEW.profile_image_src = new_profile_image_src; ' +
-// 'SET NEW.mediaUserId = (SELECT userId FROM posts WHERE mediaId = NEW.mediaId LIMIT 1); ' +
-// 'END IF; END;')
-//
-// conn.query('CREATE TRIGGER after_reposts_insert AFTER INSERT ON reposts FOR EACH ROW BEGIN ' +
-// 'UPDATE posts SET reposts = (SELECT COUNT(*) FROM reposts WHERE mediaId=NEW.mediaId) WHERE mediaId=NEW.mediaId; ' +
-// 'INSERT INTO postsNotifications (senderId, receiverId, mediaId, activity, dateTime) VALUES (NEW.userId, (SELECT userId FROM posts WHERE mediaId=NEW.mediaId), NEW.mediaId, 1, NEW.dateTime); END;')
-//
-// conn.query('CREATE TRIGGER after_reposts_update AFTER UPDATE ON reposts FOR EACH ROW BEGIN ' +
-// 'UPDATE posts SET reposts = (SELECT COUNT(*) FROM reposts WHERE mediaId = NEW.mediaId AND active = 1) WHERE mediaId = NEW.mediaId; ' +
-// 'IF (NEW.active = 0) THEN DELETE FROM postsNotifications WHERE senderId=NEW.userId AND mediaId=NEW.mediaId AND activity=1; END IF; END;')
-//
-// // conn.query('CREATE TRIGGER after_reposts_delete AFTER DELETE ON reposts FOR EACH ROW BEGIN ' +
-// // 'UPDATE posts SET reposts = (SELECT COUNT(*) FROM reposts WHERE mediaId=OLD.mediaId) WHERE mediaId=OLD.mediaId; ' +
-// // 'DELETE FROM postsNotifications WHERE senderId=OLD.userId AND mediaId=OLD.mediaId AND activity=1; END;')
-//
-// conn.query('CREATE TRIGGER before_comments_insert BEFORE INSERT ON comments FOR EACH ROW BEGIN ' +
-// 'SET NEW.mediaUserId = (SELECT userId FROM posts WHERE mediaId = NEW.mediaId LIMIT 1); END; ')
-//
-// conn.query('CREATE TRIGGER after_comments_insert AFTER INSERT ON comments FOR EACH ROW BEGIN ' +
-// 'UPDATE posts SET comments = (SELECT COUNT(*) FROM comments WHERE mediaId=NEW.mediaId) WHERE mediaId=NEW.mediaId; ' +
-// 'INSERT INTO postsNotifications (senderId, receiverId, mediaId, activity, comment, dateTime) VALUES (NEW.userId, (SELECT userId FROM posts WHERE mediaId=NEW.mediaId), NEW.mediaId, 2, NEW.comment, NEW.dateTime); END;')
-//
-// conn.query('CREATE TRIGGER after_comments_delete AFTER DELETE ON comments FOR EACH ROW BEGIN ' +
-// 'UPDATE posts SET comments = (SELECT COUNT(*) FROM comments WHERE mediaId=OLD.mediaId) WHERE mediaId=OLD.mediaId; ' +
-// 'DELETE FROM postsNotifications WHERE senderId=OLD.userId AND mediaId=OLD.mediaId AND activity=2; END;')
-//
-// conn.query('CREATE TRIGGER before_playlistsLikes_insert BEFORE INSERT ON playlistsLikes FOR EACH ROW BEGIN ' +
-// 'SET NEW.playlistUserId = (SELECT userId FROM playlists WHERE playlistId = NEW.playlistId LIMIT 1); END; ')
-//
-// conn.query('CREATE TRIGGER after_playlistsLikes_insert AFTER INSERT ON playlistsLikes FOR EACH ROW BEGIN ' +
-// 'UPDATE playlists SET likes = (SELECT COUNT(*) FROM playlistsLikes WHERE playlistId=NEW.playlistId) WHERE playlistId=NEW.playlistId; ' +
-// 'INSERT INTO playlistsNotifications (senderId, receiverId, playlistId, activity, dateTime) VALUES (NEW.userId, (SELECT userId FROM playlists WHERE playlistId=NEW.playlistId), NEW.playlistId, 0, NEW.dateTime); END;')
-//
-// conn.query('CREATE TRIGGER after_playlistsLikes_delete AFTER DELETE ON playlistsLikes FOR EACH ROW BEGIN ' +
-// 'UPDATE playlists SET likes = (SELECT COUNT(*) FROM playlistsLikes WHERE playlistId=OLD.playlistId) WHERE playlistId=OLD.playlistId; ' +
-// 'DELETE FROM playlistsNotifications WHERE senderId=OLD.userId AND playlistId=OLD.playlistId AND activity=0; END;')
-//
-// conn.query('CREATE TRIGGER before_playlistsReposts_insert BEFORE INSERT ON playlistsReposts FOR EACH ROW BEGIN ' +
-// 'DECLARE newUsername VARCHAR(255); DECLARE newProfileName TEXT; DECLARE new_profile_image_src VARCHAR(255); ' +
-// 'IF (SELECT COUNT(*) FROM playlists WHERE userId=NEW.userId AND playlistId=NEW.playlistId > 0) THEN ' +
-// 'SIGNAL SQLSTATE \'45000\' SET MESSAGE_TEXT = \'Cannot repost own playlist\', MYSQL_ERRNO = 1001; '+
-// 'ELSE ' +
-// 'SET NEW.playlistUserId = (SELECT userId FROM playlists WHERE playlistId = NEW.playlistId LIMIT 1);' +
-// 'SELECT username, profileName, profile_image_src INTO newUsername, newProfileName, new_profile_image_src FROM ' +
-// 'users WHERE userId = NEW.userId; SET NEW.username = newUsername; SET NEW.profileName = newProfileName; SET NEW.profile_image_src = new_profile_image_src; ' +
-// 'END IF; END;')
-//
-// conn.query('CREATE TRIGGER after_playlistsReposts_insert AFTER INSERT ON playlistsReposts FOR EACH ROW BEGIN ' +
-// 'UPDATE playlists SET reposts = (SELECT COUNT(*) FROM playlistsReposts WHERE playlistId=NEW.playlistId) WHERE playlistId=NEW.playlistId; ' +
-// 'INSERT INTO playlistsNotifications (senderId, receiverId, playlistId, activity, dateTime) VALUES (NEW.userId, (SELECT userId FROM playlists WHERE playlistId=NEW.playlistId), NEW.playlistId, 1, NEW.dateTime); END;')
-//
-// conn.query('CREATE TRIGGER after_playlistsReposts_update AFTER UPDATE ON playlistsReposts FOR EACH ROW BEGIN ' +
-// 'UPDATE playlists SET reposts = (SELECT COUNT(*) FROM playlistsReposts WHERE playlistId = NEW.playlistId AND active = 1) WHERE playlistId = NEW.playlistId; ' +
-// 'IF (NEW.active = 0) THEN DELETE FROM playlistsNotifications WHERE senderId=NEW.userId AND playlistId=NEW.playlistId AND activity=1; END IF; END;')
-//
-// // conn.query('CREATE TRIGGER after_playlistsReposts_delete AFTER DELETE ON playlistsReposts FOR EACH ROW BEGIN ' +
-// // 'UPDATE playlists SET reposts = (SELECT COUNT(*) FROM playlistsReposts WHERE playlistId=OLD.playlistId) WHERE playlistId=OLD.playlistId; ' +
-// // 'DELETE FROM playlistsNotifications WHERE senderId=OLD.userId AND playlistId=OLD.playlistId AND activity=1; END;')
-//
-// conn.query('CREATE TRIGGER before_playlistsFollowers_insert BEFORE INSERT ON playlistsFollowers FOR EACH ROW BEGIN ' +
-// 'SET NEW.playlistUserId = (SELECT userId FROM playlists WHERE playlistId = NEW.playlistId LIMIT 1); END; ')
-//
-// conn.query('CREATE TRIGGER after_playlistsFollowers_insert AFTER INSERT ON playlistsFollowers FOR EACH ROW BEGIN ' +
-// 'UPDATE playlists SET followers = (SELECT COUNT(*) FROM playlistsFollowers WHERE playlistId=NEW.playlistId) WHERE playlistId=NEW.playlistId; ' +
-// 'INSERT INTO playlistsNotifications (senderId, receiverId, playlistId, activity, dateTime) VALUES (NEW.userId, (SELECT userId FROM playlists WHERE playlistId=NEW.playlistId), NEW.playlistId, 3, NEW.dateTime); END;')
-//
-// conn.query('CREATE TRIGGER after_playlistsFollowers_delete AFTER DELETE ON playlistsFollowers FOR EACH ROW BEGIN ' +
-// 'UPDATE playlists SET followers = (SELECT COUNT(*) FROM playlistsFollowers WHERE playlistId=OLD.playlistId) WHERE playlistId=OLD.playlistId; ' +
-// 'DELETE FROM playlistsNotifications WHERE senderId=OLD.userId AND playlistId=OLD.playlistId AND activity=3; END;')
-//
-// conn.query('CREATE TRIGGER before_playlistsComments_insert BEFORE INSERT ON playlistsComments FOR EACH ROW BEGIN ' +
-// 'SET NEW.playlistUserId = (SELECT userId FROM playlists WHERE playlistId = NEW.playlistId LIMIT 1); END; ')
-//
-// conn.query('CREATE TRIGGER after_playlistsComments_insert AFTER INSERT ON playlistsComments FOR EACH ROW BEGIN ' +
-// 'UPDATE playlists SET comments = (SELECT COUNT(*) FROM playlistsComments WHERE playlistId=NEW.playlistId) WHERE playlistId=NEW.playlistId; ' +
-// 'INSERT INTO playlistsNotifications (senderId, receiverId, playlistId, activity, comment, dateTime) VALUES (NEW.userId, (SELECT userId FROM playlists WHERE playlistId=NEW.playlistId), NEW.playlistId, 2, NEW.comment, NEW.dateTime); END;')
-//
-// conn.query('CREATE TRIGGER after_playlistsComments_delete AFTER DELETE ON playlistsComments FOR EACH ROW BEGIN ' +
-// 'UPDATE playlists SET comments = (SELECT COUNT(*) FROM playlistsComments WHERE playlistId=OLD.playlistId) WHERE playlistId=OLD.playlistId; ' +
-// 'DELETE FROM playlistsNotifications WHERE senderId=OLD.userId AND playlistId=OLD.playlistId AND activity=2; END;')
-//
-// // conn.query('CREATE TRIGGER after_postNotifications_update AFTER UPDATE ON postsNotifications FOR EACH ROW BEGIN ' +
-// // 'UPDATE playlistsNotifications SET unread=0 WHERE receiverId=NEW.receiverId; ' +
-// // 'UPDATE followingNotifications SET unread=0 WHERE receiverId=NEW.receiverId; END;')
-//
-// conn.query('CREATE TRIGGER before_views_insert BEFORE INSERT ON views FOR EACH ROW BEGIN ' +
-// 'DECLARE mediaUserId INTEGER; SET mediaUserId = (SELECT userId FROM posts WHERE mediaId = NEW.mediaId LIMIT 1); ' +
-// 'IF (NEW.viewerId != mediaUserId OR NEW.viewerId IS NULL) THEN SET NEW.mediaUserId = mediaUserId; END IF; END;')
-//
-// conn.query('CREATE TRIGGER after_views_insert AFTER INSERT ON views FOR EACH ROW BEGIN ' +
-// // 'UPDATE posts SET views = views + 1 WHERE mediaId=NEW.mediaId; END;')
-// 'UPDATE posts SET views = (SELECT COUNT(*) FROM views WHERE mediaId=NEW.mediaId) + (SELECT COUNT(*) FROM playlistsViews WHERE mediaId=NEW.mediaId) WHERE mediaId=NEW.mediaId; END;')
-//
-// conn.query('CREATE TRIGGER before_playlistsViews_insert BEFORE INSERT ON playlistsViews FOR EACH ROW BEGIN ' +
-// 'DECLARE mediaUserId INTEGER; DECLARE playlistUserId INTEGER; ' +
-// 'SELECT b.userId, c.userId INTO playlistUserId, mediaUserId FROM playlistsPosts AS a ' +
-// 'JOIN playlists AS b ON b.playlistId = a.playlistId JOIN posts AS c ON c.mediaId = a.mediaId ' +
-// 'WHERE a.playlistId = NEW.playlistId AND a.mediaId = NEW.mediaId LIMIT 1;' +
-// 'IF (NEW.viewerId != mediaUserId) THEN SET NEW.mediaUserId = mediaUserId; SET NEW.playlistUserId = playlistUserId; END IF; END;')
-//
-// conn.query('CREATE TRIGGER after_playlistsViews_insert AFTER INSERT ON playlistsViews FOR EACH ROW BEGIN ' +
-// // 'UPDATE posts SET views = views + 1 WHERE mediaId=NEW.mediaId; END;')
-// 'UPDATE posts SET views = (SELECT COUNT(*) FROM playlistsViews WHERE mediaId = NEW.mediaId) + (SELECT COUNT(*) FROM views WHERE mediaId = NEW.mediaId) WHERE mediaId=NEW.mediaId; END;')
-//
-// conn.query('CREATE TRIGGER before_linksClicks_insert BEFORE INSERT ON linksClicks FOR EACH ROW BEGIN ' +
-// 'DECLARE linkUserId INTEGER; SET linkUserId = (SELECT userId FROM posts WHERE mediaId = NEW.mediaId LIMIT 1); ' +
-// 'IF (NEW.clickUserId != linkUserId) THEN SET NEW.linkUserId = linkUserId; END IF; END;')
-//
-// conn.query('CREATE TRIGGER before_posts_insert BEFORE INSERT ON posts FOR EACH ROW BEGIN ' +
-// 'DECLARE newUsername VARCHAR(255); DECLARE newProfileName TEXT; DECLARE new_profile_image_src VARCHAR(255); ' +
-// 'SELECT username, profileName, profile_image_src INTO newUsername, newProfileName, new_profile_image_src FROM ' +
-// 'users WHERE userId = NEW.userId; SET NEW.username = newUsername; SET NEW.profileName = newProfileName; SET NEW.profile_image_src = new_profile_image_src; END;')
-//
-// conn.query('CREATE TRIGGER after_posts_insert AFTER INSERT ON posts FOR EACH ROW BEGIN ' +
-// 'UPDATE users SET numPosts = (SELECT COUNT(*) FROM posts WHERE userId=NEW.mediaId) WHERE userId=NEW.userId; END;')
-//
-// conn.query('CREATE TRIGGER after_posts_delete AFTER DELETE ON posts FOR EACH ROW BEGIN ' +
-// 'UPDATE users SET numPosts = (SELECT COUNT(*) FROM posts WHERE userId=OLD.userId) WHERE userId=OLD.userId; END;')
-//
-// conn.query('CREATE TRIGGER before_playlists_insert BEFORE INSERT ON playlists FOR EACH ROW BEGIN ' +
-// 'DECLARE newUsername VARCHAR(255); DECLARE newProfileName TEXT; DECLARE new_profile_image_src VARCHAR(255); ' +
-// 'SELECT username, profileName, profile_image_src INTO newUsername, newProfileName, new_profile_image_src FROM ' +
-// 'users WHERE userId = NEW.userId; SET NEW.username = newUsername; SET NEW.profileName = newProfileName; SET NEW.profile_image_src = new_profile_image_src; END;')
-//
-// conn.query('CREATE TRIGGER after_users_update AFTER UPDATE ON users FOR EACH ROW BEGIN ' +
-// 'IF NEW.profileName <> OLD.profileName THEN ' +
-// 'UPDATE posts SET profileName = NEW.profileName WHERE userId=NEW.userId; ' +
-// 'UPDATE reposts SET profileName = NEW.profileName WHERE userId=NEW.userId; ' +
-// 'UPDATE playlists SET profileName = NEW.profileName WHERE userId=NEW.userId; ' +
-// 'UPDATE playlistsReposts SET profileName = NEW.profileName WHERE userId=NEW.userId; ' +
-// 'END IF;' +
-// 'IF NEW.profile_image_src <> OLD.profile_image_src THEN ' +
-// 'UPDATE posts SET profile_image_src = NEW.profile_image_src WHERE userId=NEW.userId; ' +
-// 'UPDATE reposts SET profile_image_src = NEW.profile_image_src WHERE userId=NEW.userId; ' +
-// 'UPDATE playlists SET profile_image_src = NEW.profile_image_src WHERE userId=NEW.userId; ' +
-// 'UPDATE playlistsReposts SET profile_image_src = NEW.profile_image_src WHERE userId=NEW.userId; ' +
-// 'END IF; END;')
-//
-// conn.query('CREATE TRIGGER after_playlistsPosts_insert AFTER INSERT ON playlistsPosts FOR EACH ROW BEGIN ' +
-// 'DECLARE oldDisplayTime DATETIME; DECLARE playlistUserId INTEGER; SELECT displayTime, userId INTO oldDisplayTime, playlistUserId FROM playlists WHERE playlistId=NEW.playlistId; ' +
-// 'INSERT INTO playlistsPostsNotifications (senderId, receiverId, playlistId, mediaId, dateTime) VALUES (playlistUserId, (SELECT userId FROM posts WHERE mediaId=NEW.mediaId), NEW.playlistId, NEW.mediaId, NEW.dateTime); ' +
-// 'IF (NEW.playlistIndex != 0 AND (oldDisplayTime IS NULL OR NEW.dateTime > oldDisplayTime)) THEN ' +
-// 'UPDATE playlists SET displayTime = DATE_ADD(NEW.dateTime, INTERVAL 1 DAY), postsAdded = 1 WHERE playlistId=NEW.playlistId; ' +
-// 'ELSE UPDATE playlists SET postsAdded = (postsAdded + 1) WHERE playlistId=NEW.playlistId; END IF; END;')
-//
-// conn.query('CREATE TRIGGER after_playlistsPosts_delete AFTER DELETE ON playlistsPosts FOR EACH ROW BEGIN ' +
-// 'DELETE FROM playlistsPostsNotifications WHERE playlistId = OLD.playlistId AND mediaId = OLD.mediaId; END;')
-//
-// conn.query('CREATE PROCEDURE markNotificationsAsRead (IN notificationsUserId INTEGER) BEGIN ' +
-// 'UPDATE postsNotifications SET unread = 0 WHERE receiverId = notificationsUserId;' +
-// 'UPDATE playlistsNotifications SET unread = 0 WHERE receiverId = notificationsUserId; ' +
-// 'UPDATE followingNotifications SET unread = 0 WHERE receiverId = notificationsUserId; ' +
-// 'UPDATE playlistsPostsNotifications SET unread = 0 WHERE receiverId = notificationsUserId; END;')
+conn.query('SET foreign_key_checks = 0')
+conn.query('DROP TABLE IF EXISTS users')
+conn.query('DROP TABLE IF EXISTS posts')
+conn.query('DROP TABLE IF EXISTS postsImages')
+conn.query('DROP TABLE IF EXISTS playlists')
+conn.query('DROP TABLE IF EXISTS tags');
+conn.query('DROP TABLE IF EXISTS reposts');
+conn.query('DROP TABLE IF EXISTS likes');
+conn.query('DROP TABLE IF EXISTS views');
+conn.query('DROP TABLE IF EXISTS playlistsViews');
+conn.query('DROP TABLE IF EXISTS comments');
+conn.query('DROP TABLE IF EXISTS playlistsPosts');
+conn.query('DROP TABLE IF EXISTS playlistsFollowers');
+conn.query('DROP TABLE IF EXISTS playlistsReposts');
+conn.query('DROP TABLE IF EXISTS playlistsLikes');
+conn.query('DROP TABLE IF EXISTS playlistsComments');
+conn.query('DROP TABLE IF EXISTS postsNotifications')
+conn.query('DROP TABLE IF EXISTS playlistsNotifications')
+conn.query('DROP TABLE IF EXISTS followingNotifications')
+conn.query('DROP TABLE IF EXISTS playlistsPostsNotifications')
+conn.query('DROP TABLE IF EXISTS following');
+conn.query('DROP TABLE IF EXISTS logins')
+conn.query('DROP TABLE IF EXISTS linksClicks')
+conn.query('DROP TABLE IF EXISTS profilesVisits')
+conn.query('DROP PROCEDURE IF EXISTS markNotificationsAsRead')
+conn.query('SET foreign_key_checks = 1')
+
+conn.query('CREATE TABLE IF NOT EXISTS users (userId INTEGER AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255) NOT NULL UNIQUE, profileName TEXT NOT NULL, profile_image_src VARCHAR(255), ' +
+'location TEXT, followers INTEGER NOT NULL DEFAULT 0, following INTEGER NOT NULL DEFAULT 0, numPosts INTEGER NOT NULL DEFAULT 0, description TEXT, createdDate DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL)')
+
+conn.query('CREATE TABLE IF NOT EXISTS logins (loginId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, network TEXT, networkId TEXT, accessToken TEXT, username VARCHAR(255) NOT NULL UNIQUE, email VARCHAR(255) UNIQUE, ' +
+'passwordHash CHAR(60), verificationHash CHAR(60), verified BOOLEAN NOT NULL DEFAULT FALSE, FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY (username) REFERENCES users(username) ON UPDATE CASCADE);')
+
+conn.query('CREATE TABLE IF NOT EXISTS posts (mediaId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT NOT NULL, profile_image_src VARCHAR(255), ' +
+'title VARCHAR(255) NOT NULL, url VARCHAR(255) NOT NULL, genre TEXT, original BOOLEAN, ' +
+'views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY (username) REFERENCES users(username) ON UPDATE CASCADE, UNIQUE(userId, url));')
+
+conn.query('CREATE TABLE IF NOT EXISTS postsImages (imageId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, imageUrl VARCHAR(255) NOT NULL UNIQUE, imageIndex INTEGER NOT NULL, width INTEGER NOT NULL, height INTEGER NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE);')
+
+conn.query('CREATE TABLE IF NOT EXISTS playlists (playlistId INTEGER AUTO_INCREMENT PRIMARY KEY, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT NOT NULL, profile_image_src VARCHAR(255), ' +
+'title VARCHAR(255), url VARCHAR(255) NOT NULL, genre TEXT, public BOOLEAN, likes INTEGER DEFAULT 0, reposts INTEGER DEFAULT 0, ' +
+'followers INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, description TEXT, displayTime DATETIME, postsAdded INTEGER DEFAULT 0, ' +
+'dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY(username) REFERENCES users(username) ON UPDATE CASCADE, UNIQUE(url, userId))')
+
+conn.query('CREATE TABLE IF NOT EXISTS followingNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
+'FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId))')
+
+conn.query('CREATE TABLE IF NOT EXISTS postsNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, mediaId INTEGER NOT NULL, activity INTEGER NOT NULL, comment TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
+'FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId))')
+
+conn.query('CREATE TABLE IF NOT EXISTS playlistsNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, playlistId INTEGER NOT NULL, activity INTEGER NOT NULL, comment TEXT, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
+'FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId), FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE)')
+
+conn.query('CREATE TABLE IF NOT EXISTS playlistsPostsNotifications (notificationId INTEGER AUTO_INCREMENT PRIMARY KEY, unread BOOLEAN NOT NULL DEFAULT TRUE, senderId INTEGER NOT NULL, receiverId INTEGER NOT NULL, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, ' +
+'FOREIGN KEY (senderId) REFERENCES users(userId), FOREIGN KEY (receiverId) REFERENCES users(userId), FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE)')
+
+conn.query('CREATE TABLE IF NOT EXISTS tags (tagId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, itemType TEXT NOT NULL, itemName TEXT, itemBrand TEXT, itemLink VARCHAR(255), original BOOLEAN NOT NULL DEFAULT FALSE, x INTEGER NOT NULL, y INTEGER NOT NULL, imageIndex INTEGER NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE)');
+
+conn.query('CREATE TABLE IF NOT EXISTS reposts (repostId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT, profile_image_src VARCHAR(255), dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, active BOOLEAN NOT NULL DEFAULT TRUE, ' +
+'FOREIGN KEY(mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY(username) REFERENCES users(username) ON UPDATE CASCADE, UNIQUE(mediaId, userId))');
+
+conn.query('CREATE TABLE IF NOT EXISTS likes (likeId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(mediaId, userId))');
+
+conn.query('CREATE TABLE IF NOT EXISTS views (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, reposterId INTEGER, viewerId INTEGER, ' +
+// 'viewerId INTEGER NOT NULL, ' +
+'mediaUserId INTEGER NOT NULL, IP_Address TEXT, explore BOOLEAN, dateTime DATETIME NOT NULL, ' +
+// 'FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, ' +
+'FOREIGN KEY (reposterId) REFERENCES users(userId), ' +
+// 'FOREIGN KEY (viewerId) REFERENCES users(userId), ' +
+'FOREIGN KEY (mediaUserId) REFERENCES users(userId)' +
+// ', UNIQUE(mediaId, viewerId, dateTime)' +
+')');
+
+conn.query('CREATE TABLE IF NOT EXISTS comments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, mediaId INTEGER NOT NULL, mediaUserId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId))');
+
+conn.query('CREATE TABLE IF NOT EXISTS playlistsPosts (playlistPostId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, playlistIndex INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY(mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, UNIQUE KEY (playlistId, mediaId))');
+
+conn.query('CREATE TABLE IF NOT EXISTS playlistsFollowers (playlistFollowId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
+
+conn.query('CREATE TABLE IF NOT EXISTS playlistsReposts (repostId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, username VARCHAR(255) NOT NULL, profileName TEXT, profile_image_src VARCHAR(255), dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, active BOOLEAN NOT NULL DEFAULT TRUE, ' +
+'FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY(username) REFERENCES users(username) ON UPDATE CASCADE, UNIQUE(playlistId, userId))');
+
+conn.query('CREATE TABLE IF NOT EXISTS playlistsLikes (likeId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId), UNIQUE(playlistId, userId))');
+
+conn.query('CREATE TABLE IF NOT EXISTS playlistsComments (commentId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, userId INTEGER NOT NULL, comment TEXT NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (playlistId) REFERENCES playlists(playlistId) ON DELETE CASCADE, FOREIGN KEY (playlistUserId) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId))')
+
+conn.query('CREATE TABLE IF NOT EXISTS playlistsViews (viewId INTEGER AUTO_INCREMENT PRIMARY KEY, playlistId INTEGER NOT NULL, mediaId INTEGER NOT NULL, reposterId INTEGER, viewerId INTEGER, mediaUserId INTEGER NOT NULL, playlistUserId INTEGER NOT NULL, IP_Address TEXT, explore BOOLEAN, dateTime DATETIME NOT NULL, ' +
+// 'FOREIGN KEY (playlistId) REFERENCES playlists(playlistId), ' +
+// 'FOREIGN KEY (mediaId) REFERENCES posts(mediaId) ON DELETE CASCADE, ' +
+'FOREIGN KEY (reposterId) REFERENCES users(userId), ' +
+// 'FOREIGN KEY (viewerId) REFERENCES users(userId), ' +
+'FOREIGN KEY (mediaUserId) REFERENCES users(userId), FOREIGN KEY (playlistUserId) REFERENCES users(userId)' +
+// ', UNIQUE(mediaId, viewerId, dateTime)' +
+')');
+
+conn.query('CREATE TABLE IF NOT EXISTS following (followingId INTEGER AUTO_INCREMENT PRIMARY KEY, followerUserId INTEGER NOT NULL, followingUserId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (followerUserId) REFERENCES users(userId), FOREIGN KEY (followingUserId) REFERENCES users(userId), UNIQUE(followerUserId, followingUserId))')
+
+conn.query('CREATE TABLE IF NOT EXISTS linksClicks (clickId INTEGER AUTO_INCREMENT PRIMARY KEY, clickUserId INTEGER NOT NULL, linkUserId INTEGER NOT NULL, mediaId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (clickUserId) REFERENCES users(userId), FOREIGN KEY (linkUserId) REFERENCES users(userId), FOREIGN KEY (mediaId) REFERENCES posts(mediaId))')
+
+conn.query('CREATE TABLE IF NOT EXISTS profilesVisits (clickId INTEGER AUTO_INCREMENT PRIMARY KEY, visitUserId INTEGER NOT NULL, profileUserId INTEGER NOT NULL, dateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (visitUserId) REFERENCES users(userId), FOREIGN KEY (profileUserId) REFERENCES users(userId))')
+
+conn.query('CREATE TRIGGER before_following_insert BEFORE INSERT ON following FOR EACH ROW BEGIN ' +
+'IF (NEW.followerUserId = NEW.followingUserId) THEN ' +
+'SIGNAL SQLSTATE \'45000\' SET MESSAGE_TEXT = \'Cannot follow yourself\', MYSQL_ERRNO = 1001; END IF; END;')
+
+conn.query('CREATE TRIGGER after_following_insert AFTER INSERT ON following FOR EACH ROW BEGIN ' +
+'UPDATE users SET followers = (SELECT COUNT(*) FROM following WHERE followingUserId=NEW.followingUserId) WHERE userId=NEW.followingUserId; ' +
+'UPDATE users SET following = (SELECT COUNT(*) FROM following WHERE followerUserId=NEW.followerUserId) WHERE userId=NEW.followerUserId; ' +
+'INSERT INTO followingNotifications (senderId, receiverId, dateTime) VALUES (NEW.followerUserId, NEW.followingUserId, NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_following_delete AFTER DELETE ON following FOR EACH ROW BEGIN ' +
+'UPDATE users SET followers = (SELECT COUNT(*) FROM following WHERE followingUserId=OLD.followingUserId) WHERE userId=OLD.followingUserId; ' +
+'UPDATE users SET following = (SELECT COUNT(*) FROM following WHERE followerUserId=OLD.followerUserId) WHERE userId=OLD.followerUserId; ' + 'END;')
+
+conn.query('CREATE TRIGGER before_likes_insert BEFORE INSERT ON likes FOR EACH ROW BEGIN ' +
+'SET NEW.mediaUserId = (SELECT userId FROM posts WHERE mediaId = NEW.mediaId LIMIT 1); END; ')
+
+conn.query('CREATE TRIGGER after_likes_insert AFTER INSERT ON likes FOR EACH ROW BEGIN ' +
+'UPDATE posts SET likes = (SELECT COUNT(*) FROM likes WHERE mediaId=NEW.mediaId) WHERE mediaId=NEW.mediaId; ' +
+'INSERT INTO postsNotifications (senderId, receiverId, mediaId, activity, dateTime) VALUES (NEW.userId, (SELECT userId FROM posts WHERE mediaId=NEW.mediaId), NEW.mediaId, 0, NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_likes_delete AFTER DELETE ON likes FOR EACH ROW BEGIN ' +
+'UPDATE posts SET likes = (SELECT COUNT(*) FROM likes WHERE mediaId=OLD.mediaId) WHERE mediaId=OLD.mediaId; ' +
+'DELETE FROM postsNotifications WHERE senderId=OLD.userId AND mediaId=OLD.mediaId AND activity=0; END;')
+
+conn.query('CREATE TRIGGER before_reposts_insert BEFORE INSERT ON reposts FOR EACH ROW BEGIN ' +
+'DECLARE newUsername VARCHAR(255); DECLARE newProfileName TEXT; DECLARE new_profile_image_src VARCHAR(255); ' +
+'IF (SELECT COUNT(*) FROM posts WHERE userId=NEW.userId AND mediaId=NEW.mediaId > 0) THEN ' +
+'SIGNAL SQLSTATE \'45000\' SET MESSAGE_TEXT = \'Cannot repost own track\', MYSQL_ERRNO = 1001; ' +
+'ELSE ' +
+'SELECT username, profileName, profile_image_src INTO newUsername, newProfileName, new_profile_image_src FROM users WHERE userId = NEW.userId; ' +
+'SET NEW.username = newUsername; SET NEW.profileName = newProfileName; SET NEW.profile_image_src = new_profile_image_src; ' +
+'SET NEW.mediaUserId = (SELECT userId FROM posts WHERE mediaId = NEW.mediaId LIMIT 1); ' +
+'END IF; END;')
+
+conn.query('CREATE TRIGGER after_reposts_insert AFTER INSERT ON reposts FOR EACH ROW BEGIN ' +
+'UPDATE posts SET reposts = (SELECT COUNT(*) FROM reposts WHERE mediaId=NEW.mediaId) WHERE mediaId=NEW.mediaId; ' +
+'INSERT INTO postsNotifications (senderId, receiverId, mediaId, activity, dateTime) VALUES (NEW.userId, (SELECT userId FROM posts WHERE mediaId=NEW.mediaId), NEW.mediaId, 1, NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_reposts_update AFTER UPDATE ON reposts FOR EACH ROW BEGIN ' +
+'UPDATE posts SET reposts = (SELECT COUNT(*) FROM reposts WHERE mediaId = NEW.mediaId AND active = 1) WHERE mediaId = NEW.mediaId; ' +
+'IF (NEW.active = 0) THEN DELETE FROM postsNotifications WHERE senderId=NEW.userId AND mediaId=NEW.mediaId AND activity=1; END IF; END;')
+
+// conn.query('CREATE TRIGGER after_reposts_delete AFTER DELETE ON reposts FOR EACH ROW BEGIN ' +
+// 'UPDATE posts SET reposts = (SELECT COUNT(*) FROM reposts WHERE mediaId=OLD.mediaId) WHERE mediaId=OLD.mediaId; ' +
+// 'DELETE FROM postsNotifications WHERE senderId=OLD.userId AND mediaId=OLD.mediaId AND activity=1; END;')
+
+conn.query('CREATE TRIGGER before_comments_insert BEFORE INSERT ON comments FOR EACH ROW BEGIN ' +
+'SET NEW.mediaUserId = (SELECT userId FROM posts WHERE mediaId = NEW.mediaId LIMIT 1); END; ')
+
+conn.query('CREATE TRIGGER after_comments_insert AFTER INSERT ON comments FOR EACH ROW BEGIN ' +
+'UPDATE posts SET comments = (SELECT COUNT(*) FROM comments WHERE mediaId=NEW.mediaId) WHERE mediaId=NEW.mediaId; ' +
+'INSERT INTO postsNotifications (senderId, receiverId, mediaId, activity, comment, dateTime) VALUES (NEW.userId, (SELECT userId FROM posts WHERE mediaId=NEW.mediaId), NEW.mediaId, 2, NEW.comment, NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_comments_delete AFTER DELETE ON comments FOR EACH ROW BEGIN ' +
+'UPDATE posts SET comments = (SELECT COUNT(*) FROM comments WHERE mediaId=OLD.mediaId) WHERE mediaId=OLD.mediaId; ' +
+'DELETE FROM postsNotifications WHERE senderId=OLD.userId AND mediaId=OLD.mediaId AND activity=2; END;')
+
+conn.query('CREATE TRIGGER before_playlistsLikes_insert BEFORE INSERT ON playlistsLikes FOR EACH ROW BEGIN ' +
+'SET NEW.playlistUserId = (SELECT userId FROM playlists WHERE playlistId = NEW.playlistId LIMIT 1); END; ')
+
+conn.query('CREATE TRIGGER after_playlistsLikes_insert AFTER INSERT ON playlistsLikes FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET likes = (SELECT COUNT(*) FROM playlistsLikes WHERE playlistId=NEW.playlistId) WHERE playlistId=NEW.playlistId; ' +
+'INSERT INTO playlistsNotifications (senderId, receiverId, playlistId, activity, dateTime) VALUES (NEW.userId, (SELECT userId FROM playlists WHERE playlistId=NEW.playlistId), NEW.playlistId, 0, NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_playlistsLikes_delete AFTER DELETE ON playlistsLikes FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET likes = (SELECT COUNT(*) FROM playlistsLikes WHERE playlistId=OLD.playlistId) WHERE playlistId=OLD.playlistId; ' +
+'DELETE FROM playlistsNotifications WHERE senderId=OLD.userId AND playlistId=OLD.playlistId AND activity=0; END;')
+
+conn.query('CREATE TRIGGER before_playlistsReposts_insert BEFORE INSERT ON playlistsReposts FOR EACH ROW BEGIN ' +
+'DECLARE newUsername VARCHAR(255); DECLARE newProfileName TEXT; DECLARE new_profile_image_src VARCHAR(255); ' +
+'IF (SELECT COUNT(*) FROM playlists WHERE userId=NEW.userId AND playlistId=NEW.playlistId > 0) THEN ' +
+'SIGNAL SQLSTATE \'45000\' SET MESSAGE_TEXT = \'Cannot repost own playlist\', MYSQL_ERRNO = 1001; '+
+'ELSE ' +
+'SET NEW.playlistUserId = (SELECT userId FROM playlists WHERE playlistId = NEW.playlistId LIMIT 1);' +
+'SELECT username, profileName, profile_image_src INTO newUsername, newProfileName, new_profile_image_src FROM ' +
+'users WHERE userId = NEW.userId; SET NEW.username = newUsername; SET NEW.profileName = newProfileName; SET NEW.profile_image_src = new_profile_image_src; ' +
+'END IF; END;')
+
+conn.query('CREATE TRIGGER after_playlistsReposts_insert AFTER INSERT ON playlistsReposts FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET reposts = (SELECT COUNT(*) FROM playlistsReposts WHERE playlistId=NEW.playlistId) WHERE playlistId=NEW.playlistId; ' +
+'INSERT INTO playlistsNotifications (senderId, receiverId, playlistId, activity, dateTime) VALUES (NEW.userId, (SELECT userId FROM playlists WHERE playlistId=NEW.playlistId), NEW.playlistId, 1, NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_playlistsReposts_update AFTER UPDATE ON playlistsReposts FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET reposts = (SELECT COUNT(*) FROM playlistsReposts WHERE playlistId = NEW.playlistId AND active = 1) WHERE playlistId = NEW.playlistId; ' +
+'IF (NEW.active = 0) THEN DELETE FROM playlistsNotifications WHERE senderId=NEW.userId AND playlistId=NEW.playlistId AND activity=1; END IF; END;')
+
+// conn.query('CREATE TRIGGER after_playlistsReposts_delete AFTER DELETE ON playlistsReposts FOR EACH ROW BEGIN ' +
+// 'UPDATE playlists SET reposts = (SELECT COUNT(*) FROM playlistsReposts WHERE playlistId=OLD.playlistId) WHERE playlistId=OLD.playlistId; ' +
+// 'DELETE FROM playlistsNotifications WHERE senderId=OLD.userId AND playlistId=OLD.playlistId AND activity=1; END;')
+
+conn.query('CREATE TRIGGER before_playlistsFollowers_insert BEFORE INSERT ON playlistsFollowers FOR EACH ROW BEGIN ' +
+'SET NEW.playlistUserId = (SELECT userId FROM playlists WHERE playlistId = NEW.playlistId LIMIT 1); END; ')
+
+conn.query('CREATE TRIGGER after_playlistsFollowers_insert AFTER INSERT ON playlistsFollowers FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET followers = (SELECT COUNT(*) FROM playlistsFollowers WHERE playlistId=NEW.playlistId) WHERE playlistId=NEW.playlistId; ' +
+'INSERT INTO playlistsNotifications (senderId, receiverId, playlistId, activity, dateTime) VALUES (NEW.userId, (SELECT userId FROM playlists WHERE playlistId=NEW.playlistId), NEW.playlistId, 3, NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_playlistsFollowers_delete AFTER DELETE ON playlistsFollowers FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET followers = (SELECT COUNT(*) FROM playlistsFollowers WHERE playlistId=OLD.playlistId) WHERE playlistId=OLD.playlistId; ' +
+'DELETE FROM playlistsNotifications WHERE senderId=OLD.userId AND playlistId=OLD.playlistId AND activity=3; END;')
+
+conn.query('CREATE TRIGGER before_playlistsComments_insert BEFORE INSERT ON playlistsComments FOR EACH ROW BEGIN ' +
+'SET NEW.playlistUserId = (SELECT userId FROM playlists WHERE playlistId = NEW.playlistId LIMIT 1); END; ')
+
+conn.query('CREATE TRIGGER after_playlistsComments_insert AFTER INSERT ON playlistsComments FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET comments = (SELECT COUNT(*) FROM playlistsComments WHERE playlistId=NEW.playlistId) WHERE playlistId=NEW.playlistId; ' +
+'INSERT INTO playlistsNotifications (senderId, receiverId, playlistId, activity, comment, dateTime) VALUES (NEW.userId, (SELECT userId FROM playlists WHERE playlistId=NEW.playlistId), NEW.playlistId, 2, NEW.comment, NEW.dateTime); END;')
+
+conn.query('CREATE TRIGGER after_playlistsComments_delete AFTER DELETE ON playlistsComments FOR EACH ROW BEGIN ' +
+'UPDATE playlists SET comments = (SELECT COUNT(*) FROM playlistsComments WHERE playlistId=OLD.playlistId) WHERE playlistId=OLD.playlistId; ' +
+'DELETE FROM playlistsNotifications WHERE senderId=OLD.userId AND playlistId=OLD.playlistId AND activity=2; END;')
+
+// conn.query('CREATE TRIGGER after_postNotifications_update AFTER UPDATE ON postsNotifications FOR EACH ROW BEGIN ' +
+// 'UPDATE playlistsNotifications SET unread=0 WHERE receiverId=NEW.receiverId; ' +
+// 'UPDATE followingNotifications SET unread=0 WHERE receiverId=NEW.receiverId; END;')
+
+conn.query('CREATE TRIGGER before_views_insert BEFORE INSERT ON views FOR EACH ROW BEGIN ' +
+'DECLARE mediaUserId INTEGER; SET mediaUserId = (SELECT userId FROM posts WHERE mediaId = NEW.mediaId LIMIT 1); ' +
+'IF (NEW.viewerId != mediaUserId OR NEW.viewerId IS NULL) THEN SET NEW.mediaUserId = mediaUserId; END IF; END;')
+
+conn.query('CREATE TRIGGER after_views_insert AFTER INSERT ON views FOR EACH ROW BEGIN ' +
+// 'UPDATE posts SET views = views + 1 WHERE mediaId=NEW.mediaId; END;')
+'UPDATE posts SET views = (SELECT COUNT(*) FROM views WHERE mediaId=NEW.mediaId) + (SELECT COUNT(*) FROM playlistsViews WHERE mediaId=NEW.mediaId) WHERE mediaId=NEW.mediaId; END;')
+
+conn.query('CREATE TRIGGER before_playlistsViews_insert BEFORE INSERT ON playlistsViews FOR EACH ROW BEGIN ' +
+'DECLARE mediaUserId INTEGER; DECLARE playlistUserId INTEGER; ' +
+'SELECT b.userId, c.userId INTO playlistUserId, mediaUserId FROM playlistsPosts AS a ' +
+'JOIN playlists AS b ON b.playlistId = a.playlistId JOIN posts AS c ON c.mediaId = a.mediaId ' +
+'WHERE a.playlistId = NEW.playlistId AND a.mediaId = NEW.mediaId LIMIT 1;' +
+'IF (NEW.viewerId != mediaUserId) THEN SET NEW.mediaUserId = mediaUserId; SET NEW.playlistUserId = playlistUserId; END IF; END;')
+
+conn.query('CREATE TRIGGER after_playlistsViews_insert AFTER INSERT ON playlistsViews FOR EACH ROW BEGIN ' +
+// 'UPDATE posts SET views = views + 1 WHERE mediaId=NEW.mediaId; END;')
+'UPDATE posts SET views = (SELECT COUNT(*) FROM playlistsViews WHERE mediaId = NEW.mediaId) + (SELECT COUNT(*) FROM views WHERE mediaId = NEW.mediaId) WHERE mediaId=NEW.mediaId; END;')
+
+conn.query('CREATE TRIGGER before_linksClicks_insert BEFORE INSERT ON linksClicks FOR EACH ROW BEGIN ' +
+'DECLARE linkUserId INTEGER; SET linkUserId = (SELECT userId FROM posts WHERE mediaId = NEW.mediaId LIMIT 1); ' +
+'IF (NEW.clickUserId != linkUserId) THEN SET NEW.linkUserId = linkUserId; END IF; END;')
+
+conn.query('CREATE TRIGGER before_posts_insert BEFORE INSERT ON posts FOR EACH ROW BEGIN ' +
+'DECLARE newUsername VARCHAR(255); DECLARE newProfileName TEXT; DECLARE new_profile_image_src VARCHAR(255); ' +
+'SELECT username, profileName, profile_image_src INTO newUsername, newProfileName, new_profile_image_src FROM ' +
+'users WHERE userId = NEW.userId; SET NEW.username = newUsername; SET NEW.profileName = newProfileName; SET NEW.profile_image_src = new_profile_image_src; END;')
+
+conn.query('CREATE TRIGGER after_posts_insert AFTER INSERT ON posts FOR EACH ROW BEGIN ' +
+'UPDATE users SET numPosts = (SELECT COUNT(*) FROM posts WHERE userId=NEW.mediaId) WHERE userId=NEW.userId; END;')
+
+conn.query('CREATE TRIGGER after_posts_delete AFTER DELETE ON posts FOR EACH ROW BEGIN ' +
+'UPDATE users SET numPosts = (SELECT COUNT(*) FROM posts WHERE userId=OLD.userId) WHERE userId=OLD.userId; END;')
+
+conn.query('CREATE TRIGGER before_playlists_insert BEFORE INSERT ON playlists FOR EACH ROW BEGIN ' +
+'DECLARE newUsername VARCHAR(255); DECLARE newProfileName TEXT; DECLARE new_profile_image_src VARCHAR(255); ' +
+'SELECT username, profileName, profile_image_src INTO newUsername, newProfileName, new_profile_image_src FROM ' +
+'users WHERE userId = NEW.userId; SET NEW.username = newUsername; SET NEW.profileName = newProfileName; SET NEW.profile_image_src = new_profile_image_src; END;')
+
+conn.query('CREATE TRIGGER after_users_update AFTER UPDATE ON users FOR EACH ROW BEGIN ' +
+'IF NEW.profileName <> OLD.profileName THEN ' +
+'UPDATE posts SET profileName = NEW.profileName WHERE userId=NEW.userId; ' +
+'UPDATE reposts SET profileName = NEW.profileName WHERE userId=NEW.userId; ' +
+'UPDATE playlists SET profileName = NEW.profileName WHERE userId=NEW.userId; ' +
+'UPDATE playlistsReposts SET profileName = NEW.profileName WHERE userId=NEW.userId; ' +
+'END IF;' +
+'IF NEW.profile_image_src <> OLD.profile_image_src THEN ' +
+'UPDATE posts SET profile_image_src = NEW.profile_image_src WHERE userId=NEW.userId; ' +
+'UPDATE reposts SET profile_image_src = NEW.profile_image_src WHERE userId=NEW.userId; ' +
+'UPDATE playlists SET profile_image_src = NEW.profile_image_src WHERE userId=NEW.userId; ' +
+'UPDATE playlistsReposts SET profile_image_src = NEW.profile_image_src WHERE userId=NEW.userId; ' +
+'END IF; END;')
+
+conn.query('CREATE TRIGGER after_playlistsPosts_insert AFTER INSERT ON playlistsPosts FOR EACH ROW BEGIN ' +
+'DECLARE oldDisplayTime DATETIME; DECLARE playlistUserId INTEGER; SELECT displayTime, userId INTO oldDisplayTime, playlistUserId FROM playlists WHERE playlistId=NEW.playlistId; ' +
+'INSERT INTO playlistsPostsNotifications (senderId, receiverId, playlistId, mediaId, dateTime) VALUES (playlistUserId, (SELECT userId FROM posts WHERE mediaId=NEW.mediaId), NEW.playlistId, NEW.mediaId, NEW.dateTime); ' +
+'IF (NEW.playlistIndex != 0 AND (oldDisplayTime IS NULL OR NEW.dateTime > oldDisplayTime)) THEN ' +
+'UPDATE playlists SET displayTime = DATE_ADD(NEW.dateTime, INTERVAL 1 DAY), postsAdded = 1 WHERE playlistId=NEW.playlistId; ' +
+'ELSE UPDATE playlists SET postsAdded = (postsAdded + 1) WHERE playlistId=NEW.playlistId; END IF; END;')
+
+conn.query('CREATE TRIGGER after_playlistsPosts_delete AFTER DELETE ON playlistsPosts FOR EACH ROW BEGIN ' +
+'DELETE FROM playlistsPostsNotifications WHERE playlistId = OLD.playlistId AND mediaId = OLD.mediaId; END;')
+
+conn.query('CREATE PROCEDURE markNotificationsAsRead (IN notificationsUserId INTEGER) BEGIN ' +
+'UPDATE postsNotifications SET unread = 0 WHERE receiverId = notificationsUserId;' +
+'UPDATE playlistsNotifications SET unread = 0 WHERE receiverId = notificationsUserId; ' +
+'UPDATE followingNotifications SET unread = 0 WHERE receiverId = notificationsUserId; ' +
+'UPDATE playlistsPostsNotifications SET unread = 0 WHERE receiverId = notificationsUserId; END;')
 
 var usersToSockets = {}
 var connectedUserIds = []
