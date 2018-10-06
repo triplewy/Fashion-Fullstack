@@ -181,7 +181,7 @@ export default class UploadImages extends React.Component {
         files[i].height = dimensions[i].height
       }
       return (
-        <UploadMetadata files={files} dimensions={this.state.dimensions} />
+        <UploadMetadata files={files} dimensions={this.state.dimensions} user={this.props.user}/>
       )
     } else {
       var renderedList = [];

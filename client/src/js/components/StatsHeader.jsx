@@ -177,11 +177,12 @@ export default class StatsHeader extends React.Component {
   }
 
   render() {
+    const post = this.props.post
     return (
       <div id="stats_header">
         <div id="views">
           <div style={{backgroundImage: 'url(' + view_icon_revised + ')'}}/>
-          <p className="stats_number">{this.props.post.views}</p>
+          <p className="stats_number">{post.views}</p>
         </div>
         <button id="likes" onClick={this.state.liked ? this.handleUnlike : this.handleLike}>
           <div style={{backgroundImage: this.state.liked ? 'url(' + like_icon_liked + ')' : 'url(' + like_icon + ')'}}/>
@@ -193,8 +194,8 @@ export default class StatsHeader extends React.Component {
         </button>
         <NotLoggedInOverlay showOverlay={this.state.showOverlay} target={this.state.target} />
         <div id="non_stat_div">
-          <PlaylistModal mediaId={this.props.post.mediaId} toggleLoginModal={this.props.toggleLoginModal}/>
-          <MoreDropdown post={this.props.post} />
+          <PlaylistModal mediaId={post.mediaId} username={post.username} toggleLoginModal={this.props.toggleLoginModal}/>
+          <MoreDropdown post={post} />
       </div>
     </div>
     );

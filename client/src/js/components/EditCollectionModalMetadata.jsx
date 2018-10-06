@@ -7,7 +7,6 @@ import { Link } from 'react-router-dom'
 import { Overlay, Tooltip } from 'react-bootstrap'
 import view_icon from 'images/view-icon.png'
 import trash_icon from 'images/trash-icon.png'
-import Cookie from 'js-cookie'
 
 const url = process.env.REACT_APP_API_URL
 
@@ -246,7 +245,7 @@ export default class EditCollectionModalMetadata extends React.Component {
         <input type="text" autoComplete="off" name="titleInput" onChange={this.handleChange} onBlur={this.setUrlPlaceholder} value={this.state.titleInput}
           style={{boxShadow: this.state.titleInput === collection.title ? "" : "0 1px 0px 0px green"}}></input>
         <div className="url_div">
-          <p className="url_head">{"fashion.com/" + Cookie.get('username') + "/collection/"}</p>
+          <p className="url_head">{"fashion.com/" + this.props.collection.username + "/collection/"}</p>
           <input className="url" type="text" autoComplete="off" name="urlInput" onChange={this.checkUrlAvailability} placeholder={this.state.urlInput} value={this.state.urlInput}
             style={{boxShadow: this.state.urlAvailable || !this.state.urlInput ? (this.state.urlInput === collection.url ? "" : "0 1px 0px 0px green") : "0 1px 0px 0px red"}}></input>
         </div>

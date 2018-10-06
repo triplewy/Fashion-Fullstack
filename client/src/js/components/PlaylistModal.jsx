@@ -79,7 +79,7 @@ export default class PlaylistModal extends React.Component {
           </Modal.Header>
           <Modal.Body id="playlist_modal">
             {this.state.showNewPlaylist ?
-              <PlaylistModalCreate mediaId={this.props.mediaId} />
+              <PlaylistModalCreate mediaId={this.props.mediaId} username={this.props.username}/>
               :
               <div>
                 <div id="create_new_playlist" className="playlist_selector" onClick={this.createNewPlaylist}>New Collection +</div>

@@ -234,12 +234,12 @@ export default class Signup extends React.Component {
           <div className="signup_form_div">
             <p className="modal-title">Sign Up</p>
             <div className="welcome_text">
-              <p>Use Google or Reddit to create an account (These do not work right now)</p>
+              <p>Use Reddit to create an account (These do not work right now)</p>
               <div className="oauth_div">
-                <a href='http://localhost:8081/auth/google'>
+                {/* <a href={url + '/auth/google'}>
                   <div style={{backgroundImage: 'url(' + googleLogo + ')'}} />
-                </a>
-                <a href='http://localhost:8081/auth/reddit'>
+                </a> */}
+                <a href={url + '/auth/reddit'}>
                   <div style={{backgroundImage: 'url(' + redditLogo + ')'}} />
                 </a>
               </div>

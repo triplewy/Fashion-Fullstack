@@ -6,7 +6,6 @@ import ProfileInfo from './ProfileInfo.jsx'
 import NotLoggedInOverlay from './NotLoggedInOverlay.jsx'
 import ErrorPage from './ErrorPage.jsx'
 import InfiniteScroll from 'react-infinite-scroller'
-import Cookie from 'js-cookie'
 import { Jumbotron } from 'react-bootstrap'
 // import * as loadImage from 'blueimp-load-image'
 
@@ -114,7 +113,7 @@ export default class Profile extends React.Component {
   }
 
   profileVisit() {
-    if (Cookie.get('username') !== this.props.profile) {
+    if (this.state.isProfile) {
       fetch(url + '/api/profileVisit', {
         method: 'POST',
         headers: {

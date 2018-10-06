@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import googleLogo from 'images/google-logo.png'
 import redditLogo from 'images/reddit-logo.png'
 
+const url = process.env.REACT_APP_API_URL
+
 export default class LoginModal extends React.Component {
   constructor(props) {
     super(props);
@@ -41,12 +43,12 @@ export default class LoginModal extends React.Component {
         </Modal.Header>
         <Modal.Body id="login_modal_body">
           <div className="welcome_text">
-            <p>Use Google or Reddit to login (These do not work right now)</p>
+            <p>Use Reddit to login (These do not work right now)</p>
             <div className="oauth_div">
-              <a href='http://localhost:8081/auth/google'>
+              {/* <a href={url + '/auth/google'}>
                 <div style={{backgroundImage: 'url(' + googleLogo + ')'}} />
-              </a>
-              <a href='http://localhost:8081/auth/reddit'>
+              </a> */}
+              <a href={url + '/auth/reddit'}>
                 <div style={{backgroundImage: 'url(' + redditLogo + ')'}} />
               </a>
             </div>

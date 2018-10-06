@@ -1,7 +1,6 @@
 import React from 'react';
 import Tags from './Tags.jsx'
 import Autosuggest from 'react-autosuggest';
-import Cookie from 'js-cookie'
 
 const url = process.env.REACT_APP_API_URL
 
@@ -123,7 +122,7 @@ export default class UploadMetadata extends React.Component {
         <label className="required">Title:</label>
         <input type="text" autoComplete="off" name="title" onChange={this.handleChange} onBlur={this.setUrlPlaceholder} value={this.state.title}></input>
         <div className="url_div">
-          <p className="url_head">{"fashion.com/" + Cookie.get('username') + "/"}</p>
+          <p className="url_head">{"fashion.com/" + this.props.user.username + "/"}</p>
           <input className="url" type="text" autoComplete="off" name="url" onChange={this.checkUrlAvailability}
             placeholder={this.state.url} value={this.state.url} style={{boxShadow: (this.state.urlAvailable || !this.state.url ? "" : "0 1px 0px 0px red")}}></input>
         </div>

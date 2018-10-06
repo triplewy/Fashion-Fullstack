@@ -60,7 +60,7 @@ export default class UploadDropzone extends React.Component {
     const dropzoneActive = this.state.dropzoneActive
     if (files.length > 0) {
       return (
-        <UploadImages droppedFiles={files} />
+        <UploadImages droppedFiles={files} user={this.props.user} />
       )
     } else {
       return (

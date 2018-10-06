@@ -282,6 +282,7 @@ export default class UploadMetadata extends React.Component {
             </div>
             <UploadPostMetadata
               modify
+              user={this.props.user}
               tags={this.state.inputTags}
               handleTagDelete={this.handleTagDelete}
               handleTagEdit={this.handleTagEdit}

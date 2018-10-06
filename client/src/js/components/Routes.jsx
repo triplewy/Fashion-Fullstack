@@ -43,8 +43,8 @@ export default class Routes extends React.Component {
   }
 
   componentDidMount() {
-    Cookie.set('postsViews', [])
-    Cookie.set('collectionsViews', [])
+    // Cookie.set('postsViews', [])
+    // Cookie.set('collectionsViews', [])
 
     fetch(url + '/api/sessionLogin', {
       credentials: 'include'
@@ -120,6 +120,7 @@ export default class Routes extends React.Component {
   }
 
   setUser(user) {
+    console.log(user);
     this.setState({user: user})
   }
 
@@ -129,7 +130,7 @@ export default class Routes extends React.Component {
 
   render() {
     const PrivateRoute = ({component: Component, ...rest}) => (
-      <Route {...rest} render={(props) => (this.state.user ? <Component {...props}/> : <Redirect to={{pathname: '/signup', state: {from: props.location}}} /> )} />
+      <Route {...rest} render={(props) => (this.state.user ? <Component user={this.state.user} {...props}/> : <Redirect to={{pathname: '/signup', state: {from: props.location}}} /> )} />
     )
     return (
       <BrowserRouter>
@@ -143,8 +144,8 @@ export default class Routes extends React.Component {
           />
           <div className="pageBody">
             <Switch>
-              <Route exact path='/' render={(props) => Cookie.get('username') ? <Stream {...props}/> : <Home {...props}/>} />
-              <PrivateRoute exact path='/upload' component={UploadDropzone} />}/>
+              <Route exact path='/' render={(props) => this.state.user ? <Stream {...props}/> : <Home {...props}/>} />
+              <PrivateRoute exact path='/upload' component={UploadDropzone} />
               <PrivateRoute exact path='/you/likes' component={Likes} />
               <PrivateRoute exact path='/you/stats' component={Stats} />
               <PrivateRoute exact path='/you/notifications' component={NotificationsPage} />

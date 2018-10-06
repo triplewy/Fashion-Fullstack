@@ -5,6 +5,7 @@ import TimePeriod from './TimePeriod.jsx'
 import AlbumTetris from './AlbumTetris.jsx'
 
 const url = process.env.REACT_APP_API_URL
+var isMounted = false
 
 export default class ExploreCollections extends React.Component {
   constructor(props) {
@@ -28,7 +29,12 @@ export default class ExploreCollections extends React.Component {
   }
 
   componentDidMount() {
+    isMounted = true
     this.fetchExploreHot(this.state.genre)
+  }
+
+  componentWillUnmount() {
+    isMounted = false
   }
 
   toggle_type(e) {
@@ -67,7 +73,9 @@ export default class ExploreCollections extends React.Component {
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      this.setState({collections: data});
+      if (isMounted) {
+        this.setState({collections: data});
+      }
     })
     .catch((error) => {
       console.error(error);

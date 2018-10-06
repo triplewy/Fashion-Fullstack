@@ -1,5 +1,4 @@
 import React from 'react';
-import Cookie from 'js-cookie'
 
 const url = process.env.REACT_APP_API_URL
 
@@ -107,7 +106,7 @@ export default class PlaylistModalCreate extends React.Component {
           <label className="required">Title:</label>
           <input type="text" autoComplete="off" name="titleInput" onChange={this.handleChange} onBlur={this.checkUrlAvailability} value={this.state.titleInput}></input>
           <div className="url_div">
-            <p className="url_head">{"fashion.com/" + Cookie.get('username') + "/collection/"}</p>
+            <p className="url_head">{"fashion.com/" + this.props.username + "/collection/"}</p>
             <input className="url" type="text" autoComplete="off" name="url" onChange={this.checkUrlAvailability}
               placeholder={this.state.url} value={this.state.url} style={{boxShadow: (this.state.urlAvailable || !this.state.url ? "" : "0 1px 0px 0px red")}}></input>
           </div>
