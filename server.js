@@ -62,14 +62,24 @@ var sessionMiddleware = session({
   }
 })
 
+var passportInit = passport.initialize();
+var passportSession = passport.session();
+
 io.use(function(socket, next) {
   sessionMiddleware(socket.request, socket.request.res, next);
 });
 
-app.use(sessionMiddleware)
+io.use(function(socket, next) {
+  passportInit(socket.request, socket.request.res, next);
+});
 
-app.use(passport.initialize())
-app.use(passport.session())
+io.use(function(socket, next) {
+  passportSession(socket.request, socket.request.res, next);
+});
+
+app.use(sessionMiddleware)
+app.use(passportInit)
+app.use(passportSession)
 
 passport.serializeUser(function(user, done) {
   console.log("serializeUser userId is", user);
@@ -561,42 +571,29 @@ var pollingQuery = ''
 
 io.on('connection', socket => {
   console.log("User connected");
-  // const userId = socket.request.user.userId;
-  // usersToSockets[userId] = socket
-  // connectedUserIds = []
-  // pollingQuery = ''
-  //
-  // for (var user in usersToSockets) {
-  //   console.log("user is", user);
-  //   connectedUserIds.push(user)
-  //   pollingQuery += '?,'
-  // }
-  //
-  // pollingQuery = pollingQuery.slice(0, -1)
+  if (socket.request.user) {
+    const userId = socket.request.user.userId;
+    usersToSockets[userId] = socket
+    connectedUserIds = []
+    pollingQuery = ''
+
+    for (var user in usersToSockets) {
+      console.log("user is", user);
+      connectedUserIds.push(user)
+      pollingQuery += '?,'
+    }
+
+    pollingQuery = pollingQuery.slice(0, -1)
+  }
   pollingLoop();
 
 
   socket.on('receive notifications', function() {
     console.log("receive notifications received");
-    // console.log(socket.request);
-    if (socket.request.user) {
-      const userId = socket.request.user.userId;
-      usersToSockets[userId] = socket
-      connectedUserIds = []
-      pollingQuery = ''
 
-      for (var user in usersToSockets) {
-        console.log("user is", user);
-        connectedUserIds.push(user)
-        pollingQuery += '?,'
-      }
-
-      pollingQuery = pollingQuery.slice(0, -1)
-    }
  })
 
   socket.on('disconnect', () => {
-    // console.log(socket.request);
     if (socket.request.user) {
       const userId = socket.request.user.userId
       console.log("deleted socket userId is", userId);
