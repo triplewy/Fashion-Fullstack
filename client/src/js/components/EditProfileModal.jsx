@@ -163,7 +163,7 @@ export default class EditProfileModal extends React.Component {
                 <label>Location:</label>
                 <input type="text" autoComplete="off" name="locationInput" onChange={this.handleChange} value={this.state.locationInput ? this.state.locationInput : ""}
                   style={{boxShadow: this.state.locationInput === profile.location ? "" : "0 1px 0px 0px green"}}></input>
-                <label>Description:</label>
+                <label>About:</label>
                 <textarea type="text" autoComplete="off" name="descriptionInput" rows="5" onChange={this.handleChange} value={this.state.descriptionInput ? this.state.descriptionInput : ""}
                   style={{border: this.state.descriptionInput === profile.description ? "" : "1px solid green"}}></textarea>
               </div>

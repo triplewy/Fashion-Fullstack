@@ -43,12 +43,15 @@ var POLLING_INTERVAL = 10000
 var app = express();
 var s3 = new aws.S3()
 var server = http.createServer(app)
+var io = socketIO(server)
+
 
 app.use(cors({credentials: true, origin: true}))
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
-app.use(session({
+
+var sessionMiddleware = session({
   store: sessionStore,
   secret: process.env.COOKIE_SECRET,
   resave: false,
@@ -57,7 +60,13 @@ app.use(session({
     httpOnly: false,
     secure: false
   }
-}));
+})
+
+io.use(function(socket, next) {
+  sessionMiddleware(socket.request, socket.request.res, next);
+});
+
+app.use(sessionMiddleware)
 
 app.use(passport.initialize())
 app.use(passport.session())
@@ -71,31 +80,30 @@ passport.deserializeUser(function(user, done) {
   done(null, user);
 })
 
-var io = socketIO(server)
 
-setTimeout(function () {
-  io.use(passportSocketIo.authorize({
-    cookieParser: cookieParser,       // the same middleware you registrer in express
-    key:          'connect.sid',       // the name of the cookie where express/connect stores its session_id
-    secret:       process.env.COOKIE_SECRET,    // the session_secret to parse the cookie
-    store:        sessionStore,        // we NEED to use a sessionstore. no memorystore please
-    success:      onAuthorizeSuccess,  // *optional* callback on success - read more below
-    fail:         onAuthorizeFail,     // *optional* callback on fail/error - read more below
-  }));
-}, 1000)
-
-
-
-function onAuthorizeSuccess(data, accept){
-  accept(null, true);
-}
-
-function onAuthorizeFail(data, message, error, accept){
-  if (error)
-    throw new Error(message);
-  console.log('failed connection to socket.io:', message);
-  accept(null, false);
-}
+// setTimeout(function () {
+//   io.use(passportSocketIo.authorize({
+//     cookieParser: cookieParser,       // the same middleware you registrer in express
+//     key:          'connect.sid',       // the name of the cookie where express/connect stores its session_id
+//     secret:       process.env.COOKIE_SECRET,    // the session_secret to parse the cookie
+//     store:        sessionStore,        // we NEED to use a sessionstore. no memorystore please
+//     success:      onAuthorizeSuccess,  // *optional* callback on success - read more below
+//     fail:         onAuthorizeFail,     // *optional* callback on fail/error - read more below
+//   }));
+// }, 1000)
+//
+//
+//
+// function onAuthorizeSuccess(data, accept){
+//   accept(null, true);
+// }
+//
+// function onAuthorizeFail(data, message, error, accept){
+//   if (error)
+//     throw new Error(message);
+//   console.log('failed connection to socket.io:', message);
+//   accept(null, false);
+// }
 
 passport.use('local-login', new LocalStrategy(
  function(username, password, done) {
@@ -259,6 +267,7 @@ var conn = mysql.createConnection({
   timezone: 'utc'
 });
 
+/*
 conn.query('SET foreign_key_checks = 0')
 conn.query('DROP TABLE IF EXISTS users')
 conn.query('DROP TABLE IF EXISTS posts')
@@ -544,6 +553,7 @@ conn.query('CREATE PROCEDURE markNotificationsAsRead (IN notificationsUserId INT
 'UPDATE playlistsNotifications SET unread = 0 WHERE receiverId = notificationsUserId; ' +
 'UPDATE followingNotifications SET unread = 0 WHERE receiverId = notificationsUserId; ' +
 'UPDATE playlistsPostsNotifications SET unread = 0 WHERE receiverId = notificationsUserId; END;')
+*/
 
 var usersToSockets = {}
 var connectedUserIds = []
@@ -551,37 +561,55 @@ var pollingQuery = ''
 
 io.on('connection', socket => {
   console.log("User connected");
-  const userId = socket.request.user.userId;
-  usersToSockets[userId] = socket
-  connectedUserIds = []
-  pollingQuery = ''
-
-  for (var user in usersToSockets) {
-    console.log("user is", user);
-    connectedUserIds.push(user)
-    pollingQuery += '?,'
-  }
-
-  pollingQuery = pollingQuery.slice(0, -1)
+  // const userId = socket.request.user.userId;
+  // usersToSockets[userId] = socket
+  // connectedUserIds = []
+  // pollingQuery = ''
+  //
+  // for (var user in usersToSockets) {
+  //   console.log("user is", user);
+  //   connectedUserIds.push(user)
+  //   pollingQuery += '?,'
+  // }
+  //
+  // pollingQuery = pollingQuery.slice(0, -1)
   pollingLoop();
 
 
   socket.on('receive notifications', function() {
-    // console.log("receive notifications received");
+    console.log("receive notifications received");
+    // console.log(socket.request);
+    if (socket.request.user) {
+      const userId = socket.request.user.userId;
+      usersToSockets[userId] = socket
+      connectedUserIds = []
+      pollingQuery = ''
+
+      for (var user in usersToSockets) {
+        console.log("user is", user);
+        connectedUserIds.push(user)
+        pollingQuery += '?,'
+      }
+
+      pollingQuery = pollingQuery.slice(0, -1)
+    }
  })
 
   socket.on('disconnect', () => {
-    const userId = socket.request.user.userId
-    console.log("deleted socket userId is", userId);
-    delete usersToSockets[userId]
+    // console.log(socket.request);
+    if (socket.request.user) {
+      const userId = socket.request.user.userId
+      console.log("deleted socket userId is", userId);
+      delete usersToSockets[userId]
 
-    connectedUserIds = []
-    pollingQuery = ''
-    for (var user in usersToSockets) {
-      connectedUserIds.push(user)
-      pollingQuery += '?,'
+      connectedUserIds = []
+      pollingQuery = ''
+      for (var user in usersToSockets) {
+        connectedUserIds.push(user)
+        pollingQuery += '?,'
+      }
+      pollingQuery = pollingQuery.slice(0, -1)
     }
-    pollingQuery = pollingQuery.slice(0, -1)
     console.log('user disconnected')
   })
 })
@@ -666,7 +694,7 @@ app.get('/auth/reddit/callback',
     const username = req.user.username
     res.cookie('userId', userId)
     res.cookie('username', username)
-    res.redirect(process.env.WEBSITE_URL + '/' + username);
+    res.redirect(process.env.WEBSITE_URL + username);
 });
 
 app.get('/api/sessionLogin', loggedIn, (req, res) => {
