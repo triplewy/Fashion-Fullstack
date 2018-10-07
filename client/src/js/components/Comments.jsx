@@ -1,5 +1,5 @@
 import React from 'react';
-import DropdownProfile from './DropdownProfile.jsx'
+import ProfileHover from './ProfileHover.jsx'
 import NotLoggedInOverlay from './NotLoggedInOverlay.jsx'
 import { Link } from 'react-router-dom';
 import { dateDiffInDays } from './DateHelper.js'
@@ -143,12 +143,11 @@ export default class Comments extends React.Component {
       renderedComments = this.state.comments.map((item, index) => {
         return (
           <li key={index}>
-            <div className="post_profile_link">
-              <Link to={"/" + item.username}>
-                <p className="comment_user">{item.profileName}</p>
-              </Link>
-              <DropdownProfile username={item.username} isProfile={false} />
-            </div>
+            <ProfileHover
+              classStyle="post_profile_link"
+              username={item.username}
+              profileName={item.profileName}
+            />
             <p className="comment_time">{dateDiffInDays(new Date(item.dateTime)) + " ago"}</p>
             <p className="comment">{item.comment}</p>
           </li>

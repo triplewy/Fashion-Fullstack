@@ -5,6 +5,11 @@ import {Link, Redirect} from 'react-router-dom'
 import googleLogo from 'images/google-logo.png'
 import redditLogo from 'images/reddit-logo.png'
 
+owasp.config({
+  maxLength              : 128,
+  minLength              : 8,
+  minOptionalTestsToPass : 3
+});
 // {this.state.emailIsValid ? <span className="signup_validator">✔</span> : <span className="signup_validator">x</span>}
 
 const url = process.env.REACT_APP_API_URL
@@ -45,9 +50,6 @@ export default class Signup extends React.Component {
       this.setState({[e.target.name]: value, emailIsValid: validator.isEmail(value)});
     } else if (e.target.name === 'signupUsername') {
       this.setState({[e.target.name]: value, usernameIsValid: (validator.isAlphanumeric(value) && value)});
-    } else if (e.target.name === 'signupPassword') {
-      var owaspResult = owasp.test(value);
-      this.setState({[e.target.name]: value, passwordIsValid: owaspResult.strong, passwordErrorMessage: owaspResult.errors.join(' ')});
     } else {
       this.setState({[e.target.name]: value});
     }
@@ -188,15 +190,16 @@ export default class Signup extends React.Component {
   }
 
   checkPassword(e) {
-    var owaspResult = owasp.test(this.state.signupPassword);
+    this.setState({signupPassword: e.target.value})
+    var owaspResult = owasp.test(e.target.value);
     if (owaspResult.strong) {
-      console.log(owaspResult);
-      this.setState({passwordIsValid: true})
+      this.setState({passwordIsValid: true, passwordErrorMessage: ''})
     } else {
-      console.log(owaspResult);
       var errorMessage = ''
       for (var i = 0; i < owaspResult.errors.length; i++) {
-        errorMessage += (owaspResult.errors[i] + ' ')
+        if (owaspResult.errors[i] !== "The password must contain at least one special character.") {
+          errorMessage += (owaspResult.errors[i] + ' ')
+        }
       }
       this.setState({passwordIsValid: false, passwordErrorMessage: errorMessage})
     }
@@ -234,7 +237,7 @@ export default class Signup extends React.Component {
           <div className="signup_form_div">
             <p className="modal-title">Sign Up</p>
             <div className="welcome_text">
-              <p>Use Reddit to create an account (These do not work right now)</p>
+              <p>Use Reddit to create an account</p>
               <div className="oauth_div">
                 {/* <a href={url + '/auth/google'}>
                   <div style={{backgroundImage: 'url(' + googleLogo + ')'}} />
@@ -253,7 +256,7 @@ export default class Signup extends React.Component {
                 onChange={this.checkUsername} onBlur={this.checkUsername}
                 value={this.state.signupUsername} className={this.state.usernameIsValid ? "valid_field" : ''}></input>
               <input type="password" autoComplete="off" placeholder="Password" name="signupPassword"
-                onChange={this.handleChange} onBlur={this.checkPassword}
+                onChange={this.checkPassword} onBlur={this.checkPassword}
                 value={this.state.signupPassword} className={this.state.passwordIsValid ? "valid_field" : ''}></input>
               <p>{this.state.passwordErrorMessage}</p>
               <input type="password" autoComplete="off" placeholder="Confirm Password" name="signupConfirmPassword"

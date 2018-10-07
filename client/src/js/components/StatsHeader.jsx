@@ -195,7 +195,10 @@ export default class StatsHeader extends React.Component {
         <NotLoggedInOverlay showOverlay={this.state.showOverlay} target={this.state.target} />
         <div id="non_stat_div">
           <PlaylistModal mediaId={post.mediaId} username={post.username} toggleLoginModal={this.props.toggleLoginModal}/>
-          <MoreDropdown post={post} />
+          <MoreDropdown
+            post={post}
+            SinglePostPage={this.props.SinglePostPage}
+          />
       </div>
     </div>
     );

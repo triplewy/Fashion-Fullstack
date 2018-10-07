@@ -24,7 +24,10 @@ export default class MoreDropdown extends React.Component {
         <Dropdown.Menu className="more_dropdown_menu">
           <ReportPostModal post={this.props.post} />
           {isPoster ?
-            <EditPostModal post={this.props.post} />
+            <EditPostModal
+              post={this.props.post}
+              SinglePostPage={this.props.SinglePostPage} 
+            />
             :
             null
           }

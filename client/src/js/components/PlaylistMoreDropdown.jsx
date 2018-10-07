@@ -22,7 +22,10 @@ export default class PlaylistMoreDropdown extends React.Component {
         </Dropdown.Toggle>
         <Dropdown.Menu className="more_dropdown_menu">
           {isPoster ?
-            <EditCollectionModal collection={this.props.playlist} />
+            <EditCollectionModal
+              collection={this.props.playlist}
+              SinglePlaylistPage={this.props.SinglePlaylistPage} 
+            />
             :
             null
           }

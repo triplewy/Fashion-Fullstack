@@ -584,8 +584,9 @@ io.on('connection', socket => {
     }
 
     pollingQuery = pollingQuery.slice(0, -1)
+    pollingLoop();
   }
-  pollingLoop();
+
 
 
   socket.on('receive notifications', function() {

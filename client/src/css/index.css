@@ -1314,7 +1314,7 @@ div.dropdown {
   color: #888888;
 }
 
-#input_div label.required:after {
+.required:after {
   display: inline;
   color: #e32;
   content: ' *';

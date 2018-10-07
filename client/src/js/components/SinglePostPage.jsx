@@ -51,7 +51,7 @@ export default class SinglePostPage extends React.Component {
 
   componentDidMount() {
     window.scrollTo(0, 0)
-    window.addEventListener('beforeunload', this.componentCleanup);
+    // window.addEventListener("beforeunload", this.componentCleanup);
     if (this.state.post) {
       this.fetchStats(this.state.post.mediaId)
       this.postVisit(this.state.post.mediaId)
@@ -71,13 +71,13 @@ export default class SinglePostPage extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log("unmounting");
-    window.removeEventListener('beforeunload', this.componentCleanup);
+    // window.removeEventListener("beforeunload", this.componentCleanup);
   }
 
-  componentCleanup() {
+  componentCleanup(e) {
+    console.log("hellooooooooss");
     this.fetchPost()
-    return "unloading"
+    e.returnValue = "unloading"
   }
 
   setCarouselIndex(index) {
@@ -97,7 +97,6 @@ export default class SinglePostPage extends React.Component {
       post.liked = data.liked
       post.reposted = data.reposted
       this.setState({post: post})
-      // this.setState({views: data.views, likes: data.likes, reposts: data.reposts, liked: data.liked, reposted: data.reposted});
     })
     .catch((error) => {
       console.error(error);
@@ -208,7 +207,10 @@ export default class SinglePostPage extends React.Component {
                   setCarouselIndex={this.setCarouselIndex}
                 />
               </div>
-              <StatsHeader post={post}/>
+              <StatsHeader
+                post={post}
+                SinglePostPage
+              />
             </div>
           </div>
           <div className="single_post_bottom">

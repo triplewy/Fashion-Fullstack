@@ -129,7 +129,7 @@ export default class InputTag extends React.Component {
               <option value="eyewear">Eyewear</option>
               <option value="bag">Bag</option>
             </select>
-            <p id="tag_brand_input">Brand</p>
+            <p id="tag_brand_input" className="required">Brand</p>
             <Autosuggest
               suggestions={this.state.brandSuggestions}
               onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}

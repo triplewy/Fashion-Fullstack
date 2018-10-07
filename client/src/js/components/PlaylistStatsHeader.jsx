@@ -243,7 +243,10 @@ export default class StatsHeader extends React.Component {
         </button>
         <NotLoggedInOverlay showOverlay={this.state.showOverlay} target={this.state.target} />
         <div id="non_stat_div">
-          <PlaylistMoreDropdown playlist={this.props.playlist} />
+          <PlaylistMoreDropdown
+            playlist={this.props.playlist}
+            SinglePlaylistPage={this.props.SinglePlaylistPage}
+          />
         </div>
       </div>
     )

@@ -97,6 +97,7 @@ export default class EditCollectionModal extends React.Component {
                 handlePostDelete={this.handlePostDelete}
                 reorder={this.reorder}
                 closeModal={this.closeModal}
+                SinglePlaylistPage={this.props.SinglePlaylistPage}
               />
             </div>
           </Modal.Body>

@@ -43,7 +43,7 @@ export default class LoginModal extends React.Component {
         </Modal.Header>
         <Modal.Body id="login_modal_body">
           <div className="welcome_text">
-            <p>Use Reddit to login (These do not work right now)</p>
+            <p>Use Reddit to login</p>
             <div className="oauth_div">
               {/* <a href={url + '/auth/google'}>
                 <div style={{backgroundImage: 'url(' + googleLogo + ')'}} />

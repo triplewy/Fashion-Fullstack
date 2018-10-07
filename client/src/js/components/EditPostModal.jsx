@@ -190,6 +190,7 @@ export default class EditPostModal extends React.Component {
                 </div>
               </div>
               <EditPostModalMetadata
+                SinglePostPage={this.props.SinglePostPage}
                 post={post}
                 tags={this.state.tags}
                 deletedTags={this.state.deletedTags}
@@ -198,6 +199,7 @@ export default class EditPostModal extends React.Component {
                 carouselIndex={this.state.carouselIndex}
                 setTagCarouselIndex={this.setTagCarouselIndex}
                 closeModal={this.closeModal}
+                {...this.props}
               />
           </Modal.Body>
         </Modal>

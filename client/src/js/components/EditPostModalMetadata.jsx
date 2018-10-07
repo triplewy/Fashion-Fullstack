@@ -1,6 +1,7 @@
 import React from 'react';
 import Tags from './Tags.jsx'
 import Autosuggest from 'react-autosuggest';
+import { Redirect } from 'react-router-dom'
 
 const url = process.env.REACT_APP_API_URL
 
@@ -30,6 +31,7 @@ function renderSuggestion(suggestion) {
 export default class EditPostModalMetadata extends React.Component {
   constructor(props) {
     super(props);
+    console.log(this.props);
     const post = this.props.post
     this.state = {
       titleInput: post.title,
@@ -40,7 +42,9 @@ export default class EditPostModalMetadata extends React.Component {
 
       topGenres: [],
       genreSuggestions: [],
-      topBrands: []
+      topBrands: [],
+
+      redirect: false
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -97,7 +101,12 @@ export default class EditPostModalMetadata extends React.Component {
     .then(data => {
       console.log(data);
       if (data.message === 'success') {
-        window.location.reload()
+        if (this.props.SinglePostPage && this.state.urlInput !== this.props.post.url) {
+          this.setState({redirect: true})
+          this.props.closeModal()
+        } else {
+          window.location.reload()
+        }
       }
     })
     .catch(e => {
@@ -126,17 +135,16 @@ export default class EditPostModalMetadata extends React.Component {
     this.fetchUrlAvailable(url)
   }
 
-  fetchUrlAvailable(url) {
-    if (url === this.props.post.url) {
+  fetchUrlAvailable(inputUrl) {
+    if (inputUrl === this.props.post.url) {
       this.setState({urlAvailable: true})
     } else {
-      if (url) {
-        fetch(url + '/api/urlAvailable/' + url, {
+      if (inputUrl) {
+        fetch(url + '/api/urlAvailable/' + inputUrl, {
           credentials: 'include'
         })
         .then(res => res.json())
         .then(data => {
-          console.log(data);
           this.setState({urlAvailable: (data.length === 0)});
         })
         .catch((error) => {
@@ -144,6 +152,7 @@ export default class EditPostModalMetadata extends React.Component {
         })
       }
       else {
+        console.log("herere");
         this.setState({urlAvailable: false})
       }
     }
@@ -167,42 +176,50 @@ export default class EditPostModalMetadata extends React.Component {
     var value = this.state.genreInput
     const inputProps = {value, onChange: this.onChange}
     const post = this.props.post
-    return (
-      <div id="input_div">
-        <p id="tags_input"><span>Post</span></p>
-        <label className="required">Title:</label>
-        <input type="text" autoComplete="off" name="titleInput" onChange={this.handleChange} onBlur={this.setUrlPlaceholder} value={this.state.titleInput}
-          style={{boxShadow: this.state.titleInput === post.title ? "" : "0 1px 0px 0px green"}}></input>
-        <div className="url_div">
-          <p className="url_head">{"fashion.com/" + this.props.post.username + "/"}</p>
-          <input className="url" type="text" autoComplete="off" name="urlInput" onChange={this.checkUrlAvailability} placeholder={this.state.urlInput} value={this.state.urlInput}
-            style={{boxShadow: this.state.urlAvailable || !this.state.urlInput ? (this.state.urlInput === post.url ? "" : "0 1px 0px 0px green") : "0 1px 0px 0px red"}}></input>
+
+    if (this.state.redirect) {
+      return (
+        <Redirect to={this.state.urlInput} />
+      )
+    } else {
+      return (
+        <div id="input_div">
+          <p id="tags_input"><span>Post</span></p>
+          <label className="required">Title:</label>
+          <input type="text" autoComplete="off" name="titleInput" onChange={this.handleChange} value={this.state.titleInput}
+            style={{boxShadow: this.state.titleInput === post.title ? "" : "0 1px 0px 0px green"}}></input>
+          <div className="url_div">
+            <p className="url_head">{"fashion.com/" + this.props.post.username + "/"}</p>
+            <input className="url" type="text" autoComplete="off" name="urlInput" onChange={this.checkUrlAvailability} placeholder={this.state.urlInput} value={this.state.urlInput}
+              style={{boxShadow: this.state.urlAvailable && this.state.urlInput ? (this.state.urlInput === post.url ? "" : "0 1px 0px 0px green") : "0 1px 0px 0px red"}}></input>
+          </div>
+          <label className="required">Genre:</label>
+          <Autosuggest
+            suggestions={this.state.genreSuggestions}
+            onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+            onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+            getSuggestionValue={getSuggestionValue}
+            renderSuggestion={renderSuggestion}
+            inputProps={inputProps}
+          />
+          <label>Description:</label>
+          <textarea type="text" autoComplete="off" rows="5" name="descriptionInput" onChange={this.handleChange} value={this.state.descriptionInput}
+            style={{border: this.state.descriptionInput === post.description ? "" : "1px solid green"}}></textarea>
+          <p id="tags_input"><span>Tags</span></p>
+          <Tags
+            modify
+            tags={this.props.tags}
+            handleTagDelete={this.props.handleTagDelete}
+            handleTagEdit={this.props.handleTagEdit}
+            carouselIndex={this.props.carouselIndex}
+            setTagCarouselIndex={this.props.setTagCarouselIndex}
+          />
+          <div className="input_div_submit">
+            <button className="cancel" onClick={this.props.closeModal}>Cancel</button>
+            <button className="save" onClick={this.handleSave} disabled={!(this.state.titleInput && this.state.genreInput && this.state.urlAvailable)}>Save</button>
+          </div>
         </div>
-        <label className="required">Genre:</label>
-        <Autosuggest
-          suggestions={this.state.genreSuggestions}
-          onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-          onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-          getSuggestionValue={getSuggestionValue}
-          renderSuggestion={renderSuggestion}
-          inputProps={inputProps}
-        />
-        <label>Description:</label>
-        <textarea type="text" autoComplete="off" rows="5" name="descriptionInput" onChange={this.handleChange} value={this.state.descriptionInput}
-          style={{border: this.state.descriptionInput === post.description ? "" : "1px solid green"}}></textarea>
-        <p id="tags_input"><span>Tags</span></p>
-        <Tags
-          modify
-          tags={this.props.tags}
-          handleTagDelete={this.props.handleTagDelete}
-          handleTagEdit={this.props.handleTagEdit}
-          carouselIndex={this.props.carouselIndex}
-          setTagCarouselIndex={this.props.setTagCarouselIndex}/>
-        <div className="input_div_submit">
-          <button className="cancel" onClick={this.props.closeModal}>Cancel</button>
-          <button className="save" onClick={this.handleSave} disabled={!(this.state.titleInput && this.state.genreInput && this.state.urlAvailable)}>Save</button>
-        </div>
-      </div>
-    )
+      )
+    }
   }
 }

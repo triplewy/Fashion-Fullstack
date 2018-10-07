@@ -67,8 +67,12 @@ export default class SinglePlaylistPage extends React.Component {
     if (this.props.playlist !== prevProps.playlist) {
       window.scrollTo(0,0)
       this.fetchPlaylist()
+    } else if (this.props.match.url !== prevProps.match.url) {
+      window.scrollTo(0,0)
+      this.fetchPlaylist()
     }
   }
+
   setPlaylistIndex(index, e) {
     this.fetchTags(this.state.playlist.posts[index].mediaId)
     this.setState({playlistIndex: index, carouselIndex: 0, displayTagLocation: false})
@@ -205,7 +209,10 @@ export default class SinglePlaylistPage extends React.Component {
                   <CarouselImages singlePost imageUrls={currentPost.imageUrls} carouselIndex={this.state.carouselIndex} setCarouselIndex={this.setCarouselIndex}/>
                 </div>
               </LinkContainer>
-              <PlaylistStatsHeader playlist={playlist}/>
+              <PlaylistStatsHeader
+                SinglePlaylistPage
+                playlist={playlist}
+              />
             </div>
           </div>
           <div className="single_post_bottom">
